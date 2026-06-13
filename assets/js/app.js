@@ -52,6 +52,37 @@ const Hooks = {
         this.observer.disconnect()
       }
     }
+  },
+
+  CopyLink: {
+    mounted() {
+      this.el.addEventListener("click", () => {
+        const url = this.el.dataset.url
+        const label = this.el.querySelector("[data-copy-label]")
+        const original = label ? label.textContent : null
+
+        const done = () => {
+          if (label) {
+            label.textContent = "Copied!"
+            setTimeout(() => {
+              label.textContent = original
+            }, 2000)
+          }
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(() => {})
+        } else {
+          const input = document.createElement("input")
+          input.value = url
+          document.body.appendChild(input)
+          input.select()
+          document.execCommand("copy")
+          document.body.removeChild(input)
+          done()
+        }
+      })
+    }
   }
 }
 

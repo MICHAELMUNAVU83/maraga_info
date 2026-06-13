@@ -17,7 +17,7 @@ defmodule MaragaInfoWeb do
   those modules here.
   """
 
-  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt sitemap.xml)
+  def static_paths, do: ~w(assets fonts images uploads favicon.ico robots.txt sitemap.xml)
 
   def router do
     quote do
@@ -89,6 +89,7 @@ defmodule MaragaInfoWeb do
       import Phoenix.HTML
       # Core UI components
       import MaragaInfoWeb.CoreComponents
+      import MaragaInfoWeb.AdminComponents
       import MaragaInfoWeb.SiteComponents
 
       # Shortcut for generating JS commands

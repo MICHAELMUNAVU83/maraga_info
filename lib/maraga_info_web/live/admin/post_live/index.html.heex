@@ -1,0 +1,75 @@
+<.admin_shell
+  page_title="Blogs"
+  page_subtitle={@page_subtitle}
+  current_user={@current_user}
+  current_path={@current_path}
+>
+  <:actions>
+    <.link
+      navigate={~p"/admin/blogs/new"}
+      class="inline-flex items-center gap-2 rounded-lg bg-blueink px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blueink/90"
+    >
+      <.icon name="hero-plus-mini" class="h-4 w-4" /> New post
+    </.link>
+  </:actions>
+
+  <div class="space-y-6">
+    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <.admin_stat title="Total" value={Integer.to_string(@stats.total)} hint="All posts" />
+      <.admin_stat
+        title="Published"
+        value={Integer.to_string(@stats.published)}
+        hint="Live on the site"
+        tone="accent"
+      />
+      <.admin_stat title="Drafts" value={Integer.to_string(@stats.drafts)} hint="In progress" />
+      <.admin_stat title="Featured" value={Integer.to_string(@stats.featured)} hint="On homepage" />
+    </section>
+
+    <.admin_panel title="All posts" subtitle="Click a row to view, or edit and remove inline.">
+      <.table
+        :if={@stats.total > 0}
+        id="posts"
+        rows={@streams.posts}
+        row_click={fn {_id, post} -> JS.navigate(~p"/admin/blogs/#{post}") end}
+      >
+        <:col :let={{_id, post}} label="Title">
+          <span class="font-medium text-zinc-900">{post.title}</span>
+        </:col>
+        <:col :let={{_id, post}} label="Status">
+          <.admin_badge
+            tone={if(post.status == :published, do: "published", else: "draft")}
+            label={to_string(post.status)}
+          />
+        </:col>
+        <:col :let={{_id, post}} label="Category">{post.category}</:col>
+        <:col :let={{_id, post}} label="Published">{format_datetime(post.published_at)}</:col>
+        <:col :let={{_id, post}} label="Featured">
+          {if post.is_featured, do: "Yes", else: "—"}
+        </:col>
+        <:action :let={{_id, post}}>
+          <.link navigate={~p"/admin/blogs/#{post}/edit"} class="text-blueink hover:underline">
+            Edit
+          </.link>
+        </:action>
+        <:action :let={{id, post}}>
+          <.link
+            phx-click={JS.push("delete", value: %{id: post.id}) |> hide("##{id}")}
+            data-confirm="Are you sure?"
+            class="text-red-600 hover:underline"
+          >
+            Delete
+          </.link>
+        </:action>
+      </.table>
+
+      <.admin_empty_state
+        :if={@stats.total == 0}
+        title="No posts yet"
+        description="Create the first story to start building out the public news section."
+        link={~p"/admin/blogs/new"}
+        link_label="New post"
+      />
+    </.admin_panel>
+  </div>
+</.admin_shell>

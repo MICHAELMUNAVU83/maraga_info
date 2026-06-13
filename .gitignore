@@ -35,3 +35,7 @@ maraga_info-*.tar
 npm-debug.log
 /assets/node_modules/
 
+
+# Uploaded media (keep the dir, ignore contents)
+/priv/static/uploads/*
+!/priv/static/uploads/.gitkeep

@@ -76,9 +76,9 @@ defmodule MaragaInfoWeb.Seo do
         "@type" => "NewsArticle",
         "headline" => post.title,
         "description" => post.seo_description,
-        "datePublished" => post.iso_date,
-        "dateModified" => post.iso_date,
-        "image" => [absolute_url(post.image)],
+        "datePublished" => iso8601(post.published_at),
+        "dateModified" => iso8601(post.updated_at || post.published_at),
+        "image" => [absolute_url(post.image_url)],
         "mainEntityOfPage" => article_url(post.slug),
         "about" => person_schema(),
         "author" => publisher_schema(),
@@ -88,6 +88,9 @@ defmodule MaragaInfoWeb.Seo do
   end
 
   def article_url(slug), do: @site_url <> "/blog/" <> slug
+
+  defp iso8601(nil), do: nil
+  defp iso8601(%DateTime{} = value), do: DateTime.to_iso8601(value)
 
   defp website_schema do
     %{

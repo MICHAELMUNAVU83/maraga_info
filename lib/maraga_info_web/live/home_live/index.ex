@@ -1,36 +1,13 @@
 defmodule MaragaInfoWeb.HomeLive.Index do
   use MaragaInfoWeb, :live_view
 
+  alias MaragaInfo.Content
+  alias MaragaInfoWeb.Seo
+
   @social_links [
     %{name: "x", href: "https://x.com/dkmaraga", label: "X"},
     %{name: "instagram", href: "https://www.instagram.com/maraga2027", label: "Instagram"},
     %{name: "youtube", href: "https://www.youtube.com/@dkmaraga", label: "YouTube"}
-  ]
-  @news_items [
-    %{
-      date: "Aug 30, 2022",
-      category: "Political",
-      title: "How can we improve immigration policy?",
-      image: "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=1080&q=80"
-    },
-    %{
-      date: "Sep 20, 2022",
-      category: "My passion",
-      title: "We're the people who don't just support progressive change",
-      image: "https://images.unsplash.com/photo-1485081669829-bacb8c7bb1f3?w=1080&q=80"
-    },
-    %{
-      date: "Sep 16, 2022",
-      category: "My passion",
-      title: "Security for the middle class",
-      image: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=1080&q=80"
-    },
-    %{
-      date: "Sep 5, 2022",
-      category: "My passion",
-      title: "Politics is why we can't have nice things. Like the internet",
-      image: "https://images.unsplash.com/photo-1591189863430-ab87e120f312?w=1080&q=80"
-    }
   ]
 
   @stats [
@@ -111,11 +88,16 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    news_items = Content.list_published_posts(limit: 4)
+
     {:ok,
      assign(socket,
-       page_title: "Home",
+       page_title: Seo.default_title(),
+       page_description: Seo.default_description(),
+       canonical_url: Seo.site_url(),
+       structured_data: Seo.home_structured_data(news_items),
        social_links: @social_links,
-       news_items: @news_items,
+       news_items: news_items,
        stats: @stats,
        shop_items: @shop_items,
        events: @events,
@@ -243,6 +225,27 @@ defmodule MaragaInfoWeb.HomeLive.Index do
               Blogs
             </a>
           </nav>
+
+          <.link
+            navigate={~p"/admin"}
+            aria-label="Admin"
+            title="Admin"
+            class="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:text-crimson"
+          >
+            <svg
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </.link>
         </div>
       </div>
 
@@ -277,6 +280,12 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         >
           Blog
         </a>
+        <.link
+          navigate={~p"/admin"}
+          class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+        >
+          Admin
+        </.link>
       </nav>
     </header>
     """
@@ -378,7 +387,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             src="/images/IMG_2052.jpg"
             alt="Government building with national flag"
             loading="lazy"
-            class="h-[360px] w-full rounded-[5px] object-cover shadow-2xl sm:h-[620px] lg:h-[820px]"
+            class="h-[360px] w-full rounded-[5px] object-cover object-[center_30%] shadow-2xl sm:h-[620px] lg:h-[820px]"
           />
         </div>
 
@@ -430,13 +439,20 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           description="Get the latest updates on the campaign trail, policy positions, and more."
         />
 
-        <div class="grid grid-cols-1 gap-7  md:grid-cols-2">
-          <.news_card :for={item <- @news_items} item={item} />
+        <div
+          :if={Enum.empty?(@news_items)}
+          class="rounded-[8px] bg-white px-8 py-12 text-center shadow-[0_15px_40px_rgba(15,30,80,0.08)]"
+        >
+          <h3 class="font-head text-2xl uppercase tracking-[0.08em] text-blueink">
+            No blogs published yet
+          </h3>
+          <p class="mx-auto mt-3 max-w-2xl text-base leading-7 text-grayink">
+            Log into the admin area, create your first post, and it will appear here automatically.
+          </p>
         </div>
 
-        <div class="mt-12 flex items-center justify-center gap-2">
-          <span class="h-3 w-3 rounded-full bg-blueink"></span>
-          <span class="h-3 w-3 rounded-full bg-[#c8c8c8]"></span>
+        <div :if={not Enum.empty?(@news_items)} class="grid grid-cols-1 gap-7 md:grid-cols-2">
+          <.news_card :for={item <- @news_items} item={item} />
         </div>
       </div>
     </section>
@@ -646,34 +662,36 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   defp news_card(assigns) do
     ~H"""
     <article class="group flex flex-col overflow-hidden rounded-[5px] bg-white shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
-      <a href="#news" class="block overflow-hidden">
+      <.link navigate={~p"/blog/#{@item.slug}"} class="block overflow-hidden">
         <img
-          src={@item.image}
+          src={@item.image_url}
           alt={@item.title}
           loading="lazy"
-          class="h-[300px] w-full object-cover transition duration-500 group-hover:scale-105"
+          class="h-[300px] w-full object-cover object-[center_30%] transition duration-500 group-hover:scale-105"
         />
-      </a>
+      </.link>
 
       <div class="flex flex-1 flex-col p-7">
         <div class="flex items-center gap-2 text-xs">
-          <span class="font-bold uppercase tracking-[2px] text-crimson">{@item.date}</span>
+          <span class="font-bold uppercase tracking-[2px] text-crimson">
+            {format_post_date(@item.published_at)}
+          </span>
           <span class="text-grayink">|</span>
-          <a
-            href="#news"
+          <.link
+            navigate={~p"/blog/#{@item.slug}"}
             class="font-bold uppercase tracking-[1px] text-grayink transition hover:text-crimson"
           >
             {@item.category}
-          </a>
+          </.link>
         </div>
-        <a href="#news">
+        <.link navigate={~p"/blog/#{@item.slug}"}>
           <h4 class="mt-3 font-head text-2xl uppercase tracking-[.5px] text-blueink transition hover:text-crimson">
             {@item.title}
           </h4>
-        </a>
+        </.link>
         <div class="my-5 h-px w-full bg-[#e6e6e6]"></div>
         <p class="mt-0 text-base leading-7 text-grayink">
-          The Brady Bunch the Brady Bunch that is the way we all go on got a dream...
+          {@item.excerpt}
         </p>
       </div>
     </article>
@@ -690,7 +708,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           src={@item.image}
           alt={@item.name}
           loading="lazy"
-          class="h-[420px] w-full object-cover transition duration-500 group-hover:scale-105"
+          class="h-[420px] w-full object-cover object-[center_30%] transition duration-500 group-hover:scale-105"
         />
       </a>
 
@@ -767,7 +785,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         loading="lazy"
         class={[
           @image.height_class,
-          "w-full object-cover object-top transition duration-500 group-hover:scale-105"
+          "w-full object-cover object-[center_30%] transition duration-500 group-hover:scale-105"
         ]}
       />
       <span class="absolute inset-0 flex items-center justify-center bg-blueink/0 text-4xl font-light text-white opacity-0 transition group-hover:bg-blueink/60 group-hover:opacity-100 sm:text-5xl">
@@ -861,4 +879,9 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     </svg>
     """
   end
+
+  defp format_post_date(nil), do: "Draft"
+
+  defp format_post_date(%DateTime{} = published_at),
+    do: Calendar.strftime(published_at, "%b %-d, %Y")
 end
