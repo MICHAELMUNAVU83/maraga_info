@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>Politician 128 - Webflow HTML website template</title>
+    <meta content="Politician 128 - Webflow HTML website template" property="og:title" />
+    <meta content="Politician 128 - Webflow HTML website template" name="twitter:title" />
+    <meta content="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=1200&q=80" property="og:image" />
+    <meta content="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=1200&q=80" name="twitter:image" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230637a5'/%3E%3Cpath d='M11 24V8h6.2c3.1 0 5 1.9 5 4.9s-1.9 5-5 5H15V24h-4zm4-9.4h1.8c1 0 1.6-.6 1.6-1.6s-.6-1.6-1.6-1.6H15v3.2z' fill='%23fff'/%3E%3C/svg%3E"
+      type="image/svg+xml"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&family=Oswald:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              blueink: "#0637a5",
+              crimson: "#dd2931",
+              ghost: "#f0f4ff",
+              ink: "#222222",
+              grayink: "#9ca4ab",
+            },
+            fontFamily: {
+              head: ["Oswald", "sans-serif"],
+              body: ["Lato", "sans-serif"],
+              serifi: ['"Playfair Display"', "serif"],
+            },
+            maxWidth: { container: "1200px" },
+          },
+        },
+      };
+    </script>
+    <style>
+      body { font-family: Lato, sans-serif; color: #9ca4ab; }
+      h1, h2, h3, h4, h5, h6 {
+        font-family: Oswald, sans-serif; font-weight: 500;
+        text-transform: uppercase; color: #0637a5; line-height: 1.2em; margin: 10px 0;
+      }
+      h1 { font-size: 70px; }
+      h2 { font-size: 48px; }
+      h3 { font-size: 32px; }
+      h4 { font-size: 24px; line-height: 1.5em; }
+      h5 { font-size: 20px; }
+      h6 { font-size: 18px; }
+      p  { font-size: 16px; line-height: 1.5em; margin: 10px 0 20px; }
+      @media (max-width: 767px) {
+        h1 { font-size: 42px; } h2 { font-size: 34px; } h3 { font-size: 26px; }
+      }
+    </style>
+  </head>
+  <body class="bg-white">
+    <!-- ============================ NAVBAR ============================ -->
+    <header class="relative z-30 w-full bg-blueink">
+      <input type="checkbox" id="nav-toggle" class="peer hidden" />
+      <div class="relative mx-auto flex w-full max-w-container items-center justify-between gap-4 px-4 py-3 lg:px-6">
+        <!-- LEFT group (desktop) -->
+        <nav class="hidden items-center gap-6 lg:flex">
+          <div class="mr-2 flex items-center gap-3">
+            <a href="https://www.facebook.com/" target="_blank" rel="noopener" aria-label="Facebook" class="text-white transition hover:text-crimson">
+              <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z" /></svg>
+            </a>
+            <a href="https://twitter.com/" target="_blank" rel="noopener" aria-label="X" class="text-white transition hover:text-crimson">
+              <svg class="h-[16px] w-[16px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+            </a>
+            <a href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram" class="text-white transition hover:text-crimson">
+              <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>
+            </a>
+            <a href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="YouTube" class="text-white transition hover:text-crimson">
+              <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.2 3.6z" /></svg>
+            </a>
+          </div>
+          <a href="#top" class="font-head text-[15px] font-medium uppercase tracking-wide text-crimson">Home</a>
+          <!-- Dropdown -->
+          <div class="group relative">
+            <button class="flex items-center gap-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition group-hover:text-crimson">
+              Pages
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+            </button>
+            <div class="absolute left-0 top-full z-50 hidden min-w-[440px] grid-cols-2 gap-x-10 gap-y-1 rounded-md bg-white p-6 shadow-2xl group-hover:grid group-focus-within:grid">
+              <a href="#top" class="font-body text-[15px] text-ink transition hover:text-crimson">Home</a>
+              <a href="#" class="font-body text-[15px] text-ink transition hover:text-crimson">Our Team</a>
+              <a href="#" class="font-body text-[15px] text-ink transition hover:text-crimson">About Us</a>
+              <a href="#" class="font-body text-[15px] text-ink transition hover:text-crimson">Testimonials</a>
+              <a href="#" class="font-body text-[15px] text-ink transition hover:text-crimson">Agenda</a>
+              <a href="#" class="font-body text-[15px] text-ink transition hover:text-crimson">Contact Us</a>
+              <a href="#gallery" class="font-body text-[15px] text-ink transition hover:text-crimson">Gallery</a>
+              <a href="#" class="font-body text-[15px] text-ink transition hover:text-crimson">FAQ</a>
+              <a href="#" class="font-body text-[15px] text-ink transition hover:text-crimson">Donators</a>
+            </div>
+          </div>
+          <a href="#mission" class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson">About Us</a>
+        </nav>
+
+        <!-- Mobile logo (left) -->
+        <a href="#top" class="flex shrink-0 items-center gap-2 lg:hidden">
+          <svg class="h-8 w-8" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#fff" /><path d="M11 24V8h6.2c3.1 0 5 1.9 5 4.9s-1.9 5-5 5H15V24h-4zm4-9.4h1.8c1 0 1.6-.6 1.6-1.6s-.6-1.6-1.6-1.6H15v3.2z" fill="#0637a5" /></svg>
+          <span class="font-head text-lg font-bold tracking-wide text-white">Politician 128</span>
+        </a>
+
+        <!-- CENTER logo badge -->
+        <a href="#top" class="absolute left-1/2 top-0 z-50 hidden -translate-x-1/2 flex-col items-center rounded-b-md bg-crimson px-8 pb-4 pt-2.5 shadow-lg lg:flex">
+          <div class="flex items-end gap-1 text-white">
+            <svg class="h-3 w-3 text-white/80" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 18.6 5 21l1.4-6.8L1.3 9.6l6.9-.7z" /></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 18.6 5 21l1.4-6.8L1.3 9.6l6.9-.7z" /></svg>
+            <svg class="h-3 w-3 text-white/80" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 18.6 5 21l1.4-6.8L1.3 9.6l6.9-.7z" /></svg>
+          </div>
+          <span class="font-head text-2xl font-bold uppercase tracking-wide text-white">Politician 128</span>
+        </a>
+
+        <!-- RIGHT group -->
+        <div class="flex items-center gap-6">
+          <nav class="hidden items-center gap-6 lg:flex">
+            <a href="#agenda" class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson">Our Agenda</a>
+            <a href="#news" class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson">Blog</a>
+            <a href="#shop" class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson">Shop</a>
+          </nav>
+          <div class="flex items-center gap-4">
+            <button aria-label="Search" class="text-white transition hover:text-crimson">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+            </button>
+            <button aria-label="Open cart" class="flex items-center text-white transition hover:text-crimson">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" /></svg>
+            </button>
+            <label for="nav-toggle" class="cursor-pointer text-white lg:hidden" aria-label="Open menu">
+              <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile menu panel -->
+      <nav class="hidden flex-col gap-1 bg-blueink px-6 pb-6 pt-2 shadow-xl peer-checked:flex lg:!hidden">
+        <a href="#top" class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-crimson">Home</a>
+        <a href="#gallery" class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson">Pages</a>
+        <a href="#mission" class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson">About Us</a>
+        <a href="#agenda" class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson">Our Agenda</a>
+        <a href="#news" class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson">Blog</a>
+        <a href="#shop" class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson">Shop</a>
+      </nav>
+    </header>
+
+    <!-- ============================ HERO ============================ -->
+    <section
+      id="top"
+      class="relative bg-cover bg-center"
+      style="background-image: linear-gradient(90deg, rgba(6,55,165,.82) 0 50%, rgba(221,41,49,.82) 50% 100%), url('https://images.unsplash.com/photo-1604881991720-f91add269bed?w=1600&q=80');"
+    >
+      <div class="mx-auto flex min-h-[87vh] w-full max-w-container items-center px-4 lg:px-6">
+        <div class="w-full text-center">
+          <h3 class="font-serifi text-2xl italic text-white">Candidates 2022</h3>
+          <h1 class="!text-[90px] font-semibold leading-[1.05] tracking-[3px] text-white max-md:!text-[44px]">Jumpstart <br />your campaign</h1>
+          <div class="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+            <a href="#mission" class="rounded-[5px] border-2 border-crimson bg-crimson px-[30px] py-[18px] text-[15px] font-semibold text-[#f9f9fa] transition hover:bg-transparent hover:text-white">Read More</a>
+            <a href="#" class="inline-block border-b border-white pb-1 text-[15px] font-semibold text-white transition hover:text-crimson">Purchase Now</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ DONATE ============================ -->
+    <section class="relative w-full overflow-hidden bg-ghost px-4 shadow-[0_10px_50px_#0000000a]">
+      <div class="mx-auto flex max-w-container flex-col items-center justify-center gap-8 py-14 lg:flex-row lg:justify-between">
+        <div class="flex items-center gap-3">
+          <h3 class="!mb-0">donate</h3>
+          <h3 class="!mb-0 text-crimson">today</h3>
+        </div>
+        <form class="flex flex-col items-center gap-5 sm:items-end" onsubmit="return false">
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            <label class="cursor-pointer">
+              <input type="checkbox" class="peer hidden" />
+              <span class="block rounded-[5px] border border-[#e6e6e6] bg-white px-5 py-3 font-head font-medium text-blueink transition peer-checked:border-crimson peer-checked:bg-crimson peer-checked:text-white">$25</span>
+            </label>
+            <label class="cursor-pointer">
+              <input type="checkbox" class="peer hidden" />
+              <span class="block rounded-[5px] border border-[#e6e6e6] bg-white px-5 py-3 font-head font-medium text-blueink transition peer-checked:border-crimson peer-checked:bg-crimson peer-checked:text-white">$50</span>
+            </label>
+            <label class="cursor-pointer">
+              <input type="checkbox" class="peer hidden" />
+              <span class="block rounded-[5px] border border-[#e6e6e6] bg-white px-5 py-3 font-head font-medium text-blueink transition peer-checked:border-crimson peer-checked:bg-crimson peer-checked:text-white">$100</span>
+            </label>
+            <label class="cursor-pointer">
+              <input type="checkbox" class="peer hidden" />
+              <span class="block rounded-[5px] border border-[#e6e6e6] bg-white px-5 py-3 font-head font-medium text-blueink transition peer-checked:border-crimson peer-checked:bg-crimson peer-checked:text-white">$200</span>
+            </label>
+            <input type="text" placeholder="More" class="w-24 rounded-[5px] border border-[#e6e6e6] bg-white px-4 py-3 font-body text-ink outline-none focus:border-blueink" />
+          </div>
+          <button type="submit" class="rounded-[5px] border-2 border-blueink bg-blueink px-[30px] py-4 font-semibold text-white transition hover:bg-transparent hover:text-blueink">Donate Now</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================ MISSION & VISION ============================ -->
+    <section
+      id="mission"
+      class="relative overflow-hidden bg-white py-20 lg:py-28"
+      style="background-image: radial-gradient(#dfe3ee 1.6px, transparent 1.7px); background-size: 24px 24px; background-position: center;"
+    >
+      <div class="relative mx-auto flex max-w-container flex-col items-center gap-0 px-4 lg:flex-row lg:items-center">
+        <div class="w-full lg:w-[58%]">
+          <img
+            src="https://images.unsplash.com/photo-1575320181282-9afab399332c?w=1200&q=80"
+            alt="Government building with national flag"
+            loading="lazy"
+            class="h-[460px] w-full rounded-[5px] object-cover shadow-2xl sm:h-[620px] lg:h-[820px]"
+          />
+        </div>
+        <div class="relative z-10 -mt-12 w-[92%] rounded-[5px] bg-blueink px-8 py-10 shadow-2xl sm:px-10 lg:-ml-[14%] lg:mt-0 lg:w-[44%] lg:px-12 lg:py-12">
+          <h2 class="text-white">Mission &amp; <span class="text-crimson">vision</span></h2>
+          <p class="mt-4 font-serifi text-2xl italic leading-relaxed tracking-[.5px] text-white">
+            “Organizing for Action: We’re the people who don’t just support progressive change we are fighting for it.”
+          </p>
+          <div class="mt-6 text-white/80">
+            Check out the pics from the our latest political conferences, seminars.
+          </div>
+          <a href="#" class="mt-8 inline-flex items-center gap-2 font-head text-[15px] font-semibold uppercase tracking-wide text-white transition hover:text-crimson">
+            Bio
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ LATEST NEWS ============================ -->
+    <section id="news" class="bg-ghost py-20">
+      <div class="mx-auto max-w-container px-4">
+        <div class="mb-14 text-center">
+          <h2>latest <span class="text-crimson">News</span></h2>
+          <p class="mx-auto mt-2 max-w-xl">The Brady Bunch the Brady Bunch that is the way we all go on got a dream</p>
+        </div>
+        <div class="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
+          <!-- card -->
+          <article class="group flex flex-col overflow-hidden rounded-[5px] bg-white shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
+            <a href="#" class="block overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=1080&q=80" alt="" loading="lazy" class="h-[300px] w-full object-cover transition duration-500 group-hover:scale-105" />
+            </a>
+            <div class="flex flex-1 flex-col p-7">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold uppercase tracking-[2px] text-crimson">Aug 30, 2022</span>
+                <span class="text-grayink">|</span>
+                <a href="#" class="font-bold uppercase tracking-[1px] text-grayink transition hover:text-crimson">Political</a>
+              </div>
+              <a href="#"><h4 class="mt-3 tracking-[.5px] transition hover:text-crimson">How can we improve immigration policy?</h4></a>
+              <div class="my-5 h-px w-full bg-[#e6e6e6]"></div>
+              <p class="!mt-0">The Brady Bunch the Brady Bunch that is the way we all go on got a dream...</p>
+            </div>
+          </article>
+          <article class="group flex flex-col overflow-hidden rounded-[5px] bg-white shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
+            <a href="#" class="block overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1485081669829-bacb8c7bb1f3?w=1080&q=80" alt="" loading="lazy" class="h-[300px] w-full object-cover transition duration-500 group-hover:scale-105" />
+            </a>
+            <div class="flex flex-1 flex-col p-7">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold uppercase tracking-[2px] text-crimson">Sep 20, 2022</span>
+                <span class="text-grayink">|</span>
+                <a href="#" class="font-bold uppercase tracking-[1px] text-grayink transition hover:text-crimson">My passion</a>
+              </div>
+              <a href="#"><h4 class="mt-3 tracking-[.5px] transition hover:text-crimson">We’re the people who don’t just support progressive change</h4></a>
+              <div class="my-5 h-px w-full bg-[#e6e6e6]"></div>
+              <p class="!mt-0">The Brady Bunch the Brady Bunch that is the way we all go on got a dream...</p>
+            </div>
+          </article>
+          <article class="group flex flex-col overflow-hidden rounded-[5px] bg-white shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
+            <a href="#" class="block overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=1080&q=80" alt="" loading="lazy" class="h-[300px] w-full object-cover transition duration-500 group-hover:scale-105" />
+            </a>
+            <div class="flex flex-1 flex-col p-7">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold uppercase tracking-[2px] text-crimson">Sep 16, 2022</span>
+                <span class="text-grayink">|</span>
+                <a href="#" class="font-bold uppercase tracking-[1px] text-grayink transition hover:text-crimson">My passion</a>
+              </div>
+              <a href="#"><h4 class="mt-3 tracking-[.5px] transition hover:text-crimson">Security for the middle class</h4></a>
+              <div class="my-5 h-px w-full bg-[#e6e6e6]"></div>
+              <p class="!mt-0">The Brady Bunch the Brady Bunch that is the way we all go on got a dream...</p>
+            </div>
+          </article>
+          <article class="group flex flex-col overflow-hidden rounded-[5px] bg-white shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
+            <a href="#" class="block overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1591189863430-ab87e120f312?w=1080&q=80" alt="" loading="lazy" class="h-[300px] w-full object-cover transition duration-500 group-hover:scale-105" />
+            </a>
+            <div class="flex flex-1 flex-col p-7">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold uppercase tracking-[2px] text-crimson">Sep 5, 2022</span>
+                <span class="text-grayink">|</span>
+                <a href="#" class="font-bold uppercase tracking-[1px] text-grayink transition hover:text-crimson">My passion</a>
+              </div>
+              <a href="#"><h4 class="mt-3 tracking-[.5px] transition hover:text-crimson">Politics is why we can’t have nice things. Like the internet</h4></a>
+              <div class="my-5 h-px w-full bg-[#e6e6e6]"></div>
+              <p class="!mt-0">The Brady Bunch the Brady Bunch that is the way we all go on got a dream...</p>
+            </div>
+          </article>
+        </div>
+        <!-- pagination dots -->
+        <div class="mt-12 flex items-center justify-center gap-2">
+          <span class="h-3 w-3 rounded-full bg-blueink"></span>
+          <span class="h-3 w-3 rounded-full bg-[#c8c8c8]"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ VOLUNTEER + COUNTER ============================ -->
+    <section>
+      <!-- Full-bleed dark banner -->
+      <div
+        class="relative bg-cover bg-center"
+        style="background-image: url('https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=1600&q=80');"
+      >
+        <div class="absolute inset-0 bg-black/60"></div>
+        <div class="relative z-10 mx-auto flex max-w-container flex-col items-center px-4 py-28 text-center">
+          <svg class="mb-5 h-12 w-12 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11" />
+            <path d="M12 11V4a1.5 1.5 0 0 1 3 0v7" />
+            <path d="M15 11V6.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1a6 6 0 0 1-4.24-1.76l-3-3a1.5 1.5 0 0 1 2.12-2.12L8 14.5V7a1.5 1.5 0 0 1 3 0v4" />
+          </svg>
+          <h3 class="font-serifi text-2xl italic text-white">Let's sign up to volunteer</h3>
+          <h2 class="mt-2 tracking-[.5px] text-white">Become a volunteer</h2>
+          <a href="#" class="mt-8 inline-flex items-center gap-2 rounded-[5px] bg-crimson px-[30px] py-[18px] font-head text-[15px] font-semibold uppercase tracking-wide text-white transition hover:bg-blueink">
+            Sign Up To Volunteer
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Full-bleed blue counter band -->
+      <div class="bg-blueink py-20">
+        <div class="mx-auto grid max-w-container grid-cols-2 gap-10 px-4 lg:grid-cols-4">
+          <div class="text-center">
+            <div class="relative mx-auto flex h-36 w-36 items-center justify-center">
+              <svg class="absolute inset-0 m-auto h-36 w-36 text-white/25" viewBox="0 0 120 120" fill="currentColor" aria-hidden="true">
+                <g>
+                  <ellipse cx="32" cy="96" rx="3.5" ry="7" transform="rotate(40 32 96)" />
+                  <ellipse cx="25" cy="83" rx="3.5" ry="7" transform="rotate(25 25 83)" />
+                  <ellipse cx="21" cy="68" rx="3.5" ry="7.5" transform="rotate(8 21 68)" />
+                  <ellipse cx="21" cy="52" rx="3.5" ry="7.5" transform="rotate(-10 21 52)" />
+                  <ellipse cx="25" cy="37" rx="3.5" ry="7" transform="rotate(-28 25 37)" />
+                  <ellipse cx="33" cy="25" rx="3.2" ry="6.5" transform="rotate(-45 33 25)" />
+                  <ellipse cx="43" cy="16" rx="3" ry="6" transform="rotate(-60 43 16)" />
+                </g>
+                <g transform="translate(120,0) scale(-1,1)">
+                  <ellipse cx="32" cy="96" rx="3.5" ry="7" transform="rotate(40 32 96)" />
+                  <ellipse cx="25" cy="83" rx="3.5" ry="7" transform="rotate(25 25 83)" />
+                  <ellipse cx="21" cy="68" rx="3.5" ry="7.5" transform="rotate(8 21 68)" />
+                  <ellipse cx="21" cy="52" rx="3.5" ry="7.5" transform="rotate(-10 21 52)" />
+                  <ellipse cx="25" cy="37" rx="3.5" ry="7" transform="rotate(-28 25 37)" />
+                  <ellipse cx="33" cy="25" rx="3.2" ry="6.5" transform="rotate(-45 33 25)" />
+                  <ellipse cx="43" cy="16" rx="3" ry="6" transform="rotate(-60 43 16)" />
+                </g>
+              </svg>
+              <span class="relative font-head text-[44px] leading-none text-white">260</span>
+            </div>
+            <div class="mt-3 font-body text-base text-white">Achievements</div>
+          </div>
+          <div class="text-center">
+            <div class="relative mx-auto flex h-36 w-36 items-center justify-center">
+              <svg class="absolute inset-0 m-auto h-36 w-36 text-white/25" viewBox="0 0 120 120" fill="currentColor" aria-hidden="true">
+                <g>
+                  <ellipse cx="32" cy="96" rx="3.5" ry="7" transform="rotate(40 32 96)" />
+                  <ellipse cx="25" cy="83" rx="3.5" ry="7" transform="rotate(25 25 83)" />
+                  <ellipse cx="21" cy="68" rx="3.5" ry="7.5" transform="rotate(8 21 68)" />
+                  <ellipse cx="21" cy="52" rx="3.5" ry="7.5" transform="rotate(-10 21 52)" />
+                  <ellipse cx="25" cy="37" rx="3.5" ry="7" transform="rotate(-28 25 37)" />
+                  <ellipse cx="33" cy="25" rx="3.2" ry="6.5" transform="rotate(-45 33 25)" />
+                  <ellipse cx="43" cy="16" rx="3" ry="6" transform="rotate(-60 43 16)" />
+                </g>
+                <g transform="translate(120,0) scale(-1,1)">
+                  <ellipse cx="32" cy="96" rx="3.5" ry="7" transform="rotate(40 32 96)" />
+                  <ellipse cx="25" cy="83" rx="3.5" ry="7" transform="rotate(25 25 83)" />
+                  <ellipse cx="21" cy="68" rx="3.5" ry="7.5" transform="rotate(8 21 68)" />
+                  <ellipse cx="21" cy="52" rx="3.5" ry="7.5" transform="rotate(-10 21 52)" />
+                  <ellipse cx="25" cy="37" rx="3.5" ry="7" transform="rotate(-28 25 37)" />
+                  <ellipse cx="33" cy="25" rx="3.2" ry="6.5" transform="rotate(-45 33 25)" />
+                  <ellipse cx="43" cy="16" rx="3" ry="6" transform="rotate(-60 43 16)" />
+                </g>
+              </svg>
+              <span class="relative font-head text-[44px] leading-none text-white">800</span>
+            </div>
+            <div class="mt-3 font-body text-base text-white">Volunteers</div>
+          </div>
+          <div class="text-center">
+            <div class="relative mx-auto flex h-36 w-36 items-center justify-center">
+              <svg class="absolute inset-0 m-auto h-36 w-36 text-white/25" viewBox="0 0 120 120" fill="currentColor" aria-hidden="true">
+                <g>
+                  <ellipse cx="32" cy="96" rx="3.5" ry="7" transform="rotate(40 32 96)" />
+                  <ellipse cx="25" cy="83" rx="3.5" ry="7" transform="rotate(25 25 83)" />
+                  <ellipse cx="21" cy="68" rx="3.5" ry="7.5" transform="rotate(8 21 68)" />
+                  <ellipse cx="21" cy="52" rx="3.5" ry="7.5" transform="rotate(-10 21 52)" />
+                  <ellipse cx="25" cy="37" rx="3.5" ry="7" transform="rotate(-28 25 37)" />
+                  <ellipse cx="33" cy="25" rx="3.2" ry="6.5" transform="rotate(-45 33 25)" />
+                  <ellipse cx="43" cy="16" rx="3" ry="6" transform="rotate(-60 43 16)" />
+                </g>
+                <g transform="translate(120,0) scale(-1,1)">
+                  <ellipse cx="32" cy="96" rx="3.5" ry="7" transform="rotate(40 32 96)" />
+                  <ellipse cx="25" cy="83" rx="3.5" ry="7" transform="rotate(25 25 83)" />
+                  <ellipse cx="21" cy="68" rx="3.5" ry="7.5" transform="rotate(8 21 68)" />
+                  <ellipse cx="21" cy="52" rx="3.5" ry="7.5" transform="rotate(-10 21 52)" />
+                  <ellipse cx="25" cy="37" rx="3.5" ry="7" transform="rotate(-28 25 37)" />
+                  <ellipse cx="33" cy="25" rx="3.2" ry="6.5" transform="rotate(-45 33 25)" />
+                  <ellipse cx="43" cy="16" rx="3" ry="6" transform="rotate(-60 43 16)" />
+                </g>
+              </svg>
+              <span class="relative font-head text-[44px] leading-none text-white">500</span>
+            </div>
+            <div class="mt-3 font-body text-base text-white">Donations</div>
+          </div>
+          <div class="text-center">
+            <div class="relative mx-auto flex h-36 w-36 items-center justify-center">
+              <svg class="absolute inset-0 m-auto h-36 w-36 text-white/25" viewBox="0 0 120 120" fill="currentColor" aria-hidden="true">
+                <g>
+                  <ellipse cx="32" cy="96" rx="3.5" ry="7" transform="rotate(40 32 96)" />
+                  <ellipse cx="25" cy="83" rx="3.5" ry="7" transform="rotate(25 25 83)" />
+                  <ellipse cx="21" cy="68" rx="3.5" ry="7.5" transform="rotate(8 21 68)" />
+                  <ellipse cx="21" cy="52" rx="3.5" ry="7.5" transform="rotate(-10 21 52)" />
+                  <ellipse cx="25" cy="37" rx="3.5" ry="7" transform="rotate(-28 25 37)" />
+                  <ellipse cx="33" cy="25" rx="3.2" ry="6.5" transform="rotate(-45 33 25)" />
+                  <ellipse cx="43" cy="16" rx="3" ry="6" transform="rotate(-60 43 16)" />
+                </g>
+                <g transform="translate(120,0) scale(-1,1)">
+                  <ellipse cx="32" cy="96" rx="3.5" ry="7" transform="rotate(40 32 96)" />
+                  <ellipse cx="25" cy="83" rx="3.5" ry="7" transform="rotate(25 25 83)" />
+                  <ellipse cx="21" cy="68" rx="3.5" ry="7.5" transform="rotate(8 21 68)" />
+                  <ellipse cx="21" cy="52" rx="3.5" ry="7.5" transform="rotate(-10 21 52)" />
+                  <ellipse cx="25" cy="37" rx="3.5" ry="7" transform="rotate(-28 25 37)" />
+                  <ellipse cx="33" cy="25" rx="3.2" ry="6.5" transform="rotate(-45 33 25)" />
+                  <ellipse cx="43" cy="16" rx="3" ry="6" transform="rotate(-60 43 16)" />
+                </g>
+              </svg>
+              <span class="relative font-head text-[44px] leading-none text-white">2k</span>
+            </div>
+            <div class="mt-3 font-body text-base text-white">Followers</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ SHOP ============================ -->
+    <section id="shop" class="bg-white py-20">
+      <div class="mx-auto max-w-container px-4">
+        <div class="mb-12 text-center">
+          <h2>Shop for <span class="text-crimson">campaign</span></h2>
+          <p class="mx-auto mt-2 max-w-xl">The Brady Bunch the Brady Bunch that is the way we all go on got a dream</p>
+        </div>
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="group">
+            <a href="#" class="block overflow-hidden rounded-[5px]">
+              <img src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=1080&q=80" alt="American Flag" loading="lazy" class="h-[420px] w-full object-cover transition duration-500 group-hover:scale-105" />
+            </a>
+            <div class="mt-5 text-center">
+              <a href="#"><h6 class="transition hover:text-crimson">American Flag</h6></a>
+              <div class="mt-1 font-head text-lg font-medium text-crimson">$ 20.00 USD</div>
+            </div>
+          </div>
+          <div class="group">
+            <a href="#" class="block overflow-hidden rounded-[5px]">
+              <img src="https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=1080&q=80" alt="Vote Badge" loading="lazy" class="h-[420px] w-full object-cover transition duration-500 group-hover:scale-105" />
+            </a>
+            <div class="mt-5 text-center">
+              <a href="#"><h6 class="transition hover:text-crimson">Vote Badge</h6></a>
+              <div class="mt-1 font-head text-lg font-medium text-crimson">$ 15.00 USD</div>
+            </div>
+          </div>
+          <div class="group">
+            <a href="#" class="block overflow-hidden rounded-[5px]">
+              <img src="https://images.unsplash.com/photo-1559521783-1d1599583485?w=1080&q=80" alt="American Flags and Pins" loading="lazy" class="h-[420px] w-full object-cover transition duration-500 group-hover:scale-105" />
+            </a>
+            <div class="mt-5 text-center">
+              <a href="#"><h6 class="transition hover:text-crimson">American Flags and Pins</h6></a>
+              <div class="mt-1 font-head text-lg font-medium text-crimson">$ 20.00 USD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ VIDEO + UPCOMING ============================ -->
+    <section id="agenda" class="bg-white pb-20">
+      <div class="mx-auto max-w-container px-4">
+        <a
+          href="https://www.youtube.com/watch?v=o0KmjcGd6jw"
+          target="_blank"
+          rel="noopener"
+          class="group relative block h-[360px] overflow-hidden rounded-[10px] shadow-[0_10px_30px_#0006] sm:h-[480px] lg:h-[600px]"
+          style="background-image: url('https://images.unsplash.com/photo-1560439514-4e9645039924?w=1600&q=80'); background-size: cover; background-position: center;"
+        >
+          <div class="absolute inset-0 bg-black/50 transition group-hover:bg-black/40"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span class="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-lg transition group-hover:scale-110">
+              <svg class="ml-1 h-9 w-9 text-crimson" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4" /></svg>
+            </span>
+          </div>
+        </a>
+
+        <div class="mt-16">
+          <div class="mb-12 text-center">
+            <h2>upcoming <span class="text-crimson">campaign</span></h2>
+            <p class="mx-auto mt-2 max-w-xl">The Brady Bunch the Brady Bunch that is the way we all go on got a dream</p>
+          </div>
+          <div class="grid grid-cols-1 gap-7 md:grid-cols-3">
+            <!-- event -->
+            <article class="group flex items-stretch gap-4">
+              <div class="flex shrink-0 flex-col items-center justify-center rounded-[5px] bg-blueink px-4 py-3 text-white">
+                <div class="font-head text-3xl leading-none">25</div>
+                <div class="font-head text-sm uppercase tracking-wide">Sep</div>
+              </div>
+              <div class="flex-1">
+                <a href="#"><h4 class="!mt-0 tracking-[.5px] transition hover:text-crimson">Conference on Small Business</h4></a>
+                <p class="!mt-1">Organizing for Action: We’re the people who don’t just support</p>
+              </div>
+            </article>
+            <article class="group flex items-stretch gap-4">
+              <div class="flex shrink-0 flex-col items-center justify-center rounded-[5px] bg-blueink px-4 py-3 text-white">
+                <div class="font-head text-3xl leading-none">25</div>
+                <div class="font-head text-sm uppercase tracking-wide">Sep</div>
+              </div>
+              <div class="flex-1">
+                <a href="#"><h4 class="!mt-0 tracking-[.5px] transition hover:text-crimson">65-th Annual International Conference</h4></a>
+                <p class="!mt-1">Organizing for Action: We’re the people who don’t just support</p>
+              </div>
+            </article>
+            <article class="group flex items-stretch gap-4">
+              <div class="flex shrink-0 flex-col items-center justify-center rounded-[5px] bg-blueink px-4 py-3 text-white">
+                <div class="font-head text-3xl leading-none">24</div>
+                <div class="font-head text-sm uppercase tracking-wide">Sep</div>
+              </div>
+              <div class="flex-1">
+                <a href="#"><h4 class="!mt-0 tracking-[.5px] transition hover:text-crimson">25-th Annual Democracy Forum</h4></a>
+                <p class="!mt-1">Organizing for Action: We’re the people who don’t just support</p>
+              </div>
+            </article>
+          </div>
+          <div class="mt-12 text-center">
+            <a href="#" class="inline-block rounded-[5px] border-2 border-blueink bg-blueink px-[30px] py-4 font-semibold text-white transition hover:bg-transparent hover:text-blueink">View All Events</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ GALLERY ============================ -->
+    <section id="gallery" class="bg-white pb-20">
+      <div class="mx-auto max-w-container px-4">
+        <div class="grid h-auto grid-cols-2 gap-0 sm:h-[600px] sm:grid-cols-4 sm:grid-rows-2">
+          <a href="#" class="group relative col-span-2 row-span-2 block overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1575320181282-9afab399332c?w=1200&q=80" alt="" loading="lazy" class="h-64 w-full object-cover transition duration-500 group-hover:scale-105 sm:h-full" />
+            <span class="absolute inset-0 flex items-center justify-center bg-blueink/0 text-5xl font-light text-white opacity-0 transition group-hover:bg-blueink/60 group-hover:opacity-100">+</span>
+          </a>
+          <a href="#" class="group relative block overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1591189863430-ab87e120f312?w=800&q=80" alt="" loading="lazy" class="h-44 w-full object-cover transition duration-500 group-hover:scale-105 sm:h-full" />
+            <span class="absolute inset-0 flex items-center justify-center bg-blueink/0 text-4xl font-light text-white opacity-0 transition group-hover:bg-blueink/60 group-hover:opacity-100">+</span>
+          </a>
+          <a href="#" class="group relative block overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&q=80" alt="" loading="lazy" class="h-44 w-full object-cover transition duration-500 group-hover:scale-105 sm:h-full" />
+            <span class="absolute inset-0 flex items-center justify-center bg-blueink/0 text-4xl font-light text-white opacity-0 transition group-hover:bg-blueink/60 group-hover:opacity-100">+</span>
+          </a>
+          <a href="#" class="group relative block overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&q=80" alt="" loading="lazy" class="h-44 w-full object-cover transition duration-500 group-hover:scale-105 sm:h-full" />
+            <span class="absolute inset-0 flex items-center justify-center bg-blueink/0 text-4xl font-light text-white opacity-0 transition group-hover:bg-blueink/60 group-hover:opacity-100">+</span>
+          </a>
+          <a href="#" class="group relative block overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&q=80" alt="" loading="lazy" class="h-44 w-full object-cover transition duration-500 group-hover:scale-105 sm:h-full" />
+            <span class="absolute inset-0 flex items-center justify-center bg-blueink/0 text-4xl font-light text-white opacity-0 transition group-hover:bg-blueink/60 group-hover:opacity-100">+</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ FOOTER ============================ -->
+    <footer class="bg-ink py-16">
+      <div class="mx-auto max-w-container px-4">
+        <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <!-- Information -->
+          <div>
+            <h5 class="text-white">Information</h5>
+            <div class="mt-4 space-y-3">
+              <div class="text-grayink">Grand Conference Hall - 881 7th Ave New York, NY</div>
+              <a href="tel:+1805737800" class="block font-head text-lg text-white transition hover:text-crimson">+1805 73 78 00</a>
+              <a href="#" class="block text-grayink transition hover:text-crimson">info@politician128.com</a>
+            </div>
+            <div class="mt-5 flex gap-3">
+              <a href="https://www.facebook.com/" target="_blank" rel="noopener" aria-label="Facebook" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:bg-crimson">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z" /></svg>
+              </a>
+              <a href="https://twitter.com/" target="_blank" rel="noopener" aria-label="X" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:bg-crimson">
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+              </a>
+              <a href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:bg-crimson">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>
+              </a>
+              <a href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="YouTube" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:bg-crimson">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.2 3.6z" /></svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Quick Links -->
+          <div>
+            <h5 class="mb-4 text-white">Quick Links</h5>
+            <div class="flex flex-col gap-2">
+              <a href="#top" class="text-grayink transition hover:text-crimson">Home</a>
+              <a href="#" class="text-grayink transition hover:text-crimson">Pages</a>
+              <a href="#mission" class="text-grayink transition hover:text-crimson">About Us</a>
+              <a href="#agenda" class="text-grayink transition hover:text-crimson">Our Agenda</a>
+              <a href="#shop" class="text-grayink transition hover:text-crimson">Shop</a>
+              <a href="#news" class="text-grayink transition hover:text-crimson">Blog</a>
+            </div>
+          </div>
+
+          <!-- Twitter -->
+          <div>
+            <h5 class="mb-4 text-white">Twitter</h5>
+            <div class="space-y-5">
+              <div class="flex gap-3">
+                <svg class="mt-1 h-4 w-4 shrink-0 text-crimson" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                <div>
+                  <div class="text-grayink">Start creating with Kreate - Expert Themplate for Creative Business</div>
+                  <a href="https://twitter.com/" target="_blank" rel="noopener" class="text-blue-400 transition hover:text-crimson">https://twitter.com</a>
+                </div>
+              </div>
+              <div class="flex gap-3">
+                <svg class="mt-1 h-4 w-4 shrink-0 text-crimson" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                <div>
+                  <div class="text-grayink">Need a blog? Tomas &amp; Daisy - A Stylish Blog for Him and Here:</div>
+                  <a href="https://twitter.com/" target="_blank" rel="noopener" class="text-blue-400 transition hover:text-crimson">https://twitter.com</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact -->
+          <div>
+            <h5 class="mb-4 text-white">Contact</h5>
+            <form class="flex flex-col gap-3" onsubmit="return false">
+              <input type="email" placeholder="Email" required class="rounded-[5px] border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-grayink outline-none focus:border-crimson" />
+              <textarea placeholder="Message" required class="h-28 resize-none rounded-[5px] border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-grayink outline-none focus:border-crimson"></textarea>
+              <button type="submit" class="rounded-[5px] border-2 border-blueink bg-blueink px-[30px] py-3 font-semibold text-white transition hover:bg-transparent hover:text-white">Send Message</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="mt-12 flex flex-col items-center justify-center gap-2 border-t border-white/10 pt-8 text-center text-sm text-grayink sm:flex-row sm:gap-6">
+          <div>© Politician 128. All Rights Reserved. <a href="#" class="transition hover:text-crimson">Licensing</a></div>
+          <div><a href="#" class="text-white transition hover:text-crimson">Webflow Templates</a> by <a href="#" class="text-white transition hover:text-crimson">128.digital.</a></div>
+          <div>Powered by <a href="#" class="text-white transition hover:text-crimson">Webflow</a></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
