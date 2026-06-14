@@ -6,33 +6,55 @@ defmodule MaragaInfoWeb.CampaignPillarsLive.Index do
   @pillars [
     %{
       number: "01",
-      title: "Youth Empowerment & Employment",
-      description:
-        "Harnessing Kenya's large youth population (70% of ~52 million) as a productive force to address societal challenges."
+      title: "Education, Youth, Innovation & Technology",
+      items: [
+        "Basic, secondary and tertiary education",
+        "Technology, technical training, innovation and skill development"
+      ]
     },
     %{
       number: "02",
-      title: "Environment & Sustainability",
-      description:
-        "Protecting the environment as a shared heritage, ensuring every citizen's right to a clean and healthy environment."
+      title: "Economy & Sustainable Development",
+      items: [
+        "Fiscal policy, financial and debt management",
+        "Industry, manufacturing and trade",
+        "Agriculture and food sovereignty",
+        "Infrastructural renewal and development",
+        "Environment and industrial policy",
+        "Land use policy and planning"
+      ]
     },
     %{
       number: "03",
-      title: "Economic Freedom",
-      description:
-        "Addressing obstacles to economic growth including judicial ineffectiveness, poor government integrity, and fiscal health challenges."
+      title: "Healthcare, Equity and Social Justice",
+      items: [
+        "Health policy and healthcare",
+        "Housing",
+        "Social welfare – pensions, old age",
+        "Gender, marginalized, minority and vulnerable groups",
+        "Diaspora affairs and welfare"
+      ]
     },
     %{
       number: "04",
-      title: "Rule of Law & Democracy",
-      description:
-        "Upholding the supremacy of the law as the foundation of a free and democratic society."
+      title: "Pan-Africanism and International Relations",
+      items: [
+        "Foreign policy",
+        "Regional integration, solidarity and Pan-Africanism",
+        "Foreign policy and international relations",
+        "Multilateral institutions"
+      ]
     },
     %{
       number: "05",
-      title: "Social Justice & Equality",
-      description:
-        "Preserving human dignity, promoting universal human rights, and ensuring full development of every citizen's potential."
+      title: "Accountability, Rule of Law and Constitutionalism",
+      items: [
+        "Constitutional institutional renewal and strengthening",
+        "Integrity, leadership and accountability",
+        "De-concentration, decentralization & inter-governmental relations",
+        "Public service and professionalism",
+        "Public participation"
+      ]
     }
   ]
 
@@ -42,7 +64,7 @@ defmodule MaragaInfoWeb.CampaignPillarsLive.Index do
      assign(socket,
        page_title: "Campaign Pillars | #{Seo.site_name()}",
        page_description:
-         "The five core pillars anchoring David Maraga's mission for a Kenya where every citizen thrives — economically, socially, and environmentally.",
+         "The core pillars anchoring David Maraga's mission for a Kenya where every citizen thrives — economically, socially, and environmentally.",
        canonical_url: Seo.absolute_url("/campaign-pillars"),
        pillars: @pillars
      )}
@@ -104,9 +126,12 @@ defmodule MaragaInfoWeb.CampaignPillarsLive.Index do
         {@pillar.title}
       </h2>
 
-      <p class="mt-4 text-base leading-7 text-grayink">
-        {@pillar.description}
-      </p>
+      <ul class="mt-4 space-y-2">
+        <li :for={item <- @pillar.items} class="flex gap-3 text-base leading-7 text-grayink">
+          <span aria-hidden="true" class="mt-[10px] h-1.5 w-1.5 shrink-0 rounded-full bg-crimson"></span>
+          <span>{item}</span>
+        </li>
+      </ul>
     </article>
     """
   end
