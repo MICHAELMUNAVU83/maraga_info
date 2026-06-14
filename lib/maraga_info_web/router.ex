@@ -23,6 +23,7 @@ defmodule MaragaInfoWeb.Router do
     live_session :public,
       on_mount: [{MaragaInfoWeb.UserAuth, :mount_current_user}] do
       live "/", HomeLive.Index
+      live "/media", MediaLive.Index
       live "/blog/:slug", BlogLive.Show
     end
   end
@@ -80,7 +81,7 @@ defmodule MaragaInfoWeb.Router do
     live_session :admin_authenticated,
       on_mount: [{MaragaInfoWeb.UserAuth, :ensure_admin}] do
       live "/", DashboardLive, :index
-      live "/media", SectionLive, :media
+      live "/media", MediaLive.Index, :index
       live "/pages", SectionLive, :pages
       live "/settings", SectionLive, :settings
 

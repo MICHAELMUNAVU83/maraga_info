@@ -7,6 +7,7 @@ defmodule MaragaInfo.Content do
   alias MaragaInfo.Repo
 
   alias MaragaInfo.Accounts.User
+  alias MaragaInfo.Content.MediaItem
   alias MaragaInfo.Content.Post
 
   @doc """
@@ -167,4 +168,74 @@ defmodule MaragaInfo.Content do
 
   defp preload_author(nil), do: nil
   defp preload_author(post), do: Repo.preload(post, :author)
+
+  ## Media items
+
+  @doc """
+  Returns media items ordered for display.
+
+  Pass `status: :published` to limit to items shown on the public gallery, or
+  `category: "Events"` to scope to a single category.
+  """
+  def list_media_items(opts \\ []) do
+    MediaItem
+    |> maybe_filter_published(Keyword.get(opts, :status))
+    |> maybe_filter_category(Keyword.get(opts, :category))
+    |> order_by([item], asc: item.position, desc: item.inserted_at)
+    |> Repo.all()
+  end
+
+  def list_published_media_items(opts \\ []) do
+    opts
+    |> Keyword.put(:status, :published)
+    |> list_media_items()
+  end
+
+  @doc """
+  Returns the distinct categories used by published media items, sorted.
+  """
+  def list_published_media_categories do
+    MediaItem
+    |> where([item], item.is_published == true)
+    |> select([item], item.category)
+    |> distinct(true)
+    |> Repo.all()
+    |> Enum.sort()
+  end
+
+  def get_media_item!(id), do: Repo.get!(MediaItem, id)
+
+  def create_media_item(attrs \\ %{}) do
+    %MediaItem{}
+    |> MediaItem.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_media_item(%MediaItem{} = media_item, attrs) do
+    media_item
+    |> MediaItem.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_media_item(%MediaItem{} = media_item) do
+    Repo.delete(media_item)
+  end
+
+  def change_media_item(%MediaItem{} = media_item, attrs \\ %{}) do
+    MediaItem.changeset(media_item, attrs)
+  end
+
+  defp maybe_filter_published(query, :published) do
+    where(query, [item], item.is_published == true)
+  end
+
+  defp maybe_filter_published(query, _), do: query
+
+  defp maybe_filter_category(query, nil), do: query
+  defp maybe_filter_category(query, "all"), do: query
+  defp maybe_filter_category(query, ""), do: query
+
+  defp maybe_filter_category(query, category) do
+    where(query, [item], item.category == ^category)
+  end
 end

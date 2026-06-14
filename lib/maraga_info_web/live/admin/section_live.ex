@@ -2,12 +2,6 @@ defmodule MaragaInfoWeb.Admin.SectionLive do
   use MaragaInfoWeb, :live_view
 
   @sections %{
-    media: %{
-      title: "Media Library",
-      subtitle: "A future home for campaign photography, video, and reusable visual assets.",
-      description:
-        "This section is ready for media uploads, categorization, and image management once we wire those workflows in."
-    },
     pages: %{
       title: "Pages",
       subtitle:

@@ -47,8 +47,8 @@ defmodule MaragaInfoWeb.SiteComponents do
             <a href={section_href(@base_path, "agenda")} class="transition hover:text-crimson">
               Agenda
             </a>
-            <a href={section_href(@base_path, "gallery")} class="transition hover:text-crimson">
-              Gallery
+            <a href="/media" class="transition hover:text-crimson">
+              Media
             </a>
             <a
               href="https://donations.davidmaraga.com/"

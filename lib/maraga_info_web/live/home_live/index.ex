@@ -146,40 +146,23 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             Home
           </a>
 
-          <div class="group relative">
-            <button
-              type="button"
-              class="flex items-center gap-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition group-hover:text-crimson"
-            >
-              Pages
-              <svg
-                class="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-            <div class="absolute left-0 top-full z-50 hidden w-[200px] grid-cols-1 gap-x-10 gap-y-1 rounded-md bg-white p-6 shadow-2xl group-hover:grid group-focus-within:grid">
-              <a href="#" class="text-[15px] text-ink transition hover:text-crimson">Home</a>
+          <.nav_dropdown label="About Us">
+            <a href="#mission" class="text-[15px] text-ink transition hover:text-crimson">
+              David Maraga
+            </a>
+            <a href="#" class="text-[15px] text-ink transition hover:text-crimson">
+              UGM Party
+            </a>
+          </.nav_dropdown>
 
-              <a href="#mission" class="text-[15px] text-ink transition hover:text-crimson">
-                About Us
-              </a>
-            </div>
-          </div>
-
-          <a
-            href="#mission"
-            class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
-          >
-            About Us
-          </a>
+          <.nav_dropdown label="Our Agenda">
+            <a href="#agenda" class="text-[15px] text-ink transition hover:text-crimson">
+              Campaign Pillars
+            </a>
+            <a href="#" class="text-[15px] text-ink transition hover:text-crimson">
+              Manifesto
+            </a>
+          </.nav_dropdown>
         </nav>
 
         <a href="#top" class="flex shrink-0 items-center gap-2 lg:hidden">
@@ -194,7 +177,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             <img
               src="/images/logo.png"
               alt="Politician 128 logo"
-              class="hidden h-12 w-auto shrink-0 lg:block"
+              class="hidden h-24 w-auto shrink-0 lg:block"
             />
           </span>
         </a>
@@ -212,17 +195,31 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
         <div class="flex items-center gap-6">
           <nav class="hidden items-center gap-6 lg:flex">
+            <.nav_dropdown label="Resources">
+              <a href="#" class="text-[15px] text-ink transition hover:text-crimson">
+                Newsletters
+              </a>
+              <a href="#news" class="text-[15px] text-ink transition hover:text-crimson">
+                News
+              </a>
+              <a href="#news" class="text-[15px] text-ink transition hover:text-crimson">
+                Blogs
+              </a>
+              <.link navigate={~p"/media"} class="text-[15px] text-ink transition hover:text-crimson">
+                Media
+              </.link>
+            </.nav_dropdown>
             <a
-              href="#agenda"
+              href="#"
               class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
             >
-              Our Agenda
+              Press Releases
             </a>
             <a
-              href="#news"
+              href="#"
               class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
             >
-              Blogs
+              Shop
             </a>
           </nav>
 
@@ -256,29 +253,57 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         >
           Home
         </a>
-        <a
-          href="#gallery"
-          class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
-        >
-          Pages
-        </a>
-        <a
-          href="#mission"
-          class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
-        >
+
+        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
           About Us
+        </p>
+        <a href="#mission" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+          David Maraga
         </a>
-        <a
-          href="#agenda"
-          class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
-        >
+        <a href="#" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+          UGM Party
+        </a>
+
+        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
           Our Agenda
+        </p>
+        <a href="#agenda" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+          Campaign Pillars
+        </a>
+        <a href="#" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+          Manifesto
+        </a>
+
+        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
+          Resources
+        </p>
+        <a href="#" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+          Newsletters
+        </a>
+        <a href="#news" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+          News
+        </a>
+        <a href="#news" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+          Blogs
+        </a>
+        <.link
+          navigate={~p"/media"}
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
+          Media
+        </.link>
+
+        <a
+          href="#"
+          class="py-1 pt-3 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+        >
+          Press Releases
         </a>
         <a
-          href="#news"
+          href="#"
           class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
         >
-          Blog
+          Shop
         </a>
         <.link
           navigate={~p"/admin"}
@@ -288,6 +313,37 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         </.link>
       </nav>
     </header>
+    """
+  end
+
+  attr :label, :string, required: true
+  slot :inner_block, required: true
+
+  defp nav_dropdown(assigns) do
+    ~H"""
+    <div class="group relative">
+      <button
+        type="button"
+        class="flex items-center gap-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition group-hover:text-crimson"
+      >
+        {@label}
+        <svg
+          class="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      <div class="absolute left-0 top-full z-50 hidden min-w-[200px] grid-cols-1 gap-y-2 rounded-md bg-white p-6 shadow-2xl group-hover:grid group-focus-within:grid">
+        {render_slot(@inner_block)}
+      </div>
+    </div>
     """
   end
 
