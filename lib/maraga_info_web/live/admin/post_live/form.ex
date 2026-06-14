@@ -327,6 +327,34 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
             </.editor_card>
 
             <.editor_card
+              :if={@form[:category].value == Post.newsletter_category()}
+              title="Newsletter embed"
+              description="Paste the Canva embed link for this newsletter. It updates live below and on the published page."
+            >
+              <.input
+                field={@form[:canva_embed_url]}
+                type="text"
+                label="Canva embed link"
+                placeholder="https://www.canva.com/design/.../view?embed"
+              />
+
+              <div
+                :if={Post.canva_embed_src(@form[:canva_embed_url].value)}
+                class="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white"
+              >
+                <div class="relative w-full bg-white" style="padding-top: 56.25%;">
+                  <iframe
+                    src={Post.canva_embed_src(@form[:canva_embed_url].value)}
+                    class="absolute inset-0 h-full w-full bg-white"
+                    loading="lazy"
+                    allowfullscreen
+                  >
+                  </iframe>
+                </div>
+              </div>
+            </.editor_card>
+
+            <.editor_card
               title="Sections"
               description="Build the article as a series of blocks. Each section can have a heading, text, and images."
             >
@@ -506,7 +534,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
               <.input
                 field={@form[:seo_description]}
                 type="textarea"
-                label="Search description"
+                label="Search description (optional)"
                 rows="3"
               />
             </.editor_card>

@@ -14,6 +14,7 @@ defmodule MaragaInfo.Content.MediaItem do
     field :category, :string
     field :image_url, :string
     field :is_published, :boolean, default: true
+    field :display_on_landing, :boolean, default: false
     field :position, :integer, default: 0
 
     timestamps(type: :utc_datetime)
@@ -25,7 +26,15 @@ defmodule MaragaInfo.Content.MediaItem do
   @doc false
   def changeset(media_item, attrs) do
     media_item
-    |> cast(attrs, [:title, :description, :category, :image_url, :is_published, :position])
+    |> cast(attrs, [
+      :title,
+      :description,
+      :category,
+      :image_url,
+      :is_published,
+      :display_on_landing,
+      :position
+    ])
     |> validate_required([:title, :category, :image_url])
     |> validate_length(:title, max: 160)
     |> validate_length(:category, max: 80)

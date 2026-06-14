@@ -27,6 +27,7 @@ defmodule MaragaInfoWeb.Router do
       live "/ugm-party", UgmPartyLive.Index
       live "/campaign-pillars", CampaignPillarsLive.Index
       live "/news", NewsLive.Index
+      live "/newsletters", NewslettersLive.Index
       live "/press-releases", PressReleasesLive.Index
       live "/media", MediaLive.Index
       live "/blog/:slug", BlogLive.Show
@@ -86,6 +87,7 @@ defmodule MaragaInfoWeb.Router do
     live_session :admin_authenticated,
       on_mount: [{MaragaInfoWeb.UserAuth, :ensure_admin}] do
       live "/", DashboardLive, :index
+      live "/volunteers", VolunteerLive.Index, :index
       live "/media", MediaLive.Index, :index
       live "/pages", SectionLive, :pages
       live "/settings", SectionLive, :settings

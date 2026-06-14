@@ -83,7 +83,7 @@ defmodule MaragaInfoWeb.UgmPartyLive.Index do
       <section class="bg-white py-20 lg:py-28">
         <div class="mx-auto grid max-w-container grid-cols-1 items-center gap-12 px-4 lg:grid-cols-2 lg:gap-16">
           <img
-            src="/images/IMG_2028.jpg"
+            src="/images/UGM LOGO NEW copy (2).png"
             alt="United Green Movement Party"
             loading="lazy"
             class="w-full rounded-[8px] object-cover shadow-[0_15px_40px_rgba(15,30,80,0.12)]"

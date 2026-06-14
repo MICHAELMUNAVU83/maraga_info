@@ -10,12 +10,21 @@ defmodule MaragaInfo.Content do
   alias MaragaInfo.Content.MediaItem
   alias MaragaInfo.Content.Post
 
-  @post_categories ["News", "Press Releases", "Statements", "Speeches"]
+  @post_categories ["News", "Press Releases", "Statements", "Speeches", "Newsletter"]
 
   @doc """
   Returns the canonical list of post categories used in the admin form.
   """
   def post_categories, do: @post_categories
+
+  @doc """
+  Returns published newsletter posts, newest first.
+  """
+  def list_published_newsletters(opts \\ []) do
+    opts
+    |> Keyword.put(:category, Post.newsletter_category())
+    |> list_published_posts()
+  end
 
   @doc """
   Returns the list of posts.
@@ -218,6 +227,16 @@ defmodule MaragaInfo.Content do
     opts
     |> Keyword.put(:status, :published)
     |> list_media_items()
+  end
+
+  @doc """
+  Returns published media items flagged to show on the landing page gallery.
+  """
+  def list_landing_media_items do
+    MediaItem
+    |> where([item], item.is_published == true and item.display_on_landing == true)
+    |> order_by([item], asc: item.position, desc: item.inserted_at)
+    |> Repo.all()
   end
 
   @doc """

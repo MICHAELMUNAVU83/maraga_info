@@ -2,6 +2,7 @@ defmodule MaragaInfoWeb.BlogLive.Show do
   use MaragaInfoWeb, :live_view
 
   alias MaragaInfo.Content
+  alias MaragaInfo.Content.Post
   alias MaragaInfoWeb.Seo
 
   @impl true
@@ -75,6 +76,21 @@ defmodule MaragaInfoWeb.BlogLive.Show do
 
           <div class="mx-auto mt-12 max-w-[760px] space-y-12 text-[1.12rem] leading-9 text-ink">
             <p class="text-[1.25rem] leading-9 text-grayink">{@post.intro}</p>
+
+            <div
+              :if={Post.canva_embed_src(@post.canva_embed_url)}
+              class="overflow-hidden rounded-[8px] bg-white shadow-[0_12px_40px_rgba(15,30,80,0.1)]"
+            >
+              <div class="relative w-full bg-white" style="padding-top: 70%;">
+                <iframe
+                  src={Post.canva_embed_src(@post.canva_embed_url)}
+                  class="absolute inset-0 h-full w-full bg-white"
+                  loading="lazy"
+                  allowfullscreen
+                >
+                </iframe>
+              </div>
+            </div>
 
             <section :for={section <- @post.sections} :if={@post.sections != []} class="space-y-6">
               <h2

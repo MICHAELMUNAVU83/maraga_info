@@ -87,9 +87,12 @@ defmodule MaragaInfoWeb.SiteComponents do
         <div class="flex items-center gap-6">
           <nav class="hidden items-center gap-6 lg:flex">
             <.nav_dropdown label="Resources">
-              <a href="#" class="text-[15px] text-ink transition hover:text-crimson">
+              <.link
+                navigate="/newsletters"
+                class="text-[15px] text-ink transition hover:text-crimson"
+              >
                 Newsletters
-              </a>
+              </.link>
               <.link navigate="/news" class="text-[15px] text-ink transition hover:text-crimson">
                 News
               </.link>
@@ -194,9 +197,12 @@ defmodule MaragaInfoWeb.SiteComponents do
         <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
           Resources
         </p>
-        <a href="#" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+        <.link
+          navigate="/newsletters"
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
           Newsletters
-        </a>
+        </.link>
         <.link
           navigate="/news"
           class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
@@ -285,81 +291,75 @@ defmodule MaragaInfoWeb.SiteComponents do
 
     ~H"""
     <footer id={@id} class="border-t border-white/10 bg-blueink text-white">
-      <div class="mx-auto max-w-container px-4 py-14 lg:px-6 lg:py-16">
-        <div class="grid gap-10 lg:grid-cols-[1.3fr_0.9fr] lg:items-end">
+      <div class="mx-auto max-w-container px-4 py-8 lg:px-6 lg:py-10">
+        <div class="grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-start">
           <div>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
               <img
                 src="/images/logo.png"
                 alt="David Maraga Info logo"
-                class="h-12 bg-white w-auto rounded-sm"
+                class="h-10 bg-white w-auto rounded-sm"
               />
               <div>
-                <p class="font-head text-[11px] uppercase tracking-[0.32em] text-crimson">
+                <p class="font-head text-[10px] uppercase tracking-[0.32em] text-crimson">
                   Kenya 2027
                 </p>
-                <h2 class="mt-2 font-head text-2xl uppercase leading-none text-white sm:text-3xl">
+                <h2 class="font-head text-xl uppercase leading-none text-white sm:text-2xl">
                   David Maraga Info
                 </h2>
               </div>
             </div>
 
-            <p class="mt-5 max-w-xl text-base leading-7 text-white/72">
+            <p class="mt-3 max-w-xl text-sm leading-6 text-white/72">
               Independent coverage, campaign updates and public record context in one place.
             </p>
 
-            <div class="mt-7">
-              <h3 class="font-head text-xs uppercase tracking-[0.2em] text-crimson">
-                Campaign Headquarters
-              </h3>
-              <address class="mt-3 space-y-1 not-italic text-base leading-7 text-white/72">
-                <p>82 Westlands Rd, Nairobi, Kenya</p>
-                <a href="tel:+254746900027" class="block transition hover:text-crimson">
-                  +254 746 900 027
-                </a>
-              </address>
+            <p class="mt-4 text-sm text-white/72">
+              <span class="font-head text-[11px] uppercase tracking-[0.2em] text-crimson">
+                Campaign HQ:
+              </span>
+              82 Westlands Rd, Nairobi, Kenya ·
+              <a href="tel:+254746900027" class="transition hover:text-crimson">+254 746 900 027</a>
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-4 lg:items-end">
+            <nav class="flex flex-wrap gap-x-5 gap-y-2 font-head text-xs uppercase tracking-[0.2em] text-white/78 lg:justify-end">
+              <a href={section_href(@base_path, "top")} class="transition hover:text-crimson">Home</a>
+              <a href={section_href(@base_path, "mission")} class="transition hover:text-crimson">
+                About
+              </a>
+              <a href="/news" class="transition hover:text-crimson">News</a>
+              <a href={section_href(@base_path, "agenda")} class="transition hover:text-crimson">
+                Agenda
+              </a>
+              <a href="/media" class="transition hover:text-crimson">Media</a>
+              <a
+                href="https://donations.davidmaraga.com/"
+                target="_blank"
+                rel="noopener"
+                class="transition hover:text-crimson"
+              >
+                Donate
+              </a>
+            </nav>
+
+            <div class="flex items-center gap-2.5 lg:justify-end">
+              <.social_link
+                :for={link <- @social_links}
+                link={link}
+                class="social-dance flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/80 transition duration-300 ease-out hover:-translate-y-1 hover:scale-110 hover:border-crimson hover:bg-crimson hover:text-white hover:shadow-lg hover:shadow-crimson/30"
+              />
             </div>
           </div>
-
-          <nav class="flex flex-wrap gap-x-6 gap-y-3 font-head text-xs uppercase tracking-[0.2em] text-white/78 lg:justify-end">
-            <a href={section_href(@base_path, "top")} class="transition hover:text-crimson">Home</a>
-            <a href={section_href(@base_path, "mission")} class="transition hover:text-crimson">
-              About
-            </a>
-            <a href="/news" class="transition hover:text-crimson">
-              News
-            </a>
-            <a href={section_href(@base_path, "agenda")} class="transition hover:text-crimson">
-              Agenda
-            </a>
-            <a href="/media" class="transition hover:text-crimson">
-              Media
-            </a>
-            <a
-              href="https://donations.davidmaraga.com/"
-              target="_blank"
-              rel="noopener"
-              class="transition hover:text-crimson"
-            >
-              Donate
-            </a>
-          </nav>
         </div>
 
-        <div class="mt-10 flex flex-col gap-5 border-t border-white/15 pt-6 lg:flex-row lg:items-center lg:justify-between">
-          <div class="flex items-center gap-3">
-            <.social_link
-              :for={link <- @social_links}
-              link={link}
-              class="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white/80 transition hover:border-crimson hover:text-white"
-            />
-          </div>
-
+        <div class="mt-6 flex flex-col gap-2 border-t border-white/15 pt-4 text-xs text-white/68 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {Date.utc_today().year} David Maraga Info. Integrity, justice and service for Kenya.
           </p>
 
-          <div class="flex flex-wrap items-center gap-4 font-head text-[11px] uppercase tracking-[0.2em] text-white/68">
+          <div class="flex flex-wrap items-center gap-4 font-head uppercase tracking-[0.2em]">
             <a href="https://davidmaraga.info/" class="transition hover:text-crimson">
               davidmaraga.info
             </a>

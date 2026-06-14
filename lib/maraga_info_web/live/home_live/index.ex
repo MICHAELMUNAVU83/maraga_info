@@ -86,9 +86,10 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   ]
 
   @events [
+     %{day: "16", month: "Jun", title: "State of Nation: The Way Forward – 16 June 2026"},
     %{day: "08", month: "Jun", title: "Nairobi National Park Protest – Maraga Arrested"},
     %{day: "25", month: "May", title: "Ukombozi Campaign Launch – Lodwar, Turkana"},
-    %{day: "05", month: "Feb", title: "Ukatiba Caravan – Lamu County Voter Drive"}
+
   ]
 
   # Layout classes for the 5-tile gallery collage, applied in order to the
@@ -125,7 +126,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   # Pairs the published media items with the collage layout classes so the
   # gallery shows exactly five images sourced from the database.
   defp build_gallery_images do
-    Content.list_published_media_items()
+    Content.list_landing_media_items()
     |> Enum.take(length(@gallery_layout))
     |> Enum.zip(@gallery_layout)
     |> Enum.map(fn {item, layout} -> Map.put(layout, :image, item.image_url) end)
@@ -220,7 +221,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
               href="https://donations.davidmaraga.com/"
               rel="noopener"
               target="_blank"
-              class="rounded-[5px] border-2 border-blueink bg-blueink px-[44px] py-5 text-lg font-semibold text-white transition hover:bg-transparent hover:text-blueink"
+              class="rounded-[5px] border-2 border-red-500 bg-red-500 px-[44px] py-5 text-lg font-semibold text-white transition hover:bg-transparent hover:text-red-500"
             >
               Donate Now
             </a>
@@ -231,7 +232,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
               target="_blank"
               class="rounded-[5px] border-2 border-crimson bg-crimson px-[44px] py-5 text-lg font-semibold text-white transition hover:bg-transparent hover:text-crimson"
             >
-              Volunteer Now
+              Volunteer
             </a>
           </div>
         </div>
@@ -636,7 +637,12 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <div class="absolute inset-0 bg-black/50 transition group-hover:bg-black/35"></div>
       <div class="absolute inset-0 flex items-center justify-center">
         <span class="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg transition group-hover:scale-110">
-          <svg class="ml-1 h-7 w-7 text-crimson" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <svg
+            class="ml-1 h-7 w-7 text-crimson"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
             <polygon points="6 4 20 12 6 20 6 4" />
           </svg>
         </span>

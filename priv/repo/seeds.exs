@@ -16,6 +16,7 @@ alias MaragaInfo.Content
 alias MaragaInfo.Content.MediaItem
 alias MaragaInfo.Content.Post
 alias MaragaInfo.Repo
+alias MaragaInfo.Volunteers
 
 # --- Seed an admin user -----------------------------------------------------
 # The first registered user is automatically promoted to admin by the
@@ -46,6 +47,21 @@ admin =
     |> Ecto.Changeset.change(is_admin: true)
     |> Repo.update!()
   end
+
+# --- Seed volunteers -------------------------------------------------------
+volunteer_seed_path = Path.join([__DIR__, "seeds", "volunteers_2026-05-11.xlsx"])
+
+if File.exists?(volunteer_seed_path) do
+  case Volunteers.import_volunteers_from_file(volunteer_seed_path) do
+    {:ok, summary} ->
+      IO.puts(
+        "Seeded volunteers: #{summary.inserted} added, #{summary.updated} updated, #{summary.failed} failed."
+      )
+
+    {:error, reason} ->
+      IO.puts("Skipping volunteer seed import: #{inspect(reason)}")
+  end
+end
 
 # --- Seed blog posts --------------------------------------------------------
 posts = [
@@ -231,6 +247,7 @@ media_items = [
     description: "David Maraga greeted by supporters during a county tour.",
     category: "Rallies",
     image_url: "/images/gallery/1.jpg",
+    display_on_landing: true,
     position: 0
   },
   %{
@@ -238,6 +255,7 @@ media_items = [
     description: "A warm moment with a young family at a community visit.",
     category: "Public",
     image_url: "/images/gallery/2.jpg",
+    display_on_landing: true,
     position: 1
   },
   %{
@@ -245,6 +263,7 @@ media_items = [
     description: "Crowds turn out to receive Maraga on the streets.",
     category: "Rallies",
     image_url: "/images/gallery/3.jpg",
+    display_on_landing: true,
     position: 2
   },
   %{
@@ -252,6 +271,7 @@ media_items = [
     description: "Maraga shares a light moment with a young supporter.",
     category: "Public",
     image_url: "/images/gallery/4.jpg",
+    display_on_landing: true,
     position: 3
   },
   %{
@@ -259,6 +279,7 @@ media_items = [
     description: "Maraga addresses the media during a campaign stop.",
     category: "Press",
     image_url: "/images/gallery/5.jpg",
+    display_on_landing: true,
     position: 4
   }
 ]
@@ -266,6 +287,6 @@ media_items = [
 Enum.each(media_items, fn attrs ->
   case Repo.get_by(MediaItem, image_url: attrs.image_url) do
     nil -> Content.create_media_item(attrs)
-    _item -> :ok
+    item -> Content.update_media_item(item, attrs)
   end
 end)

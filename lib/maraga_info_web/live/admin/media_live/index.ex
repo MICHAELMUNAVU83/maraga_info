@@ -319,6 +319,7 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
           <.input field={@form[:description]} type="textarea" label="Description (optional)" rows="3" />
           <.input field={@form[:position]} type="number" label="Sort order" />
           <.input field={@form[:is_published]} type="checkbox" label="Show in public gallery" />
+          <.input field={@form[:display_on_landing]} type="checkbox" label="Display on landing page" />
 
           <div class="flex items-center justify-end gap-3 pt-2">
             <button

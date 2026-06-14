@@ -82,11 +82,36 @@ body {
   }
 }
 
+@keyframes social-wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-12deg);
+  }
+
+  75% {
+    transform: rotate(12deg);
+  }
+}
+
+.social-dance svg {
+  transition: transform 0.3s ease;
+}
+
+.social-dance:hover svg {
+  animation: social-wiggle 0.5s ease-in-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-color-slide-left,
   .hero-color-slide-right,
   .video-marquee,
-  .reveal-on-scroll {
+  .reveal-on-scroll,
+  .social-dance,
+  .social-dance svg {
     animation: none !important;
     transition: none !important;
     transform: none !important;
