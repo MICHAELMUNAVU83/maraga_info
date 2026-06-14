@@ -7,6 +7,256 @@ defmodule MaragaInfoWeb.SiteComponents do
     %{name: "youtube", href: "https://www.youtube.com/@dkmaraga", label: "YouTube"}
   ]
 
+  attr :base_path, :string, default: ""
+
+  def site_header(assigns) do
+    assigns = assign(assigns, :social_links, @social_links)
+
+    ~H"""
+    <header class="relative z-30 w-full bg-blueink">
+      <input id="nav-toggle" type="checkbox" class="peer hidden" />
+
+      <div class="relative mx-auto flex w-full max-w-container items-center justify-between gap-4 px-4 py-3 lg:px-6">
+        <nav class="hidden items-center gap-6 lg:flex">
+          <div class="mr-2 flex items-center gap-3">
+            <.social_link
+              :for={link <- @social_links}
+              link={link}
+              class="text-white transition hover:text-crimson"
+            />
+          </div>
+          <a
+            href={section_href(@base_path, "top")}
+            class="font-head text-[15px] font-medium uppercase tracking-wide text-crimson"
+          >
+            Home
+          </a>
+
+          <.nav_dropdown label="About Us">
+            <a
+              href={section_href(@base_path, "mission")}
+              class="text-[15px] text-ink transition hover:text-crimson"
+            >
+              David Maraga
+            </a>
+            <a href="#" class="text-[15px] text-ink transition hover:text-crimson">
+              UGM Party
+            </a>
+          </.nav_dropdown>
+
+          <.nav_dropdown label="Our Agenda">
+            <a
+              href={section_href(@base_path, "agenda")}
+              class="text-[15px] text-ink transition hover:text-crimson"
+            >
+              Campaign Pillars
+            </a>
+            <a href="#" class="text-[15px] text-ink transition hover:text-crimson">
+              Manifesto
+            </a>
+          </.nav_dropdown>
+        </nav>
+
+        <a href={section_href(@base_path, "top")} class="flex shrink-0 items-center gap-2 lg:hidden">
+          <svg class="h-8 w-8" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="6" fill="#fff" />
+            <path
+              d="M11 24V8h6.2c3.1 0 5 1.9 5 4.9s-1.9 5-5 5H15V24h-4zm4-9.4h1.8c1 0 1.6-.6 1.6-1.6s-.6-1.6-1.6-1.6H15v3.2z"
+              fill="#026631"
+            />
+          </svg>
+          <span class="font-head text-lg font-bold tracking-wide text-white">
+            <img
+              src="/images/logo.png"
+              alt="Politician 128 logo"
+              class="hidden h-24 w-auto shrink-0 lg:block"
+            />
+          </span>
+        </a>
+
+        <a
+          href={section_href(@base_path, "top")}
+          class="absolute left-1/2 top-0 z-50 hidden -translate-x-1/2 flex-col items-center rounded-b-md bg-crimson px-8 pb-4 pt-2.5 shadow-lg lg:flex"
+        >
+          <img
+            src="/images/logo.png"
+            alt="Politician 128 logo"
+            class="hidden h-12 w-auto shrink-0 lg:block"
+          />
+        </a>
+
+        <div class="flex items-center gap-6">
+          <nav class="hidden items-center gap-6 lg:flex">
+            <.nav_dropdown label="Resources">
+              <a href="#" class="text-[15px] text-ink transition hover:text-crimson">
+                Newsletters
+              </a>
+              <a
+                href={section_href(@base_path, "news")}
+                class="text-[15px] text-ink transition hover:text-crimson"
+              >
+                News
+              </a>
+              <a
+                href={section_href(@base_path, "news")}
+                class="text-[15px] text-ink transition hover:text-crimson"
+              >
+                Blogs
+              </a>
+              <.link navigate="/media" class="text-[15px] text-ink transition hover:text-crimson">
+                Media
+              </.link>
+            </.nav_dropdown>
+            <a
+              href="#"
+              class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+            >
+              Press Releases
+            </a>
+            <a
+              href="#"
+              class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+            >
+              Shop
+            </a>
+          </nav>
+
+          <.link
+            navigate="/admin"
+            aria-label="Admin"
+            title="Admin"
+            class="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:text-crimson"
+          >
+            <svg
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </.link>
+        </div>
+      </div>
+
+      <nav class="hidden flex-col gap-1 bg-blueink px-6 pb-6 pt-2 shadow-xl peer-checked:flex lg:!hidden">
+        <a
+          href={section_href(@base_path, "top")}
+          class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-crimson"
+        >
+          Home
+        </a>
+
+        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
+          About Us
+        </p>
+        <a
+          href={section_href(@base_path, "mission")}
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
+          David Maraga
+        </a>
+        <a href="#" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+          UGM Party
+        </a>
+
+        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
+          Our Agenda
+        </p>
+        <a
+          href={section_href(@base_path, "agenda")}
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
+          Campaign Pillars
+        </a>
+        <a href="#" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+          Manifesto
+        </a>
+
+        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
+          Resources
+        </p>
+        <a href="#" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+          Newsletters
+        </a>
+        <a
+          href={section_href(@base_path, "news")}
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
+          News
+        </a>
+        <a
+          href={section_href(@base_path, "news")}
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
+          Blogs
+        </a>
+        <.link
+          navigate="/media"
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
+          Media
+        </.link>
+
+        <a
+          href="#"
+          class="py-1 pt-3 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+        >
+          Press Releases
+        </a>
+        <a
+          href="#"
+          class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+        >
+          Shop
+        </a>
+        <.link
+          navigate="/admin"
+          class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+        >
+          Admin
+        </.link>
+      </nav>
+    </header>
+    """
+  end
+
+  attr :label, :string, required: true
+  slot :inner_block, required: true
+
+  defp nav_dropdown(assigns) do
+    ~H"""
+    <div class="group relative">
+      <button
+        type="button"
+        class="flex items-center gap-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition group-hover:text-crimson"
+      >
+        {@label}
+        <svg
+          class="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      <div class="absolute left-0 top-full z-50 hidden min-w-[200px] grid-cols-1 gap-y-2 rounded-md bg-white p-6 shadow-2xl group-hover:grid group-focus-within:grid">
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
+
   attr :id, :string, default: nil
   attr :base_path, :string, default: ""
 

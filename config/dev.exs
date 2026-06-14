@@ -22,7 +22,7 @@ config :maraga_info, MaragaInfoWeb.Endpoint,
   http: [port: 4227],
   check_origin: false,
   code_reloader: true,
-  debug_errors: true,
+  debug_errors: false,
   secret_key_base: "LXT/aPu7ZUqh6H74XFCCbZWOOeqC8cfYVbchAQg4nM7BqgTKnsqTQxrF0n8TSAmD",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:maraga_info, ~w(--sourcemap=inline --watch)]},

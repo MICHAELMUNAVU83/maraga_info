@@ -42,7 +42,7 @@ defmodule MaragaInfoWeb.MediaLive.Index do
   def render(assigns) do
     ~H"""
     <div class="min-h-screen bg-white">
-      <.site_header current_user={@current_user} />
+      <.site_header base_path="/" />
 
       <section
         class="relative overflow-hidden bg-cover"
@@ -166,51 +166,6 @@ defmodule MaragaInfoWeb.MediaLive.Index do
     >
       {@label}
     </button>
-    """
-  end
-
-  attr :current_user, :map, default: nil
-
-  defp site_header(assigns) do
-    ~H"""
-    <header class="border-b border-slate-200 bg-blueink">
-      <div class="mx-auto flex w-full max-w-container items-center justify-between gap-6 px-4 py-5 lg:px-6">
-        <a href={~p"/"} class="flex items-center gap-3">
-          <img src="/images/logo.png" alt="David Maraga Info logo" class="h-10 w-auto rounded-sm" />
-          <div class="font-head text-lg uppercase tracking-[0.14em] text-white">
-            David Maraga Info
-          </div>
-        </a>
-
-        <nav class="hidden items-center gap-6 lg:flex">
-          <a
-            href="/#mission"
-            class="font-head text-sm uppercase tracking-[0.18em] text-white transition hover:text-crimson"
-          >
-            About
-          </a>
-          <a
-            href="/#news"
-            class="font-head text-sm uppercase tracking-[0.18em] text-white transition hover:text-crimson"
-          >
-            Latest News
-          </a>
-          <.link
-            navigate={~p"/media"}
-            class="font-head text-sm uppercase tracking-[0.18em] text-crimson"
-          >
-            Media
-          </.link>
-          <.link
-            :if={@current_user && @current_user.is_admin}
-            navigate={~p"/admin/media"}
-            class="font-head text-sm uppercase tracking-[0.18em] text-white transition hover:text-crimson"
-          >
-            Admin
-          </.link>
-        </nav>
-      </div>
-    </header>
     """
   end
 
