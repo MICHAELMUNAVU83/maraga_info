@@ -13,6 +13,7 @@
 alias MaragaInfo.Accounts
 alias MaragaInfo.Accounts.User
 alias MaragaInfo.Content
+alias MaragaInfo.Content.MediaItem
 alias MaragaInfo.Content.Post
 alias MaragaInfo.Repo
 
@@ -218,5 +219,53 @@ Enum.each(posts, fn attrs ->
   case Repo.get_by(Post, slug: attrs.slug) do
     nil -> Content.create_post(attrs)
     _post -> :ok
+  end
+end)
+
+# --- Seed gallery media items -----------------------------------------------
+# These five images power the home page gallery collage, fetched in order of
+# their position from the media_items table.
+media_items = [
+  %{
+    title: "On the campaign trail",
+    description: "David Maraga greeted by supporters during a county tour.",
+    category: "Rallies",
+    image_url: "/images/gallery/1.jpg",
+    position: 0
+  },
+  %{
+    title: "Welcoming a newborn",
+    description: "A warm moment with a young family at a community visit.",
+    category: "Public",
+    image_url: "/images/gallery/2.jpg",
+    position: 1
+  },
+  %{
+    title: "Greeted by the crowds",
+    description: "Crowds turn out to receive Maraga on the streets.",
+    category: "Rallies",
+    image_url: "/images/gallery/3.jpg",
+    position: 2
+  },
+  %{
+    title: "With the next generation",
+    description: "Maraga shares a light moment with a young supporter.",
+    category: "Public",
+    image_url: "/images/gallery/4.jpg",
+    position: 3
+  },
+  %{
+    title: "Speaking to the press",
+    description: "Maraga addresses the media during a campaign stop.",
+    category: "Press",
+    image_url: "/images/gallery/5.jpg",
+    position: 4
+  }
+]
+
+Enum.each(media_items, fn attrs ->
+  case Repo.get_by(MediaItem, image_url: attrs.image_url) do
+    nil -> Content.create_media_item(attrs)
+    _item -> :ok
   end
 end)

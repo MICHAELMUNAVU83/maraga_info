@@ -9,7 +9,10 @@ defmodule MaragaInfoWeb.MediaLive.Index do
     {:ok,
      socket
      |> assign(:page_title, "Media Gallery | #{Seo.site_name()}")
-     |> assign(:page_description, "Photography from the David Maraga campaign trail across Kenya.")
+     |> assign(
+       :page_description,
+       "Photography from the David Maraga campaign trail across Kenya."
+     )
      |> assign(:canonical_url, Seo.site_url() <> "/media")
      |> assign(:categories, Content.list_published_media_categories())
      |> assign(:active_category, "all")
@@ -75,10 +78,7 @@ defmodule MaragaInfoWeb.MediaLive.Index do
             </div>
           </div>
 
-          <div
-            :if={@items == []}
-            class="rounded-[8px] bg-ghost px-8 py-16 text-center"
-          >
+          <div :if={@items == []} class="rounded-[8px] bg-ghost px-8 py-16 text-center">
             <h3 class="font-head text-2xl uppercase tracking-[0.08em] text-blueink">
               No media here yet
             </h3>
@@ -87,10 +87,7 @@ defmodule MaragaInfoWeb.MediaLive.Index do
             </p>
           </div>
 
-          <div
-            :if={@items != []}
-            class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          >
+          <div :if={@items != []} class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <.media_card :for={item <- @items} item={item} />
           </div>
         </div>

@@ -10,6 +10,13 @@ defmodule MaragaInfo.Content do
   alias MaragaInfo.Content.MediaItem
   alias MaragaInfo.Content.Post
 
+  @post_categories ["News", "Press Releases", "Statements", "Speeches"]
+
+  @doc """
+  Returns the canonical list of post categories used in the admin form.
+  """
+  def post_categories, do: @post_categories
+
   @doc """
   Returns the list of posts.
 
@@ -22,6 +29,7 @@ defmodule MaragaInfo.Content do
   def list_posts(opts \\ []) do
     Post
     |> maybe_filter_status(Keyword.get(opts, :status))
+    |> maybe_filter_post_category(Keyword.get(opts, :category))
     |> order_posts()
     |> maybe_limit(Keyword.get(opts, :limit))
     |> Repo.all()
@@ -32,6 +40,19 @@ defmodule MaragaInfo.Content do
     opts
     |> Keyword.put(:status, :published)
     |> list_posts()
+  end
+
+  @doc """
+  Returns the distinct categories used by published posts, sorted.
+  """
+  def list_published_post_categories do
+    Post
+    |> where([post], post.status == :published)
+    |> select([post], post.category)
+    |> distinct(true)
+    |> Repo.all()
+    |> Enum.reject(&(is_nil(&1) or &1 == ""))
+    |> Enum.sort()
   end
 
   @doc """
@@ -153,6 +174,14 @@ defmodule MaragaInfo.Content do
 
   defp maybe_filter_status(query, status) do
     where(query, [post], post.status == ^status)
+  end
+
+  defp maybe_filter_post_category(query, nil), do: query
+  defp maybe_filter_post_category(query, "all"), do: query
+  defp maybe_filter_post_category(query, ""), do: query
+
+  defp maybe_filter_post_category(query, category) do
+    where(query, [post], post.category == ^category)
   end
 
   defp order_posts(query) do

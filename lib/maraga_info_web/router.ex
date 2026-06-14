@@ -23,6 +23,11 @@ defmodule MaragaInfoWeb.Router do
     live_session :public,
       on_mount: [{MaragaInfoWeb.UserAuth, :mount_current_user}] do
       live "/", HomeLive.Index
+      live "/david-maraga", DavidMaragaLive.Index
+      live "/ugm-party", UgmPartyLive.Index
+      live "/campaign-pillars", CampaignPillarsLive.Index
+      live "/news", NewsLive.Index
+      live "/press-releases", PressReleasesLive.Index
       live "/media", MediaLive.Index
       live "/blog/:slug", BlogLive.Show
     end

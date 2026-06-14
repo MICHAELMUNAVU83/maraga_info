@@ -26,15 +26,10 @@ defmodule MaragaInfoWeb.AdminComponents do
           <div class="sticky top-6 space-y-6">
             <.link navigate={~p"/admin"} class="flex items-start gap-2.5">
               <img src={~p"/images/logo.png"} alt="Maraga Info" class="h-9  " />
-
             </.link>
 
             <nav class="space-y-0.5">
-              <.admin_nav_link
-                :for={item <- @navigation}
-                item={item}
-                current_path={@current_path}
-              />
+              <.admin_nav_link :for={item <- @navigation} item={item} current_path={@current_path} />
             </nav>
 
             <div class="border-t border-zinc-200 pt-4">
@@ -104,7 +99,11 @@ defmodule MaragaInfoWeb.AdminComponents do
       <p class="mt-2 text-3xl font-semibold tracking-tight">{@value}</p>
       <p
         :if={@hint}
-        class={["mt-1 text-xs", @tone == "accent" && "text-white/70", @tone == "default" && "text-zinc-400"]}
+        class={[
+          "mt-1 text-xs",
+          @tone == "accent" && "text-white/70",
+          @tone == "default" && "text-zinc-400"
+        ]}
       >
         {@hint}
       </p>
@@ -186,7 +185,8 @@ defmodule MaragaInfoWeb.AdminComponents do
       class={[
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition",
         nav_active?(@current_path, @item.href) && "bg-blueink text-white",
-        !nav_active?(@current_path, @item.href) && "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+        !nav_active?(@current_path, @item.href) &&
+          "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
       ]}
     >
       <.icon name={@item.icon} class="h-5 w-5" />

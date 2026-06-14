@@ -267,7 +267,9 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
   defp blank?(value) when is_binary(value), do: String.trim(value) == ""
   defp blank?(_), do: false
 
-  defp current_cover(cover_url, _form) when is_binary(cover_url) and cover_url != "", do: cover_url
+  defp current_cover(cover_url, _form) when is_binary(cover_url) and cover_url != "",
+    do: cover_url
+
   defp current_cover(_cover_url, form), do: Phoenix.HTML.Form.input_value(form, :image_url)
 
   defp upload_error_to_string(:too_large), do: "File is too large (max #{@max_image_mb}MB)"
@@ -295,13 +297,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
         </.link>
       </:actions>
 
-      <.form
-        for={@form}
-        id="post-form"
-        phx-change="validate"
-        phx-submit="save"
-        class="space-y-8"
-      >
+      <.form for={@form} id="post-form" phx-change="validate" phx-submit="save" class="space-y-8">
         <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div class="space-y-8">
             <.editor_card title="Basics">
@@ -313,15 +309,16 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                   </p>
                 </div>
                 <div class="sm:col-span-2">
-                  <.input field={@form[:category]} type="text" label="Category" />
+                  <.input
+                    field={@form[:category]}
+                    type="select"
+                    label="Category"
+                    prompt="Select a category"
+                    options={Content.post_categories()}
+                  />
                 </div>
                 <div class="sm:col-span-2">
-                  <.input
-                    field={@form[:excerpt]}
-                    type="textarea"
-                    label="Excerpt"
-                    rows="2"
-                  />
+                  <.input field={@form[:excerpt]} type="textarea" label="Excerpt" rows="2" />
                 </div>
                 <div class="sm:col-span-2">
                   <.input field={@form[:intro]} type="textarea" label="Intro" rows="3" />
@@ -333,7 +330,10 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
               title="Sections"
               description="Build the article as a series of blocks. Each section can have a heading, text, and images."
             >
-              <div :if={@sections == []} class="rounded-lg border border-dashed border-zinc-200 px-5 py-8 text-center text-sm text-zinc-500">
+              <div
+                :if={@sections == []}
+                class="rounded-lg border border-dashed border-zinc-200 px-5 py-8 text-center text-sm text-zinc-500"
+              >
                 No sections yet. Add your first one below.
               </div>
 
@@ -400,7 +400,10 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                     >{section.body}</textarea>
 
                     <div :if={section.image_urls != []} class="grid grid-cols-3 gap-3 sm:grid-cols-4">
-                      <div :for={url <- section.image_urls} class="group relative overflow-hidden rounded-lg border border-zinc-200">
+                      <div
+                        :for={url <- section.image_urls}
+                        class="group relative overflow-hidden rounded-lg border border-zinc-200"
+                      >
                         <img src={url} class="aspect-square w-full object-cover" />
                         <button
                           type="button"
@@ -472,7 +475,10 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                   :if={current_cover(@cover_url, @form)}
                   class="overflow-hidden rounded-lg border border-zinc-200"
                 >
-                  <img src={current_cover(@cover_url, @form)} class="aspect-video w-full object-cover object-top" />
+                  <img
+                    src={current_cover(@cover_url, @form)}
+                    class="aspect-video w-full object-cover object-top"
+                  />
                 </div>
 
                 <label class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-600 transition hover:border-blueink hover:text-blueink">
@@ -486,10 +492,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                   Uploading {entry.client_name} — {entry.progress}%
                 </p>
 
-                <p
-                  :for={err <- cover_errors(@uploads.cover)}
-                  class="text-xs text-red-600"
-                >
+                <p :for={err <- cover_errors(@uploads.cover)} class="text-xs text-red-600">
                   {upload_error_to_string(err)}
                 </p>
 

@@ -4,7 +4,9 @@ defmodule MaragaInfoWeb.SiteComponents do
   @social_links [
     %{name: "x", href: "https://x.com/dkmaraga", label: "X"},
     %{name: "instagram", href: "https://www.instagram.com/maraga2027", label: "Instagram"},
-    %{name: "youtube", href: "https://www.youtube.com/@dkmaraga", label: "YouTube"}
+    %{name: "youtube", href: "https://www.youtube.com/@dkmaraga", label: "YouTube"},
+    %{name: "facebook", href: "https://www.facebook.com/Maraga2027", label: "Facebook"},
+    %{name: "tiktok", href: "https://www.tiktok.com/@maraga2027", label: "TikTok"}
   ]
 
   attr :base_path, :string, default: ""
@@ -33,24 +35,21 @@ defmodule MaragaInfoWeb.SiteComponents do
           </a>
 
           <.nav_dropdown label="About Us">
-            <a
-              href={section_href(@base_path, "mission")}
-              class="text-[15px] text-ink transition hover:text-crimson"
-            >
+            <.link navigate="/david-maraga" class="text-[15px] text-ink transition hover:text-crimson">
               David Maraga
-            </a>
-            <a href="#" class="text-[15px] text-ink transition hover:text-crimson">
+            </.link>
+            <.link navigate="/ugm-party" class="text-[15px] text-ink transition hover:text-crimson">
               UGM Party
-            </a>
+            </.link>
           </.nav_dropdown>
 
           <.nav_dropdown label="Our Agenda">
-            <a
-              href={section_href(@base_path, "agenda")}
+            <.link
+              navigate="/campaign-pillars"
               class="text-[15px] text-ink transition hover:text-crimson"
             >
               Campaign Pillars
-            </a>
+            </.link>
             <a href="#" class="text-[15px] text-ink transition hover:text-crimson">
               Manifesto
             </a>
@@ -91,17 +90,26 @@ defmodule MaragaInfoWeb.SiteComponents do
               <a href="#" class="text-[15px] text-ink transition hover:text-crimson">
                 Newsletters
               </a>
-              <a
-                href={section_href(@base_path, "news")}
+              <.link navigate="/news" class="text-[15px] text-ink transition hover:text-crimson">
+                News
+              </.link>
+              <.link
+                navigate="/press-releases"
                 class="text-[15px] text-ink transition hover:text-crimson"
               >
-                News
-              </a>
+                Press Releases
+              </.link>
               <a
                 href={section_href(@base_path, "news")}
                 class="text-[15px] text-ink transition hover:text-crimson"
               >
                 Blogs
+              </a>
+              <a
+                href={section_href(@base_path, "events")}
+                class="text-[15px] text-ink transition hover:text-crimson"
+              >
+                Events
               </a>
               <.link navigate="/media" class="text-[15px] text-ink transition hover:text-crimson">
                 Media
@@ -114,7 +122,9 @@ defmodule MaragaInfoWeb.SiteComponents do
               Press Releases
             </a>
             <a
-              href="#"
+              href="https://davidmaraga.com/shop"
+              target="_blank"
+              rel="noopener"
               class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
             >
               Shop
@@ -155,25 +165,28 @@ defmodule MaragaInfoWeb.SiteComponents do
         <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
           About Us
         </p>
-        <a
-          href={section_href(@base_path, "mission")}
+        <.link
+          navigate="/david-maraga"
           class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
         >
           David Maraga
-        </a>
-        <a href="#" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
+        </.link>
+        <.link
+          navigate="/ugm-party"
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
           UGM Party
-        </a>
+        </.link>
 
         <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
           Our Agenda
         </p>
-        <a
-          href={section_href(@base_path, "agenda")}
+        <.link
+          navigate="/campaign-pillars"
           class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
         >
           Campaign Pillars
-        </a>
+        </.link>
         <a href="#" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
           Manifesto
         </a>
@@ -184,12 +197,18 @@ defmodule MaragaInfoWeb.SiteComponents do
         <a href="#" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
           Newsletters
         </a>
-        <a
-          href={section_href(@base_path, "news")}
+        <.link
+          navigate="/news"
           class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
         >
           News
-        </a>
+        </.link>
+        <.link
+          navigate="/press-releases"
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
+          Press Releases
+        </.link>
         <a
           href={section_href(@base_path, "news")}
           class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
@@ -270,7 +289,11 @@ defmodule MaragaInfoWeb.SiteComponents do
         <div class="grid gap-10 lg:grid-cols-[1.3fr_0.9fr] lg:items-end">
           <div>
             <div class="flex items-center gap-4">
-              <img src="/images/logo.png" alt="David Maraga Info logo" class="h-12 w-auto rounded-sm" />
+              <img
+                src="/images/logo.png"
+                alt="David Maraga Info logo"
+                class="h-12 bg-white w-auto rounded-sm"
+              />
               <div>
                 <p class="font-head text-[11px] uppercase tracking-[0.32em] text-crimson">
                   Kenya 2027
@@ -284,6 +307,18 @@ defmodule MaragaInfoWeb.SiteComponents do
             <p class="mt-5 max-w-xl text-base leading-7 text-white/72">
               Independent coverage, campaign updates and public record context in one place.
             </p>
+
+            <div class="mt-7">
+              <h3 class="font-head text-xs uppercase tracking-[0.2em] text-crimson">
+                Campaign Headquarters
+              </h3>
+              <address class="mt-3 space-y-1 not-italic text-base leading-7 text-white/72">
+                <p>82 Westlands Rd, Nairobi, Kenya</p>
+                <a href="tel:+254746900027" class="block transition hover:text-crimson">
+                  +254 746 900 027
+                </a>
+              </address>
+            </div>
           </div>
 
           <nav class="flex flex-wrap gap-x-6 gap-y-3 font-head text-xs uppercase tracking-[0.2em] text-white/78 lg:justify-end">
@@ -291,7 +326,7 @@ defmodule MaragaInfoWeb.SiteComponents do
             <a href={section_href(@base_path, "mission")} class="transition hover:text-crimson">
               About
             </a>
-            <a href={section_href(@base_path, "news")} class="transition hover:text-crimson">
+            <a href="/news" class="transition hover:text-crimson">
               News
             </a>
             <a href={section_href(@base_path, "agenda")} class="transition hover:text-crimson">
@@ -393,6 +428,14 @@ defmodule MaragaInfoWeb.SiteComponents do
     ~H"""
     <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M23.5 6.2a3 3 0 0 0-2.1-2.12C19.53 3.5 12 3.5 12 3.5s-7.53 0-9.4.58A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.12c1.87.58 9.4.58 9.4.58s7.53 0 9.4-.58a3 3 0 0 0 2.1-2.12A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8ZM9.6 15.94V8.06L16.4 12 9.6 15.94Z" />
+    </svg>
+    """
+  end
+
+  defp social_icon(%{name: "tiktok"} = assigns) do
+    ~H"""
+    <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M16.6 5.82a4.28 4.28 0 0 1-1.05-2.82h-3.1v12.42a2.6 2.6 0 1 1-1.84-2.49V9.74a5.7 5.7 0 1 0 4.94 5.65V9.01a7.32 7.32 0 0 0 4.28 1.37V7.28a4.28 4.28 0 0 1-3.18-1.46z" />
     </svg>
     """
   end

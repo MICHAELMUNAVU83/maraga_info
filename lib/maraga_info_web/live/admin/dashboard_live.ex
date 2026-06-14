@@ -48,11 +48,7 @@ defmodule MaragaInfoWeb.Admin.DashboardLive do
             tone="accent"
           />
           <.admin_stat title="Drafts" value={Integer.to_string(@stats.drafts)} hint="In progress" />
-          <.admin_stat
-            title="Featured"
-            value={Integer.to_string(@stats.featured)}
-            hint="On homepage"
-          />
+          <.admin_stat title="Featured" value={Integer.to_string(@stats.featured)} hint="On homepage" />
         </section>
 
         <.admin_panel title="Recent posts" subtitle="Your latest stories.">

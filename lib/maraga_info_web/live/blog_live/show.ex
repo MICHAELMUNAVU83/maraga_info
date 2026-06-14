@@ -76,7 +76,7 @@ defmodule MaragaInfoWeb.BlogLive.Show do
           <div class="mx-auto mt-12 max-w-[760px] space-y-12 text-[1.12rem] leading-9 text-ink">
             <p class="text-[1.25rem] leading-9 text-grayink">{@post.intro}</p>
 
-            <section :if={@post.sections != []} :for={section <- @post.sections} class="space-y-6">
+            <section :for={section <- @post.sections} :if={@post.sections != []} class="space-y-6">
               <h2
                 :if={present?(section.heading)}
                 class="font-head text-[2.2rem] uppercase leading-none tracking-[0.02em] text-blueink"

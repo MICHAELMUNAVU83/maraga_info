@@ -32,7 +32,11 @@
           </div>
 
           <div :if={@post.image_url} class="overflow-hidden rounded-lg border border-zinc-200">
-            <img src={@post.image_url} alt={@post.title} class="aspect-video w-full object-cover object-top" />
+            <img
+              src={@post.image_url}
+              alt={@post.title}
+              class="aspect-video w-full object-cover object-top"
+            />
           </div>
 
           <div>
@@ -54,7 +58,9 @@
               class="rounded-lg border border-zinc-200 p-4"
             >
               <p class="text-xs text-zinc-400">Section {index + 1}</p>
-              <h4 :if={section.heading} class="mt-1 font-semibold text-zinc-900">{section.heading}</h4>
+              <h4 :if={section.heading} class="mt-1 font-semibold text-zinc-900">
+                {section.heading}
+              </h4>
               <div :if={section.body} class="mt-1.5 space-y-2 text-sm text-zinc-700">
                 <p :for={paragraph <- paragraphs(section.body)}>{paragraph}</p>
               </div>
@@ -102,7 +108,9 @@
           </dd>
         </div>
         <div>
-          <dt class="text-xs font-semibold uppercase tracking-wide text-zinc-400">Published at</dt>
+          <dt class="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+            Published at
+          </dt>
           <dd class="mt-1 text-zinc-900">{format_datetime(@post.published_at)}</dd>
         </div>
         <div>
@@ -110,7 +118,9 @@
           <dd class="mt-1 text-zinc-900">{author_email(@post)}</dd>
         </div>
         <div>
-          <dt class="text-xs font-semibold uppercase tracking-wide text-zinc-400">SEO description</dt>
+          <dt class="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+            SEO description
+          </dt>
           <dd class="mt-1 text-zinc-700">{@post.seo_description}</dd>
         </div>
       </dl>

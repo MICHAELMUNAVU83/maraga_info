@@ -207,11 +207,11 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
           <.admin_stat title="Hidden" value={Integer.to_string(@stats.hidden)} hint="Not public" />
         </section>
 
-        <.admin_panel title="All media" subtitle="Add images and group them by category for the public gallery.">
-          <div
-            :if={@items != []}
-            class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
-          >
+        <.admin_panel
+          title="All media"
+          subtitle="Add images and group them by category for the public gallery."
+        >
+          <div :if={@items != []} class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             <div
               :for={item <- @items}
               class="group overflow-hidden rounded-xl border border-zinc-200 bg-white"
@@ -229,7 +229,12 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
                 <p class="truncate text-sm font-semibold text-zinc-900">{item.title}</p>
                 <p class="mt-0.5 text-xs text-zinc-500">{item.category}</p>
                 <div class="mt-3 flex items-center gap-3 text-xs font-medium">
-                  <button type="button" phx-click="edit" phx-value-id={item.id} class="text-blueink hover:underline">
+                  <button
+                    type="button"
+                    phx-click="edit"
+                    phx-value-id={item.id}
+                    class="text-blueink hover:underline"
+                  >
                     Edit
                   </button>
                   <button
@@ -267,10 +272,7 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
           class="mt-6 space-y-5"
         >
           <div>
-            <div
-              :if={@image_url}
-              class="relative overflow-hidden rounded-lg border border-zinc-200"
-            >
+            <div :if={@image_url} class="relative overflow-hidden rounded-lg border border-zinc-200">
               <img src={@image_url} class="aspect-video w-full object-cover" />
               <button
                 type="button"
@@ -295,10 +297,7 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
             <p :for={entry <- @uploads.image.entries} class="mt-2 text-xs text-zinc-500">
               Uploading {entry.client_name} — {entry.progress}%
             </p>
-            <p
-              :for={err <- upload_errors(@uploads.image)}
-              class="mt-2 text-xs text-red-600"
-            >
+            <p :for={err <- upload_errors(@uploads.image)} class="mt-2 text-xs text-red-600">
               {upload_error_to_string(err)}
             </p>
             <p

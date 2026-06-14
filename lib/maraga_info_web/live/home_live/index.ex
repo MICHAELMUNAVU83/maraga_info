@@ -52,43 +52,59 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     }
   ]
 
+  @videos [
+    %{
+      title: "Maraga Arrested at Nairobi Protest",
+      thumb: "/images/maxresdefault.jpg",
+      href: "https://www.youtube.com/watch?v=o0KmjcGd6jw"
+    },
+    %{
+      title: "Ukombozi Campaign Launch — Turkana",
+      thumb: "/images/gallery/1.jpg",
+      href: "https://www.youtube.com/@dkmaraga"
+    },
+    %{
+      title: "On the Campaign Trail",
+      thumb: "/images/gallery/2.jpg",
+      href: "https://www.youtube.com/@dkmaraga"
+    },
+    %{
+      title: "Justice for Every County",
+      thumb: "/images/gallery/3.jpg",
+      href: "https://www.youtube.com/@dkmaraga"
+    },
+    %{
+      title: "Meet David Maraga",
+      thumb: "/images/gallery/4.jpg",
+      href: "https://www.youtube.com/@dkmaraga"
+    },
+    %{
+      title: "Rallying for 2027",
+      thumb: "/images/gallery/5.jpg",
+      href: "https://www.youtube.com/@dkmaraga"
+    }
+  ]
+
   @events [
     %{day: "08", month: "Jun", title: "Nairobi National Park Protest – Maraga Arrested"},
     %{day: "25", month: "May", title: "Ukombozi Campaign Launch – Lodwar, Turkana"},
     %{day: "05", month: "Feb", title: "Ukatiba Caravan – Lamu County Voter Drive"}
   ]
 
-  @gallery_images [
-    %{
-      image: "/images/gallery/1.jpg",
-      class: "col-span-2 row-span-2",
-      height_class: "h-64 sm:h-full"
-    },
-    %{
-      image: "/images/gallery/2.jpg",
-      class: "",
-      height_class: "h-44 sm:h-full"
-    },
-    %{
-      image: "/images/gallery/3.jpg",
-      class: "",
-      height_class: "h-44 sm:h-full"
-    },
-    %{
-      image: "/images/gallery/4.jpg",
-      class: "",
-      height_class: "h-44 sm:h-full"
-    },
-    %{
-      image: "/images/gallery/5.jpg",
-      class: "object-center",
-      height_class: "h-44  sm:h-full"
-    }
+  # Layout classes for the 5-tile gallery collage, applied in order to the
+  # media items fetched from the database.
+  @gallery_layout [
+    %{class: "col-span-2 row-span-2", height_class: "h-64 sm:h-full"},
+    %{class: "", height_class: "h-44 sm:h-full"},
+    %{class: "", height_class: "h-44 sm:h-full"},
+    %{class: "", height_class: "h-44 sm:h-full"},
+    %{class: "object-center", height_class: "h-44  sm:h-full"}
   ]
 
   @impl true
   def mount(_params, _session, socket) do
     news_items = Content.list_published_posts(limit: 4)
+    gallery_images = build_gallery_images()
 
     {:ok,
      assign(socket,
@@ -100,9 +116,19 @@ defmodule MaragaInfoWeb.HomeLive.Index do
        news_items: news_items,
        stats: @stats,
        shop_items: @shop_items,
+       videos: @videos,
        events: @events,
-       gallery_images: @gallery_images
+       gallery_images: gallery_images
      )}
+  end
+
+  # Pairs the published media items with the collage layout classes so the
+  # gallery shows exactly five images sourced from the database.
+  defp build_gallery_images do
+    Content.list_published_media_items()
+    |> Enum.take(length(@gallery_layout))
+    |> Enum.zip(@gallery_layout)
+    |> Enum.map(fn {item, layout} -> Map.put(layout, :image, item.image_url) end)
   end
 
   @impl true
@@ -116,7 +142,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <.news_section news_items={@news_items} />
       <.newsletter_section stats={@stats} />
       <%!-- <.shop_section shop_items={@shop_items} /> --%>
-      <.agenda_section events={@events} />
+      <.agenda_section events={@events} videos={@videos} />
       <.gallery_section gallery_images={@gallery_images} />
       <.site_footer id="footer" />
     </div>
@@ -175,27 +201,39 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
         <div class="flex flex-col items-center gap-5 sm:items-end">
           <div class="flex flex-wrap items-center justify-center gap-3">
+            <.donation_chip amount="KES 50" />
+            <.donation_chip amount="KES 100" />
+            <.donation_chip amount="KES 200" />
             <.donation_chip amount="KES 500" />
             <.donation_chip amount="KES 1000" />
-            <.donation_chip amount="KES 2000" />
-            <.donation_chip amount="KES 5000" />
 
             <input
               type="text"
-              placeholder="More"
+              placeholder="Other"
               class="w-24 rounded-[5px] border border-[#e6e6e6] bg-white px-4 py-3 text-ink outline-none focus:border-blueink"
             />
           </div>
 
-          <a
-            type="button"
-            href="https://donations.davidmaraga.com/"
-            rel="noopener"
-            target="_blank"
-            class="rounded-[5px] border-2 border-blueink bg-blueink px-[30px] py-4 font-semibold text-white transition hover:bg-transparent hover:text-blueink"
-          >
-            Donate Now
-          </a>
+          <div class="flex flex-wrap items-center justify-center gap-3 sm:justify-end">
+            <a
+              type="button"
+              href="https://donations.davidmaraga.com/"
+              rel="noopener"
+              target="_blank"
+              class="rounded-[5px] border-2 border-blueink bg-blueink px-[44px] py-5 text-lg font-semibold text-white transition hover:bg-transparent hover:text-blueink"
+            >
+              Donate Now
+            </a>
+            <a
+              type="button"
+              href="https://www.davidmaraga.com/volunteer"
+              rel="noopener"
+              target="_blank"
+              class="rounded-[5px] border-2 border-crimson bg-crimson px-[44px] py-5 text-lg font-semibold text-white transition hover:bg-transparent hover:text-crimson"
+            >
+              Volunteer Now
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -409,39 +447,26 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   end
 
   attr :events, :list, required: true
+  attr :videos, :list, required: true
 
   defp agenda_section(assigns) do
     ~H"""
     <section id="agenda" class="bg-white py-20">
       <div class="mx-auto max-w-container px-4">
-        <a
-          id="agenda-video"
-          phx-hook="RevealOnScroll"
-          href="https://www.youtube.com/watch?v=o0KmjcGd6jw"
-          target="_blank"
-          rel="noopener"
-          class="reveal-on-scroll group relative block h-[360px] overflow-hidden rounded-[10px] shadow-[0_10px_30px_#0006] sm:h-[480px] lg:h-[600px]"
-          style="background-image: url('/images/maxresdefault.jpg'); background-size: cover; background-position: center;"
-        >
-          <div class="absolute inset-0 bg-black/50 transition group-hover:bg-black/40"></div>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-lg transition group-hover:scale-110">
-              <svg
-                class="ml-1 h-9 w-9 text-crimson"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <polygon points="6 4 20 12 6 20 6 4" />
-              </svg>
-            </span>
-          </div>
-        </a>
+        <.section_heading
+          title="Watch the Campaign"
+          accent="Campaign"
+          description="Catch the latest moments from the trail — tap any clip to watch on YouTube and social media."
+        />
+      </div>
 
-        <div class="mt-16">
+      <.video_carousel videos={@videos} />
+
+      <div class="mx-auto max-w-container px-4">
+        <div class="mt-16" id="#events">
           <.section_heading
-            title="Ukombozi"
-            accent="Rallies"
+            title="Upcoming"
+            accent="Events"
             description="Follow the latest news and updates from the campaign trail ."
           />
 
@@ -580,6 +605,49 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     """
   end
 
+  attr :videos, :list, required: true
+
+  defp video_carousel(assigns) do
+    ~H"""
+    <div class="video-marquee-wrap relative overflow-hidden">
+      <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-white to-transparent sm:w-24">
+      </div>
+      <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-white to-transparent sm:w-24">
+      </div>
+
+      <div class="video-marquee flex w-max gap-6 px-3">
+        <.video_card :for={video <- @videos ++ @videos} video={video} />
+      </div>
+    </div>
+    """
+  end
+
+  attr :video, :map, required: true
+
+  defp video_card(assigns) do
+    ~H"""
+    <a
+      href={@video.href}
+      target="_blank"
+      rel="noopener"
+      class="group relative block h-[220px] w-[320px] shrink-0 overflow-hidden rounded-[10px] shadow-[0_10px_30px_#0006] sm:h-[260px] sm:w-[420px]"
+      style={"background-image: url('#{@video.thumb}'); background-size: cover; background-position: center;"}
+    >
+      <div class="absolute inset-0 bg-black/50 transition group-hover:bg-black/35"></div>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <span class="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg transition group-hover:scale-110">
+          <svg class="ml-1 h-7 w-7 text-crimson" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <polygon points="6 4 20 12 6 20 6 4" />
+          </svg>
+        </span>
+      </div>
+      <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+        <p class="font-head text-sm uppercase tracking-[0.1em] text-white">{@video.title}</p>
+      </div>
+    </a>
+    """
+  end
+
   attr :stat, :map, required: true
 
   defp stat_card(assigns) do
@@ -592,8 +660,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         {Map.get(@stat, :badge)}
       </span>
 
-      <div class="font-head text-2xl tracking-[0.3em] text-[#d0b216]">★★★</div>
-      <div class="mt-5 font-head text-5xl font-bold leading-none text-white sm:text-6xl">
+      <div class="font-head text-5xl font-bold leading-none text-white sm:text-6xl">
         {@stat.value}
       </div>
       <div class="mt-4 font-head text-2xl font-semibold uppercase tracking-wide text-[#d0b216]">
@@ -637,16 +704,6 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         {@amount}
       </span>
     </label>
-    """
-  end
-
-  attr :class, :string, default: nil
-
-  defp star(assigns) do
-    ~H"""
-    <svg class={@class} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 18.6 5 21l1.4-6.8L1.3 9.6l6.9-.7z" />
-    </svg>
     """
   end
 
