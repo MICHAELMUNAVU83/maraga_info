@@ -24,7 +24,7 @@ defmodule MaragaInfoWeb.SiteComponents do
             <.social_link
               :for={link <- @social_links}
               link={link}
-              class="text-white transition hover:text-crimson"
+              class="text-white transition [filter:drop-shadow(0_0_5px_rgba(255,255,255,0.7))] hover:text-crimson hover:[filter:drop-shadow(0_0_9px_rgba(225,29,72,0.9))]"
             />
           </div>
           <a
@@ -348,7 +348,7 @@ defmodule MaragaInfoWeb.SiteComponents do
               <.social_link
                 :for={link <- @social_links}
                 link={link}
-                class="social-dance flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/80 transition duration-300 ease-out hover:-translate-y-1 hover:scale-110 hover:border-crimson hover:bg-crimson hover:text-white hover:shadow-lg hover:shadow-crimson/30"
+                class="social-dance flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white shadow-[0_0_12px_rgba(255,255,255,0.18)] transition duration-300 ease-out hover:-translate-y-1 hover:scale-110 hover:border-crimson hover:bg-crimson hover:text-white hover:shadow-lg hover:shadow-crimson/50"
               />
             </div>
           </div>
