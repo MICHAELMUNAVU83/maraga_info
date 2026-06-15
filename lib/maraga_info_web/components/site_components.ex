@@ -57,20 +57,11 @@ defmodule MaragaInfoWeb.SiteComponents do
         </nav>
 
         <a href={section_href(@base_path, "top")} class="flex shrink-0 items-center gap-2 lg:hidden">
-          <svg class="h-8 w-8" viewBox="0 0 32 32" aria-hidden="true">
-            <rect width="32" height="32" rx="6" fill="#fff" />
-            <path
-              d="M11 24V8h6.2c3.1 0 5 1.9 5 4.9s-1.9 5-5 5H15V24h-4zm4-9.4h1.8c1 0 1.6-.6 1.6-1.6s-.6-1.6-1.6-1.6H15v3.2z"
-              fill="#026631"
-            />
-          </svg>
-          <span class="font-head text-lg font-bold tracking-wide text-white">
-            <img
-              src="/images/logo.png"
-              alt="Politician 128 logo"
-              class="hidden h-24 w-auto shrink-0 lg:block"
-            />
-          </span>
+          <img
+            src="/images/PHOTO-2026-06-14-22-19-17.jpg"
+            alt="David Maraga logo"
+            class="h-12 w-auto shrink-0"
+          />
         </a>
 
         <a
@@ -154,6 +145,27 @@ defmodule MaragaInfoWeb.SiteComponents do
               <circle cx="12" cy="7" r="4" />
             </svg>
           </.link>
+
+          <label
+            for="nav-toggle"
+            aria-label="Toggle navigation menu"
+            class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:text-crimson lg:hidden"
+          >
+            <svg
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="4" y1="6" x2="20" y2="6" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+            </svg>
+          </label>
         </div>
       </div>
 
@@ -298,7 +310,7 @@ defmodule MaragaInfoWeb.SiteComponents do
               <img
                 src="/images/PHOTO-2026-06-14-22-19-17.jpg"
                 alt="David Maraga Info logo"
-                class="h-10 bg-white w-auto rounded-sm"
+                class="h-10 w-auto"
               />
               <div>
                 <p class="font-head text-[10px] uppercase tracking-[0.32em] text-crimson">

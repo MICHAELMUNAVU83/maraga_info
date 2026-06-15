@@ -60,8 +60,6 @@ defmodule MaragaInfo.Content.Post do
     ])
     |> validate_length(:title, max: 160)
     |> validate_length(:category, max: 80)
-    |> validate_length(:excerpt, max: 320)
-    |> validate_length(:seo_description, max: 320)
     |> validate_format(:image_url, ~r/^(\/|https?:\/\/)/,
       message: "must start with /, http://, or https://"
     )
