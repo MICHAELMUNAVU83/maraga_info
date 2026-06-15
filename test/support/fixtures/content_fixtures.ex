@@ -20,9 +20,7 @@ defmodule MaragaInfo.ContentFixtures do
       |> Enum.into(%{
         body: "some body\n\nsome follow-up paragraph",
         category: "some category",
-        excerpt: "some excerpt",
         image_url: "/images/maxresdefault.jpg",
-        intro: "some intro",
         is_featured: true,
         published_at: ~U[2026-06-12 13:48:00Z],
         status: :published,
@@ -42,9 +40,7 @@ defmodule MaragaInfo.ContentFixtures do
       Enum.into(attrs, %{
         body: "some body\n\nsome follow-up paragraph",
         category: "some category",
-        excerpt: "some excerpt",
         image_url: "/images/maxresdefault.jpg",
-        intro: "some intro",
         is_featured: true,
         published_at: ~U[2026-06-12 13:48:00Z],
         status: :published,

@@ -2,6 +2,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Show do
   use MaragaInfoWeb, :live_view
 
   alias MaragaInfo.Content
+  alias MaragaInfoWeb.RichText
 
   @impl true
   def mount(_params, _session, socket) do
@@ -21,14 +22,9 @@ defmodule MaragaInfoWeb.Admin.PostLive.Show do
   defp format_datetime(nil), do: "Not scheduled"
   defp format_datetime(datetime), do: Calendar.strftime(datetime, "%d %b %Y")
 
-  defp paragraphs(nil), do: []
+  defp paragraphs(text), do: RichText.paragraphs(text)
 
-  defp paragraphs(text) when is_binary(text) do
-    text
-    |> String.split(~r/\n\s*\n/, trim: true)
-    |> Enum.map(&String.trim/1)
-    |> Enum.reject(&(&1 == ""))
-  end
+  defp format_inline(text), do: RichText.format_inline(text)
 
   defp author_email(%{author: %{email: email}}), do: email
   defp author_email(_post), do: "No author"

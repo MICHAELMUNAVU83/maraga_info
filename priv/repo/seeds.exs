@@ -69,13 +69,9 @@ posts = [
     title: "David Maraga declares 2027 presidential bid: Reset, Restore, Rebuild",
     slug: "david-maraga-declares-2027-presidential-bid",
     category: "Latest News",
-    excerpt:
-      "Former Chief Justice David Maraga has declared his candidacy for the 2027 presidency, promising to Reset, Restore and Rebuild Kenya through a government of professionals.",
     seo_description:
       "David Maraga, Kenya's former Chief Justice, has declared his 2027 presidential bid on a platform to Reset, Restore and Rebuild Kenya. Read what his candidacy means.",
     image_url: "/images/maxresdefault.jpg",
-    intro:
-      "On June 18, 2025, David Kenani Maraga ended years of relative public silence and declared that he will run for President of Kenya in the 2027 general election. The announcement instantly reframed a man Kenyans had known as a judge into a contender for the country's highest political office.",
     body:
       "Maraga framed his candidacy as a citizen-driven movement rather than a conventional political launch, telling supporters his mission is to \"Reset, Restore and Rebuild\" the country.\n\nFor a man best known for defending the constitution from the bench, the move marks a deliberate shift from interpreting the law to seeking the mandate to govern.",
     status: :published,
@@ -110,13 +106,9 @@ posts = [
     title: "Citizen-led drive raises Sh8 million for Maraga's 2027 campaign",
     slug: "citizen-led-drive-raises-sh8-million-for-maraga-2027-campaign",
     category: "Latest News",
-    excerpt:
-      "A people-funded campaign platform has raised about Sh8 million for David Maraga's 2027 presidential bid, with thousands of small contributions from Kenyans at home and abroad.",
     seo_description:
       "David Maraga's citizen-led 2027 campaign fund has raised roughly Sh8 million from over 1,800 contributors, including the Kenyan diaspora. Here is what the numbers show.",
     image_url: "/images/IMG_2028.jpg",
-    intro:
-      "David Maraga's presidential campaign has leaned on small donations rather than wealthy backers, and the early results suggest the strategy is gaining traction. In a political culture often financed in the shadows, the campaign has made a point of doing the opposite — in the open, in small amounts, from many hands.",
     body:
       "The Maraga '27 platform lets supporters contribute amounts as small as Sh50, framing the bid as a people-driven movement to fund grassroots mobilisation, town halls and digital outreach.\n\nBy April 2026, the drive had raised roughly Sh8 million from more than 1,800 individual contributors, with a notable share coming from the Kenyan diaspora.",
     status: :published,
@@ -151,13 +143,9 @@ posts = [
     title: "The 2017 election annulment that still defines David Maraga",
     slug: "the-2017-election-annulment-that-still-defines-david-maraga",
     category: "Analysis",
-    excerpt:
-      "On September 1, 2017, the Supreme Court led by David Maraga annulled Kenya's presidential election, the first time an African court had voided a sitting president's victory.",
     seo_description:
       "Analysis of the September 1, 2017 Supreme Court ruling, led by Chief Justice David Maraga, that annulled Kenya's presidential election and reshaped his public legacy.",
     image_url: "/images/IMG_2075.jpg",
-    intro:
-      "For many Kenyans and international observers, David Maraga's public legacy begins with a single judgment delivered on September 1, 2017. In the space of one ruling, a relatively low-profile Chief Justice became one of the most consequential judicial figures on the continent.",
     body:
       "The Supreme Court annulled President Uhuru Kenyatta's August 8 election win, citing irregularities in how the IEBC transmitted results, and ordered a fresh poll within 60 days.\n\nFour of the six justices supported Raila Odinga's petition, making it the first time an African court had nullified the re-election of a sitting president.",
     status: :published,
@@ -192,13 +180,9 @@ posts = [
     title: "David Maraga biography: from Nyamira to Chief Justice and beyond",
     slug: "david-maraga-biography-from-nyamira-to-chief-justice",
     category: "Explainer",
-    excerpt:
-      "A concise biography of David Kenani Maraga, covering his legal career, his tenure as Kenya's 14th Chief Justice and his move into presidential politics.",
     seo_description:
       "Biography of David Kenani Maraga: born 1951, University of Nairobi law graduate, 25 years in practice, judge, 14th Chief Justice of Kenya and 2027 presidential aspirant.",
     image_url: "/images/IMG_2052.jpg",
-    intro:
-      "David Kenani Maraga was born on January 12, 1951, and built a five-decade career in law before stepping onto the national political stage. His story runs from a modest upbringing through the courtrooms of Kenya to the highest seat in its judiciary — and now toward State House.",
     body:
       "He earned Bachelor of Laws and Master of Laws degrees from the University of Nairobi and was admitted to the bar in 1978, spending some 25 years in private legal practice.\n\nHe was appointed a judge of the High Court in 2003, later served on the Court of Appeal, and became Kenya's 14th Chief Justice in October 2016, retiring in January 2021.",
     status: :published,

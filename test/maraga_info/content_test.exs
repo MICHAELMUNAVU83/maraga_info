@@ -13,10 +13,8 @@ defmodule MaragaInfo.ContentTest do
       category: nil,
       body: nil,
       slug: nil,
-      excerpt: nil,
       seo_description: nil,
       image_url: nil,
-      intro: nil,
       status: nil,
       is_featured: nil
     }
@@ -37,10 +35,8 @@ defmodule MaragaInfo.ContentTest do
         category: "some category",
         body: "some body",
         slug: "some slug",
-        excerpt: "some excerpt",
         seo_description: "some seo_description",
         image_url: "/images/maxresdefault.jpg",
-        intro: "some intro",
         published_at: ~U[2026-06-12 13:48:00Z],
         status: :published,
         is_featured: true
@@ -51,10 +47,8 @@ defmodule MaragaInfo.ContentTest do
       assert post.category == "some category"
       assert post.body == "some body"
       assert post.slug == "some-slug"
-      assert post.excerpt == "some excerpt"
       assert post.seo_description == "some seo_description"
       assert post.image_url == "/images/maxresdefault.jpg"
-      assert post.intro == "some intro"
       assert post.published_at == ~U[2026-06-12 13:48:00Z]
       assert post.status == :published
       assert post.is_featured == true
@@ -72,10 +66,8 @@ defmodule MaragaInfo.ContentTest do
         category: "some updated category",
         body: "some updated body",
         slug: "some updated slug",
-        excerpt: "some updated excerpt",
         seo_description: "some updated seo_description",
         image_url: "/images/IMG_2052.jpg",
-        intro: "some updated intro",
         published_at: ~U[2026-06-13 13:48:00Z],
         status: :draft,
         is_featured: false
@@ -86,10 +78,8 @@ defmodule MaragaInfo.ContentTest do
       assert post.category == "some updated category"
       assert post.body == "some updated body"
       assert post.slug == "some-updated-slug"
-      assert post.excerpt == "some updated excerpt"
       assert post.seo_description == "some updated seo_description"
       assert post.image_url == "/images/IMG_2052.jpg"
-      assert post.intro == "some updated intro"
       assert post.published_at == ~U[2026-06-13 13:48:00Z]
       assert post.status == :draft
       assert post.is_featured == false

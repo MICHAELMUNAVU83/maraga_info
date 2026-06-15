@@ -54,6 +54,52 @@ const Hooks = {
     }
   },
 
+  RichTextEditor: {
+    mounted() {
+      this.textarea = this.el.querySelector("textarea")
+      if (!this.textarea) return
+
+      this.el.querySelectorAll("[data-rt-cmd]").forEach(btn => {
+        btn.addEventListener("mousedown", e => e.preventDefault())
+        btn.addEventListener("click", e => {
+          e.preventDefault()
+          this.run(btn.dataset.rtCmd)
+        })
+      })
+    },
+
+    run(cmd) {
+      const textarea = this.textarea
+      textarea.focus()
+
+      if (cmd === "undo") { document.execCommand("undo"); return }
+      if (cmd === "redo") { document.execCommand("redo"); return }
+
+      const markers = {bold: ["**", "**"], italic: ["_", "_"], underline: ["++", "++"]}
+      const [pre, post] = markers[cmd] || ["", ""]
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const selected = textarea.value.slice(start, end)
+      const placeholder = selected || "text"
+      const replacement = pre + placeholder + post
+
+      textarea.setSelectionRange(start, end)
+      // execCommand keeps the native undo/redo history intact.
+      if (!document.execCommand("insertText", false, replacement)) {
+        textarea.setRangeText(replacement, start, end, "end")
+      }
+
+      if (selected) {
+        textarea.setSelectionRange(start, start + replacement.length)
+      } else {
+        const caret = start + pre.length
+        textarea.setSelectionRange(caret, caret + placeholder.length)
+      }
+
+      textarea.dispatchEvent(new Event("input", {bubbles: true}))
+    }
+  },
+
   CopyLink: {
     mounted() {
       this.el.addEventListener("click", () => {

@@ -9,10 +9,8 @@ defmodule MaragaInfoWeb.BlogLive.ShowTest do
       title: "Newer post",
       slug: "newer-post",
       category: "News",
-      excerpt: "A newer post.",
       seo_description: "A newer post.",
       image_url: "/images/maxresdefault.jpg",
-      intro: "A newer intro.",
       body: "A newer story.",
       status: :published,
       published_at: ~U[2026-06-13 12:00:00Z]
@@ -23,10 +21,8 @@ defmodule MaragaInfoWeb.BlogLive.ShowTest do
         title: "Why the 2017 election ruling still defines Maraga",
         slug: "why-the-2017-election-ruling-still-defines-maraga",
         category: "Analysis",
-        excerpt: "The Supreme Court decision still defines his public legacy.",
         seo_description: "Analysis of the 2017 ruling.",
         image_url: "/images/maxresdefault.jpg",
-        intro: "For many Kenyans, this ruling defines Maraga's legacy.",
         body: "A defining test of judicial independence.\n\nWhy the ruling still matters.",
         status: :published,
         published_at: ~U[2026-06-12 12:00:00Z]
@@ -36,10 +32,8 @@ defmodule MaragaInfoWeb.BlogLive.ShowTest do
       title: "Older post",
       slug: "older-post",
       category: "Background",
-      excerpt: "An older post.",
       seo_description: "An older post.",
       image_url: "/images/IMG_2052.jpg",
-      intro: "An older intro.",
       body: "An older story.",
       status: :published,
       published_at: ~U[2026-06-11 12:00:00Z]

@@ -2,6 +2,7 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
   use MaragaInfoWeb, :live_view
 
   alias MaragaInfo.Content
+  alias MaragaInfo.Content.Post
   alias MaragaInfoWeb.Seo
 
   @category "Press Releases"
@@ -100,7 +101,7 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
         </.link>
         <div class="my-5 h-px w-full bg-[#e6e6e6]"></div>
         <p class="mt-0 text-base leading-7 text-grayink">
-          {@item.excerpt}
+          {Post.summary(@item)}
         </p>
       </div>
     </article>

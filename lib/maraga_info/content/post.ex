@@ -16,10 +16,8 @@ defmodule MaragaInfo.Content.Post do
     field :category, :string
     field :body, :string
     field :slug, :string
-    field :excerpt, :string
     field :seo_description, :string
     field :image_url, :string
-    field :intro, :string
     field :canva_embed_url, :string
     field :status, Ecto.Enum, values: [:draft, :published], default: :draft
     field :published_at, :utc_datetime
@@ -38,10 +36,8 @@ defmodule MaragaInfo.Content.Post do
       :title,
       :slug,
       :category,
-      :excerpt,
       :seo_description,
       :image_url,
-      :intro,
       :canva_embed_url,
       :body,
       :status,
@@ -53,9 +49,7 @@ defmodule MaragaInfo.Content.Post do
     |> validate_required([
       :title,
       :category,
-      :excerpt,
       :image_url,
-      :intro,
       :status
     ])
     |> validate_length(:title, max: 160)
@@ -111,6 +105,50 @@ defmodule MaragaInfo.Content.Post do
   end
 
   def canva_embed_src(_), do: nil
+
+  @doc """
+  Returns a short plain-text preview for cards and listings, derived from the
+  post body (or the first non-empty section when there's no fallback body).
+  """
+  def summary(%__MODULE__{} = post, max \\ 180) do
+    post
+    |> summary_source()
+    |> case do
+      nil ->
+        ""
+
+      text ->
+        text
+        |> String.replace(~r/\s+/u, " ")
+        |> String.trim()
+        |> truncate(max)
+    end
+  end
+
+  defp summary_source(%__MODULE__{} = post) do
+    presence(post.body) || first_section_body(post.sections)
+  end
+
+  defp first_section_body(sections) when is_list(sections) do
+    Enum.find_value(sections, fn section -> presence(section.body) end)
+  end
+
+  defp first_section_body(_), do: nil
+
+  defp presence(text) when is_binary(text) do
+    if String.trim(text) == "", do: nil, else: text
+  end
+
+  defp presence(_), do: nil
+
+  defp truncate(text, max) when byte_size(text) <= max, do: text
+
+  defp truncate(text, max) do
+    text
+    |> String.slice(0, max)
+    |> String.replace(~r/\s+\S*$/u, "")
+    |> Kernel.<>("…")
+  end
 
   defp put_slug(changeset) do
     title = get_field(changeset, :title)

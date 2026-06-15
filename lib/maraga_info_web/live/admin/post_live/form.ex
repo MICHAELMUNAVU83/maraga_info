@@ -317,12 +317,6 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                     options={Content.post_categories()}
                   />
                 </div>
-                <div class="sm:col-span-2">
-                  <.input field={@form[:excerpt]} type="textarea" label="Excerpt" rows="2" />
-                </div>
-                <div class="sm:col-span-2">
-                  <.input field={@form[:intro]} type="textarea" label="Intro" rows="3" />
-                </div>
               </div>
             </.editor_card>
 
@@ -342,7 +336,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                 :if={Post.canva_embed_src(@form[:canva_embed_url].value)}
                 class="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white"
               >
-                <div class="relative w-full bg-white" style="padding-top: 56.25%;">
+                <div class="relative w-full bg-white" style="padding-top: 141.42%;">
                   <iframe
                     src={Post.canva_embed_src(@form[:canva_embed_url].value)}
                     class="absolute inset-0 h-full w-full bg-white"
@@ -419,13 +413,13 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                       placeholder="Section heading (optional)"
                       class="block w-full rounded-lg border-zinc-300 text-sm font-semibold text-zinc-900 focus:border-blueink focus:ring-blueink"
                     />
-                    <textarea
+                    <.rich_text_area
+                      id={"rt-section-#{index}"}
                       name={"sections[#{index}][body]"}
+                      value={section.body}
                       rows="4"
-                      phx-debounce="blur"
                       placeholder="Section text. Separate paragraphs with a blank line."
-                      class="block w-full rounded-lg border-zinc-300 text-sm text-zinc-700 focus:border-blueink focus:ring-blueink"
-                    >{section.body}</textarea>
+                    />
 
                     <div :if={section.image_urls != []} class="grid grid-cols-3 gap-3 sm:grid-cols-4">
                       <div
@@ -479,7 +473,14 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
               title="Fallback body"
               description="Optional. Used only for posts without sections. Separate paragraphs with a blank line."
             >
-              <.input field={@form[:body]} type="textarea" label="Body" rows="5" />
+              <.rich_text_area
+                id="rt-body"
+                name="post[body]"
+                value={@form[:body].value}
+                rows="5"
+                label="Body"
+                placeholder="Separate paragraphs with a blank line."
+              />
             </.editor_card>
           </div>
 
@@ -558,6 +559,70 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
         </div>
       </.form>
     </.admin_shell>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :name, :string, required: true
+  attr :value, :string, default: ""
+  attr :rows, :string, default: "4"
+  attr :placeholder, :string, default: nil
+  attr :label, :string, default: nil
+
+  defp rich_text_area(assigns) do
+    ~H"""
+    <div>
+      <label :if={@label} class="mb-1 block text-sm font-medium text-zinc-700">{@label}</label>
+      <div
+        id={@id}
+        phx-hook="RichTextEditor"
+        class="overflow-hidden rounded-lg border border-zinc-300 focus-within:border-blueink focus-within:ring-1 focus-within:ring-blueink"
+      >
+        <div class="flex flex-wrap items-center gap-1 border-b border-zinc-200 bg-zinc-50 px-2 py-1.5">
+          <.rt_button cmd="bold" label="Bold">
+            <span class="font-bold">B</span>
+          </.rt_button>
+          <.rt_button cmd="italic" label="Italic">
+            <span class="italic">I</span>
+          </.rt_button>
+          <.rt_button cmd="underline" label="Underline">
+            <span class="underline">U</span>
+          </.rt_button>
+          <span class="mx-1 h-5 w-px bg-zinc-300"></span>
+          <.rt_button cmd="undo" label="Undo">
+            <.icon name="hero-arrow-uturn-left-mini" class="h-4 w-4" />
+          </.rt_button>
+          <.rt_button cmd="redo" label="Redo">
+            <.icon name="hero-arrow-uturn-right-mini" class="h-4 w-4" />
+          </.rt_button>
+        </div>
+        <textarea
+          name={@name}
+          rows={@rows}
+          phx-debounce="blur"
+          placeholder={@placeholder}
+          class="block w-full border-0 text-sm text-zinc-700 focus:ring-0"
+        >{@value}</textarea>
+      </div>
+    </div>
+    """
+  end
+
+  attr :cmd, :string, required: true
+  attr :label, :string, required: true
+  slot :inner_block, required: true
+
+  defp rt_button(assigns) do
+    ~H"""
+    <button
+      type="button"
+      data-rt-cmd={@cmd}
+      title={@label}
+      aria-label={@label}
+      class="flex h-7 min-w-7 items-center justify-center rounded px-1.5 text-sm text-zinc-700 transition hover:bg-zinc-200"
+    >
+      {render_slot(@inner_block)}
+    </button>
     """
   end
 

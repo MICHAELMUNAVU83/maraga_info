@@ -87,12 +87,6 @@ defmodule MaragaInfoWeb.SiteComponents do
               <.link navigate="/news" class="text-[15px] text-ink transition hover:text-crimson">
                 News
               </.link>
-              <.link
-                navigate="/press-releases"
-                class="text-[15px] text-ink transition hover:text-crimson"
-              >
-                Press Releases
-              </.link>
               <a
                 href={section_href(@base_path, "news")}
                 class="text-[15px] text-ink transition hover:text-crimson"
@@ -109,12 +103,12 @@ defmodule MaragaInfoWeb.SiteComponents do
                 Media
               </.link>
             </.nav_dropdown>
-            <a
-              href="#"
+            <.link
+              navigate="/press-releases"
               class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
             >
               Press Releases
-            </a>
+            </.link>
             <a
               href="https://davidmaraga.com/shop"
               target="_blank"
@@ -221,12 +215,6 @@ defmodule MaragaInfoWeb.SiteComponents do
         >
           News
         </.link>
-        <.link
-          navigate="/press-releases"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-        >
-          Press Releases
-        </.link>
         <a
           href={section_href(@base_path, "news")}
           class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
@@ -240,12 +228,12 @@ defmodule MaragaInfoWeb.SiteComponents do
           Media
         </.link>
 
-        <a
-          href="#"
+        <.link
+          navigate="/press-releases"
           class="py-1 pt-3 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
         >
           Press Releases
-        </a>
+        </.link>
         <a
           href="#"
           class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
@@ -302,6 +290,25 @@ defmodule MaragaInfoWeb.SiteComponents do
       assign(assigns, :social_links, @social_links)
 
     ~H"""
+    <section class="relative overflow-hidden bg-gradient-to-r from-crimson via-crimson to-rose-600">
+      <div class="mx-auto flex max-w-container flex-col items-center gap-6 px-4 py-12 text-center lg:px-6 lg:py-14">
+        <div>
+          <p class="font-serifi text-xl italic text-white/90 sm:text-2xl">Let's Connect</p>
+          <h2 class="mt-2 font-head text-3xl font-bold uppercase tracking-[0.06em] text-white sm:text-4xl md:text-5xl">
+            Join the Conversation
+          </h2>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-5">
+          <.social_link
+            :for={link <- @social_links}
+            link={link}
+            class="social-dance flex h-14 w-14 items-center justify-center rounded-full bg-white text-crimson shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition duration-300 ease-out hover:-translate-y-1.5 hover:scale-110 hover:bg-blueink hover:text-white sm:h-16 sm:w-16 [&_svg]:h-7 [&_svg]:w-7"
+          />
+        </div>
+      </div>
+    </section>
+
     <footer id={@id} class="border-t border-white/10 bg-blueink text-white">
       <div class="mx-auto max-w-container px-4 py-8 lg:px-6 lg:py-10">
         <div class="grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-start">
@@ -355,14 +362,6 @@ defmodule MaragaInfoWeb.SiteComponents do
                 Donate
               </a>
             </nav>
-
-            <div class="flex items-center gap-2.5 lg:justify-end">
-              <.social_link
-                :for={link <- @social_links}
-                link={link}
-                class="social-dance flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white shadow-[0_0_12px_rgba(255,255,255,0.18)] transition duration-300 ease-out hover:-translate-y-1 hover:scale-110 hover:border-crimson hover:bg-crimson hover:text-white hover:shadow-lg hover:shadow-crimson/50"
-              />
-            </div>
           </div>
         </div>
 

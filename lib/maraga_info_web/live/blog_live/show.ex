@@ -3,6 +3,7 @@ defmodule MaragaInfoWeb.BlogLive.Show do
 
   alias MaragaInfo.Content
   alias MaragaInfo.Content.Post
+  alias MaragaInfoWeb.RichText
   alias MaragaInfoWeb.Seo
 
   @impl true
@@ -75,13 +76,11 @@ defmodule MaragaInfoWeb.BlogLive.Show do
           </div>
 
           <div class="mx-auto mt-12 max-w-[760px] space-y-12 text-[1.12rem] leading-9 text-ink">
-            <p class="text-[1.25rem] leading-9 text-grayink">{@post.intro}</p>
-
             <div
               :if={Post.canva_embed_src(@post.canva_embed_url)}
-              class="overflow-hidden rounded-[8px] bg-white shadow-[0_12px_40px_rgba(15,30,80,0.1)]"
+              class="overflow-hidden rounded-[8px] bg-white shadow-[0_12px_40px_rgba(15,30,80,0.1)] lg:-mx-[144px]"
             >
-              <div class="relative w-full bg-white" style="padding-top: 70%;">
+              <div class="relative w-full bg-white" style="padding-top: 141.42%;">
                 <iframe
                   src={Post.canva_embed_src(@post.canva_embed_url)}
                   class="absolute inset-0 h-full w-full bg-white"
@@ -100,7 +99,7 @@ defmodule MaragaInfoWeb.BlogLive.Show do
                 {section.heading}
               </h2>
 
-              <p :for={paragraph <- paragraphs(section.body)}>{paragraph}</p>
+              <p :for={paragraph <- paragraphs(section.body)}>{format_inline(paragraph)}</p>
 
               <div :if={section.image_urls != []} class="space-y-6 sm:space-y-0">
                 <div class={[
@@ -122,7 +121,7 @@ defmodule MaragaInfoWeb.BlogLive.Show do
                 Full story
               </h2>
 
-              <p :for={paragraph <- paragraphs(@post.body)}>{paragraph}</p>
+              <p :for={paragraph <- paragraphs(@post.body)}>{format_inline(paragraph)}</p>
             </section>
 
             <.share_bar url={@canonical_url} title={@post.title} />
@@ -304,14 +303,9 @@ defmodule MaragaInfoWeb.BlogLive.Show do
     """
   end
 
-  defp paragraphs(nil), do: []
+  defp paragraphs(text), do: RichText.paragraphs(text)
 
-  defp paragraphs(text) when is_binary(text) do
-    text
-    |> String.split(~r/\n\s*\n/, trim: true)
-    |> Enum.map(&String.trim/1)
-    |> Enum.reject(&(&1 == ""))
-  end
+  defp format_inline(text), do: RichText.format_inline(text)
 
   defp present?(nil), do: false
   defp present?(value) when is_binary(value), do: String.trim(value) != ""

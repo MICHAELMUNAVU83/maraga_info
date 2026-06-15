@@ -8,9 +8,7 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
     title: "some title",
     category: "some category",
     body: "some body",
-    excerpt: "some excerpt",
     seo_description: "some seo_description",
-    intro: "some intro",
     status: "published",
     published_at: "2026-06-12T13:48:00Z",
     is_featured: true
@@ -19,9 +17,7 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
     title: "some updated title",
     category: "some updated category",
     body: "some updated body",
-    excerpt: "some updated excerpt",
     seo_description: "some updated seo_description",
-    intro: "some updated intro",
     status: "draft",
     published_at: "2026-06-13T13:48:00Z",
     is_featured: false
@@ -30,9 +26,7 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
     title: nil,
     category: nil,
     body: nil,
-    excerpt: nil,
     seo_description: nil,
-    intro: nil,
     status: "draft",
     is_featured: false
   }

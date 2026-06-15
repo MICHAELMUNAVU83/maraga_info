@@ -9,7 +9,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Index do
 
     {:ok,
      socket
-     |> assign(:page_title, "Blogs")
+     |> assign(:page_title, "Posts")
      |> assign(
        :page_subtitle,
        "Create, review, and publish the stories that appear on the public website."

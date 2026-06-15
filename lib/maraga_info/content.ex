@@ -195,7 +195,6 @@ defmodule MaragaInfo.Content do
 
   defp order_posts(query) do
     order_by(query, [post],
-      desc: post.is_featured,
       desc: post.published_at,
       desc: post.inserted_at
     )

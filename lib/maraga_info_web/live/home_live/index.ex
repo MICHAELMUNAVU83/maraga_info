@@ -2,6 +2,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   use MaragaInfoWeb, :live_view
 
   alias MaragaInfo.Content
+  alias MaragaInfo.Content.Post
   alias MaragaInfoWeb.Seo
 
   @social_links [
@@ -164,9 +165,11 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
       <div class="relative z-10 mx-auto flex min-h-[100vh] w-full max-w-container items-center px-4 lg:px-6">
         <div class="w-full text-center">
-          <h3 class="font-serifi text-2xl italic text-white">Presidential Candidate 2027</h3>
-          <h1 class="mt-3 font-head text-[44px] font-semibold uppercase leading-[1.05] tracking-[3px] text-white md:text-[72px] lg:text-[90px]">
-            Jiandikishe <br /> Kupiga Kura
+          <h3 class="font-serifi text-3xl italic text-white sm:text-4xl md:text-5xl lg:text-6xl">
+            Presidential Candidate 2027
+          </h3>
+          <h1 class="mt-4 font-head text-[40px] font-semibold uppercase leading-[1.05] tracking-[3px] text-white md:text-[60px] lg:text-[76px]">
+            Reset. Restore. <br /> Rebuild Kenya.
           </h1>
 
           <div class="mt-12 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-center">
@@ -177,12 +180,12 @@ defmodule MaragaInfoWeb.HomeLive.Index do
               Read More
             </a>
             <a
-              href="https://donations.davidmaraga.com/"
+              href="https://www.iebc.or.ke/"
               rel="noopener"
               target="_blank"
               class="inline-flex min-w-[190px] items-center justify-center rounded-full border-2 border-white px-8 py-3.5 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-white transition duration-300 hover:bg-white hover:text-blueink"
             >
-              Donate
+              Jiandikishe Kupiga Kura
             </a>
           </div>
         </div>
@@ -419,7 +422,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           </div>
 
           <p class="mt-14 text-center font-head text-sm uppercase tracking-[0.45em] text-white/60 sm:text-base">
-            Tawala Maraga · Tawala Kenya · 2027
+            Tawala Maraga · Ukatiba Ndio Tiba · 2027
           </p>
         </div>
       </div>
@@ -549,7 +552,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         </.link>
         <div class="my-5 h-px w-full bg-[#e6e6e6]"></div>
         <p class="mt-0 text-base leading-7 text-grayink">
-          {@item.excerpt}
+          {Post.summary(@item)}
         </p>
       </div>
     </article>
