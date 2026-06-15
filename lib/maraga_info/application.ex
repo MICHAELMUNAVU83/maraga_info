@@ -14,8 +14,8 @@ defmodule MaragaInfo.Application do
       {Phoenix.PubSub, name: MaragaInfo.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: MaragaInfo.Finch},
-      # Start a worker by calling: MaragaInfo.Worker.start_link(arg)
-      # {MaragaInfo.Worker, arg},
+      # Oban runs the bulk email delivery jobs
+      {Oban, Application.fetch_env!(:maraga_info, Oban)},
       # Start to serve requests, typically the last entry
       MaragaInfoWeb.Endpoint
     ]

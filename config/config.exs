@@ -11,6 +11,19 @@ config :maraga_info,
   ecto_repos: [MaragaInfo.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+# The address campaign emails are sent from. Override in runtime.exs for prod.
+config :maraga_info, :mail_from, {"David Maraga Campaign", "no-reply@davidmaraga.info"}
+
+# Oban powers reliable, retryable bulk email delivery.
+config :maraga_info, Oban,
+  repo: MaragaInfo.Repo,
+  engine: Oban.Engines.Basic,
+  queues: [mailers: 10, default: 10],
+  plugins: [
+    {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7},
+    {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(30)}
+  ]
+
 # Configures the endpoint
 config :maraga_info, MaragaInfoWeb.Endpoint,
   url: [host: "localhost"],

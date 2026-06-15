@@ -200,6 +200,7 @@ defmodule MaragaInfoWeb.AdminComponents do
       %{label: "Dashboard", href: ~p"/admin", icon: "hero-home"},
       %{label: "Blogs", href: ~p"/admin/blogs", icon: "hero-document-text"},
       %{label: "Volunteers", href: ~p"/admin/volunteers", icon: "hero-users"},
+      %{label: "Emails", href: ~p"/admin/emails", icon: "hero-envelope"},
       %{label: "Media", href: ~p"/admin/media", icon: "hero-photo"},
       %{label: "Pages", href: ~p"/admin/pages", icon: "hero-rectangle-stack"},
       %{label: "Settings", href: ~p"/admin/settings", icon: "hero-cog-6-tooth"}

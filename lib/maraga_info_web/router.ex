@@ -88,6 +88,7 @@ defmodule MaragaInfoWeb.Router do
       on_mount: [{MaragaInfoWeb.UserAuth, :ensure_admin}] do
       live "/", DashboardLive, :index
       live "/volunteers", VolunteerLive.Index, :index
+      live "/emails", EmailLive.Index, :index
       live "/media", MediaLive.Index, :index
       live "/pages", SectionLive, :pages
       live "/settings", SectionLive, :settings

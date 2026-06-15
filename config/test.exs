@@ -26,6 +26,9 @@ config :maraga_info, MaragaInfoWeb.Endpoint,
 # In test we don't send emails
 config :maraga_info, MaragaInfo.Mailer, adapter: Swoosh.Adapters.Test
 
+# Run Oban jobs inline and synchronously so tests stay deterministic.
+config :maraga_info, Oban, testing: :inline
+
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 
