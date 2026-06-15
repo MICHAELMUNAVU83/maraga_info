@@ -296,7 +296,7 @@ defmodule MaragaInfoWeb.SiteComponents do
           <div>
             <div class="flex items-center gap-3">
               <img
-                src="/images/logo.png"
+                src="/images/PHOTO-2026-06-14-22-19-17.jpg"
                 alt="David Maraga Info logo"
                 class="h-10 bg-white w-auto rounded-sm"
               />
