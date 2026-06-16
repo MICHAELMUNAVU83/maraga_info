@@ -87,10 +87,9 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   ]
 
   @events [
-     %{day: "16", month: "Jun", title: "State of Nation: The Way Forward – 16 June 2026"},
+    %{day: "16", month: "Jun", title: "State of Nation: The Way Forward – 16 June 2026"},
     %{day: "08", month: "Jun", title: "Nairobi National Park Protest – Maraga Arrested"},
-    %{day: "25", month: "May", title: "Ukombozi Campaign Launch – Lodwar, Turkana"},
-
+    %{day: "25", month: "May", title: "Ukombozi Campaign Launch – Lodwar, Turkana"}
   ]
 
   # Layout classes for the 5-tile gallery collage, applied in order to the
@@ -105,7 +104,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    news_items = Content.list_published_posts(limit: 4)
+    news_items = Content.list_published_posts(scope: :posts, limit: 4)
     gallery_images = build_gallery_images()
 
     {:ok,
@@ -172,21 +171,25 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             Reset. Restore. <br /> Rebuild Kenya.
           </h1>
 
-          <div class="mt-12 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-center">
-            <a
-              href="#mission"
-              class="inline-flex min-w-[190px] items-center justify-center rounded-full bg-white px-8 py-3.5 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-blueink transition duration-300 hover:bg-crimson"
-            >
-              Read More
-            </a>
-            <a
-              href="https://www.iebc.or.ke/"
-              rel="noopener"
-              target="_blank"
-              class="inline-flex min-w-[190px] items-center justify-center rounded-full border-2 border-white px-8 py-3.5 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-white transition duration-300 hover:bg-white hover:text-blueink"
-            >
-              Jiandikishe Kupiga Kura
-            </a>
+          <div class="mt-12 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:gap-0">
+            <div class="flex sm:w-1/2 sm:justify-end sm:pr-3">
+              <a
+                href="#mission"
+                class="inline-flex w-full min-w-[190px] items-center justify-center rounded-full bg-white px-8 py-3.5 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-blueink transition duration-300 hover:bg-crimson sm:w-auto"
+              >
+                Read More
+              </a>
+            </div>
+            <div class="flex sm:w-1/2 sm:justify-start sm:pl-3">
+              <a
+                href="https://www.iebc.or.ke/"
+                rel="noopener"
+                target="_blank"
+                class="inline-flex w-full min-w-[190px] items-center justify-center rounded-full border-2 border-white px-8 py-3.5 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-white transition duration-300 hover:bg-white hover:text-blueink sm:w-auto"
+              >
+                Jiandikishe Kupiga Kura
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -421,8 +424,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             <.stat_card :for={stat <- @stats} stat={stat} />
           </div>
 
-          <p class="mt-14 text-center font-head text-sm uppercase tracking-[0.45em] text-white/60 sm:text-base">
-            Tawala Maraga · Ukatiba Ndio Tiba · 2027
+          <p class="mt-14 text-center font-head text-base uppercase tracking-[0.35em] text-white/72 sm:text-lg">
+            Ukatiba Ndio Tiba
           </p>
         </div>
       </div>

@@ -29,5 +29,9 @@ defmodule MaragaInfoWeb.Uploads do
   defp ext_from_type("image/png"), do: ".png"
   defp ext_from_type("image/webp"), do: ".webp"
   defp ext_from_type("image/gif"), do: ".gif"
+  defp ext_from_type("video/mp4"), do: ".mp4"
+  defp ext_from_type("video/quicktime"), do: ".mov"
+  defp ext_from_type("video/webm"), do: ".webm"
+  defp ext_from_type("video/x-m4v"), do: ".m4v"
   defp ext_from_type(_), do: ".jpg"
 end

@@ -84,12 +84,15 @@ defmodule MaragaInfoWeb.NewslettersLive.Index do
 
       <div class="flex flex-1 flex-col p-7">
         <div class="flex items-center gap-2 text-xs">
+          <span
+            :if={present?(@item.newsletter_volume)}
+            class="font-bold uppercase tracking-[1px] text-blueink"
+          >
+            {@item.newsletter_volume}
+          </span>
+          <span :if={present?(@item.newsletter_volume)} class="text-grayink">|</span>
           <span class="font-bold uppercase tracking-[2px] text-crimson">
             {format_post_date(@item.published_at)}
-          </span>
-          <span class="text-grayink">|</span>
-          <span class="font-bold uppercase tracking-[1px] text-grayink">
-            {@item.category}
           </span>
         </div>
         <.link navigate={~p"/blog/#{@item.slug}"}>
@@ -110,4 +113,7 @@ defmodule MaragaInfoWeb.NewslettersLive.Index do
 
   defp format_post_date(%DateTime{} = published_at),
     do: Calendar.strftime(published_at, "%b %-d, %Y")
+
+  defp present?(nil), do: false
+  defp present?(value) when is_binary(value), do: String.trim(value) != ""
 end

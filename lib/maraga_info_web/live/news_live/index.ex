@@ -15,7 +15,7 @@ defmodule MaragaInfoWeb.NewsLive.Index do
        "The latest news, campaign updates and policy positions from David Maraga's 2027 campaign."
      )
      |> assign(:canonical_url, Seo.site_url() <> "/news")
-     |> assign(:categories, Content.list_published_post_categories())
+     |> assign(:categories, Content.list_published_post_categories(scope: :posts))
      |> assign(:active_category, "all")
      |> load_posts("all")}
   end
@@ -29,7 +29,7 @@ defmodule MaragaInfoWeb.NewsLive.Index do
   end
 
   defp load_posts(socket, category) do
-    assign(socket, :posts, Content.list_published_posts(category: category))
+    assign(socket, :posts, Content.list_published_posts(scope: :posts, category: category))
   end
 
   @impl true

@@ -128,7 +128,8 @@ defmodule MaragaInfoWeb.CampaignPillarsLive.Index do
 
       <ul class="mt-4 space-y-2">
         <li :for={item <- @pillar.items} class="flex gap-3 text-base leading-7 text-grayink">
-          <span aria-hidden="true" class="mt-[10px] h-1.5 w-1.5 shrink-0 rounded-full bg-crimson"></span>
+          <span aria-hidden="true" class="mt-[10px] h-1.5 w-1.5 shrink-0 rounded-full bg-crimson">
+          </span>
           <span>{item}</span>
         </li>
       </ul>

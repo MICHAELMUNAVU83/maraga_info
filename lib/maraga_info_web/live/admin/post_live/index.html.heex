@@ -1,15 +1,15 @@
 <.admin_shell
-  page_title="Blogs"
+  page_title={@page_title}
   page_subtitle={@page_subtitle}
   current_user={@current_user}
   current_path={@current_path}
 >
   <:actions>
     <.link
-      navigate={~p"/admin/blogs/new"}
+      navigate={new_path(@scope)}
       class="inline-flex items-center gap-2 rounded-lg bg-blueink px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blueink/90"
     >
-      <.icon name="hero-plus-mini" class="h-4 w-4" /> New post
+      <.icon name="hero-plus-mini" class="h-4 w-4" /> {@scope.new_label}
     </.link>
   </:actions>
 
@@ -26,12 +26,38 @@
       <.admin_stat title="Featured" value={Integer.to_string(@stats.featured)} hint="On homepage" />
     </section>
 
-    <.admin_panel title="All posts" subtitle="Click a row to view, or edit and remove inline.">
+    <.admin_panel title={@scope.panel_title} subtitle={@scope.panel_subtitle}>
+      <:actions>
+        <form phx-submit="search" class="flex flex-wrap items-center gap-2">
+          <input
+            type="search"
+            name="search[q]"
+            value={@search_query}
+            placeholder="Search title or slug"
+            class="w-56 rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700 focus:border-blueink focus:outline-none focus:ring-1 focus:ring-blueink"
+          />
+          <button
+            type="submit"
+            class="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:border-blueink hover:text-blueink"
+          >
+            Search
+          </button>
+          <button
+            :if={@search_query != ""}
+            type="button"
+            phx-click="clear_search"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 transition hover:text-zinc-900"
+          >
+            Clear
+          </button>
+        </form>
+      </:actions>
+
       <.table
         :if={@stats.total > 0}
         id="posts"
         rows={@streams.posts}
-        row_click={fn {_id, post} -> JS.navigate(~p"/admin/blogs/#{post}") end}
+        row_click={fn {_id, post} -> JS.navigate(show_path(@scope, post)) end}
       >
         <:col :let={{_id, post}} label="Title">
           <span class="font-medium text-zinc-900">{post.title}</span>
@@ -42,13 +68,18 @@
             label={to_string(post.status)}
           />
         </:col>
-        <:col :let={{_id, post}} label="Category">{post.category}</:col>
+        <:col :let={{_id, post}} :if={@scope.scope == :posts} label="Category">
+          {post.category}
+        </:col>
+        <:col :let={{_id, post}} :if={@scope.scope == :newsletters} label="Volume">
+          {volume_label(post)}
+        </:col>
         <:col :let={{_id, post}} label="Published">{format_datetime(post.published_at)}</:col>
         <:col :let={{_id, post}} label="Featured">
           {if post.is_featured, do: "Yes", else: "—"}
         </:col>
         <:action :let={{_id, post}}>
-          <.link navigate={~p"/admin/blogs/#{post}/edit"} class="text-blueink hover:underline">
+          <.link navigate={edit_path(@scope, post)} class="text-blueink hover:underline">
             Edit
           </.link>
         </:action>
@@ -65,10 +96,10 @@
 
       <.admin_empty_state
         :if={@stats.total == 0}
-        title="No posts yet"
-        description="Create the first story to start building out the public news section."
-        link={~p"/admin/blogs/new"}
-        link_label="New post"
+        title={@scope.empty_title}
+        description={@scope.empty_description}
+        link={new_path(@scope)}
+        link_label={@scope.new_label}
       />
     </.admin_panel>
   </div>

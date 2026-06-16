@@ -10,12 +10,14 @@ defmodule MaragaInfo.Content do
   alias MaragaInfo.Content.MediaItem
   alias MaragaInfo.Content.Post
 
-  @post_categories ["News", "Press Releases", "Statements", "Speeches", "Newsletter"]
-
   @doc """
   Returns the canonical list of post categories used in the admin form.
   """
-  def post_categories, do: @post_categories
+  def post_categories(scope \\ :all)
+
+  def post_categories(:posts), do: Post.general_categories()
+  def post_categories(:all), do: Post.all_categories()
+  def post_categories(_scope), do: Post.all_categories()
 
   @doc """
   Returns published newsletter posts, newest first.
@@ -38,7 +40,9 @@ defmodule MaragaInfo.Content do
   def list_posts(opts \\ []) do
     Post
     |> maybe_filter_status(Keyword.get(opts, :status))
+    |> maybe_filter_post_scope(Keyword.get(opts, :scope))
     |> maybe_filter_post_category(Keyword.get(opts, :category))
+    |> maybe_filter_post_search(Keyword.get(opts, :search))
     |> order_posts()
     |> maybe_limit(Keyword.get(opts, :limit))
     |> Repo.all()
@@ -54,9 +58,10 @@ defmodule MaragaInfo.Content do
   @doc """
   Returns the distinct categories used by published posts, sorted.
   """
-  def list_published_post_categories do
+  def list_published_post_categories(opts \\ []) do
     Post
     |> where([post], post.status == :published)
+    |> maybe_filter_post_scope(Keyword.get(opts, :scope))
     |> select([post], post.category)
     |> distinct(true)
     |> Repo.all()
@@ -193,6 +198,44 @@ defmodule MaragaInfo.Content do
     where(query, [post], post.category == ^category)
   end
 
+  defp maybe_filter_post_scope(query, nil), do: query
+  defp maybe_filter_post_scope(query, :all), do: query
+
+  defp maybe_filter_post_scope(query, :posts) do
+    where(query, [post], post.category not in ^Post.special_categories())
+  end
+
+  defp maybe_filter_post_scope(query, :newsletters) do
+    where(query, [post], post.category == ^Post.newsletter_category())
+  end
+
+  defp maybe_filter_post_scope(query, :press_releases) do
+    where(query, [post], post.category == ^Post.press_release_category())
+  end
+
+  defp maybe_filter_post_scope(query, :media_invitations) do
+    where(query, [post], post.category == ^Post.media_invitation_category())
+  end
+
+  defp maybe_filter_post_search(query, nil), do: query
+
+  defp maybe_filter_post_search(query, search) when is_binary(search) do
+    trimmed = String.trim(search)
+
+    if trimmed == "" do
+      query
+    else
+      pattern = "%#{trimmed}%"
+
+      where(
+        query,
+        [post],
+        ilike(post.title, ^pattern) or ilike(post.slug, ^pattern) or
+          ilike(post.category, ^pattern)
+      )
+    end
+  end
+
   defp order_posts(query) do
     order_by(query, [post],
       desc: post.published_at,
@@ -217,6 +260,7 @@ defmodule MaragaInfo.Content do
   def list_media_items(opts \\ []) do
     MediaItem
     |> maybe_filter_published(Keyword.get(opts, :status))
+    |> maybe_filter_media_type(Keyword.get(opts, :media_type))
     |> maybe_filter_category(Keyword.get(opts, :category))
     |> order_by([item], asc: item.position, desc: item.inserted_at)
     |> Repo.all()
@@ -233,7 +277,10 @@ defmodule MaragaInfo.Content do
   """
   def list_landing_media_items do
     MediaItem
-    |> where([item], item.is_published == true and item.display_on_landing == true)
+    |> where(
+      [item],
+      item.is_published == true and item.display_on_landing == true and item.media_type == "photo"
+    )
     |> order_by([item], asc: item.position, desc: item.inserted_at)
     |> Repo.all()
   end
@@ -241,9 +288,10 @@ defmodule MaragaInfo.Content do
   @doc """
   Returns the distinct categories used by published media items, sorted.
   """
-  def list_published_media_categories do
+  def list_published_media_categories(opts \\ []) do
     MediaItem
     |> where([item], item.is_published == true)
+    |> maybe_filter_media_type(Keyword.get(opts, :media_type))
     |> select([item], item.category)
     |> distinct(true)
     |> Repo.all()
@@ -284,5 +332,13 @@ defmodule MaragaInfo.Content do
 
   defp maybe_filter_category(query, category) do
     where(query, [item], item.category == ^category)
+  end
+
+  defp maybe_filter_media_type(query, nil), do: query
+  defp maybe_filter_media_type(query, :all), do: query
+  defp maybe_filter_media_type(query, "all"), do: query
+
+  defp maybe_filter_media_type(query, media_type) do
+    where(query, [item], item.media_type == ^to_string(media_type))
   end
 end

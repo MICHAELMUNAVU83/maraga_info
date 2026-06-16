@@ -5,19 +5,23 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
   alias MaragaInfo.Content.Post
   alias MaragaInfoWeb.Seo
 
-  @category "Press Releases"
-
   @impl true
   def mount(_params, _session, socket) do
-    {:ok,
+    {:ok, assign(socket, :posts, [])}
+  end
+
+  @impl true
+  def handle_params(_params, url, socket) do
+    path = URI.parse(url).path
+    config = scope_from_path(path)
+
+    {:noreply,
      socket
-     |> assign(:page_title, "Press Releases | #{Seo.site_name()}")
-     |> assign(
-       :page_description,
-       "Official press releases and statements from David Maraga's 2027 campaign."
-     )
-     |> assign(:canonical_url, Seo.site_url() <> "/press-releases")
-     |> assign(:posts, Content.list_published_posts(category: @category))}
+     |> assign(:page_title, "#{config.title} | #{Seo.site_name()}")
+     |> assign(:page_description, config.description)
+     |> assign(:canonical_url, Seo.site_url() <> config.canonical_path)
+     |> assign(:config, config)
+     |> assign(:posts, Content.list_published_posts(scope: config.scope))}
   end
 
   @impl true
@@ -34,7 +38,7 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
         <div class="relative z-10 mx-auto flex min-h-[42vh] w-full max-w-container flex-col items-center justify-center px-4 py-24 text-center lg:px-6">
           <h3 class="font-serifi text-2xl italic text-white">David Maraga · Kenya 2027</h3>
           <h1 class="mt-3 font-head text-4xl font-semibold uppercase tracking-[3px] text-white md:text-6xl lg:text-7xl">
-            Press Releases
+            {@config.title}
           </h1>
         </div>
       </section>
@@ -43,7 +47,7 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
         <div class="mx-auto max-w-container px-4">
           <div class="mb-10 flex flex-wrap items-center justify-between gap-4">
             <h2 class="font-head text-2xl uppercase tracking-[0.08em] text-blueink">
-              All <span class="text-crimson">Press Releases</span>
+              All <span class="text-crimson">{@config.title}</span>
             </h2>
           </div>
 
@@ -52,10 +56,10 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
             class="rounded-[8px] bg-white px-8 py-16 text-center shadow-[0_15px_40px_rgba(15,30,80,0.08)]"
           >
             <h3 class="font-head text-2xl uppercase tracking-[0.08em] text-blueink">
-              No press releases here yet
+              No {@config.title |> String.downcase()} here yet
             </h3>
             <p class="mx-auto mt-3 max-w-xl text-base leading-7 text-grayink">
-              Posts published under the "Press Releases" category will appear here automatically.
+              Posts published under the "{@config.title}" category will appear here automatically.
             </p>
           </div>
 
@@ -112,4 +116,23 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
 
   defp format_post_date(%DateTime{} = published_at),
     do: Calendar.strftime(published_at, "%b %-d, %Y")
+
+  defp scope_from_path(path) do
+    if String.ends_with?(path, "/media-invitations") do
+      %{
+        scope: :media_invitations,
+        title: "Media Invitations",
+        canonical_path: "/media-invitations",
+        description:
+          "Official media advisories and invitation notices from David Maraga's 2027 campaign."
+      }
+    else
+      %{
+        scope: :press_releases,
+        title: "Press Releases",
+        canonical_path: "/press-releases",
+        description: "Official press releases and statements from David Maraga's 2027 campaign."
+      }
+    end
+  end
 end

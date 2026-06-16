@@ -32,35 +32,37 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
 
   @impl true
   def handle_params(params, url, socket) do
+    path = URI.parse(url).path
+    scope = scope_from_path(path)
+
     {:noreply,
      socket
-     |> assign(:current_path, "/admin/blogs")
-     |> assign(:return_to, ~p"/admin/blogs")
-     |> apply_action(socket.assigns.live_action, params, url)}
+     |> assign(:current_path, path)
+     |> assign(:return_to, scope.base_path)
+     |> assign(:scope, scope)
+     |> apply_action(socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :new, _params, _url) do
-    post = %Post{sections: []}
+  defp apply_action(socket, :new, _params) do
+    post = %Post{sections: [], category: default_category(socket.assigns.scope)}
 
     socket
-    |> assign(:page_title, "New blog post")
+    |> assign(:page_title, "New #{socket.assigns.scope.singular_title}")
     |> assign(:post, post)
     |> assign(:sections, [])
     |> assign_form(Content.change_post(post))
   end
 
-  defp apply_action(socket, :edit, %{"id" => id}, _url) do
+  defp apply_action(socket, :edit, %{"id" => id}) do
     post = Content.get_post!(id)
 
     socket
-    |> assign(:page_title, "Edit blog post")
+    |> assign(:page_title, "Edit #{socket.assigns.scope.singular_title}")
     |> assign(:post, post)
     |> assign(:cover_url, nil)
     |> assign(:sections, Enum.map(post.sections, &to_section_map/1))
     |> assign_form(Content.change_post(post))
   end
-
-  # --- Scalar form ---------------------------------------------------------
 
   @impl true
   def handle_event("validate", %{"post" => post_params} = params, socket) do
@@ -88,8 +90,6 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     save_post(socket, socket.assigns.live_action, final_params, sections)
   end
 
-  # --- Sections ------------------------------------------------------------
-
   def handle_event("add_section", _params, socket) do
     section = %{heading: "", body: "", image_urls: []}
     {:noreply, assign(socket, :sections, socket.assigns.sections ++ [section])}
@@ -97,8 +97,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
 
   def handle_event("remove_section", %{"index" => index}, socket) do
     index = String.to_integer(index)
-    sections = List.delete_at(socket.assigns.sections, index)
-    {:noreply, assign(socket, :sections, sections)}
+    {:noreply, assign(socket, :sections, List.delete_at(socket.assigns.sections, index))}
   end
 
   def handle_event("move_section", %{"index" => index, "dir" => dir}, socket) do
@@ -107,11 +106,9 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     sections = socket.assigns.sections
 
     sections =
-      if target >= 0 and target < length(sections) do
-        swap(sections, index, target)
-      else
-        sections
-      end
+      if target >= 0 and target < length(sections),
+        do: swap(sections, index, target),
+        else: sections
 
     {:noreply, assign(socket, :sections, sections)}
   end
@@ -139,12 +136,9 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     {:noreply, assign(socket, :cover_url, nil)}
   end
 
-  # --- Upload progress (auto_upload) --------------------------------------
-
   defp handle_progress(:cover, entry, socket) do
     if entry.done? do
       url = consume_uploaded_entry(socket, entry, fn meta -> Uploads.store_entry(meta, entry) end)
-
       {:noreply, assign(socket, :cover_url, url)}
     else
       {:noreply, socket}
@@ -166,15 +160,13 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     end
   end
 
-  # --- Persistence ---------------------------------------------------------
-
   defp save_post(socket, :new, params, sections) do
     case Content.create_post(socket.assigns.current_user, params) do
       {:ok, post} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Blog post created")
-         |> push_navigate(to: ~p"/admin/blogs/#{post}")}
+         |> put_flash(:info, "#{socket.assigns.scope.singular_title} created")
+         |> push_navigate(to: show_path(socket.assigns.scope, post))}
 
       {:error, changeset} ->
         {:noreply, socket |> assign(:sections, sections) |> assign_form(changeset)}
@@ -186,15 +178,13 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
       {:ok, post} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Blog post updated")
-         |> push_navigate(to: ~p"/admin/blogs/#{post}")}
+         |> put_flash(:info, "#{socket.assigns.scope.singular_title} updated")
+         |> push_navigate(to: show_path(socket.assigns.scope, post))}
 
       {:error, changeset} ->
         {:noreply, socket |> assign(:sections, sections) |> assign_form(changeset)}
     end
   end
-
-  # --- Helpers -------------------------------------------------------------
 
   defp assign_form(socket, changeset), do: assign(socket, :form, to_form(changeset))
 
@@ -206,8 +196,6 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     }
   end
 
-  # Merge the latest heading/body text from the form params into the
-  # assign-driven sections, keeping image_urls (managed via events) intact.
   defp sync_section_text(sections, nil), do: sections
 
   defp sync_section_text(sections, params) when is_map(params) do
@@ -250,9 +238,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
   defp maybe_put_cover(params, ""), do: params
   defp maybe_put_cover(params, url), do: Map.put(params, "image_url", url)
 
-  defp update_section(sections, index, fun) do
-    List.update_at(sections, index, fun)
-  end
+  defp update_section(sections, index, fun), do: List.update_at(sections, index, fun)
 
   defp swap(list, i, j) do
     a = Enum.at(list, i)
@@ -277,14 +263,62 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
   defp upload_error_to_string(:not_accepted), do: "Unsupported file type"
   defp upload_error_to_string(_), do: "Invalid file"
 
-  # --- Render --------------------------------------------------------------
+  defp scope_from_path(path) do
+    cond do
+      String.starts_with?(path, "/admin/newsletters") ->
+        %{
+          singular_title: "newsletter",
+          base_path: "/admin/newsletters",
+          fixed_category: Post.newsletter_category(),
+          categories_scope: :newsletters,
+          subtitle:
+            "Create a newsletter issue, add the volume number, and embed the published design."
+        }
+
+      String.starts_with?(path, "/admin/press-releases") ->
+        %{
+          singular_title: "press release",
+          base_path: "/admin/press-releases",
+          fixed_category: Post.press_release_category(),
+          categories_scope: :press_releases,
+          subtitle: "Draft official campaign statements and publish them to the press archive."
+        }
+
+      String.starts_with?(path, "/admin/media-invitations") ->
+        %{
+          singular_title: "media invitation",
+          base_path: "/admin/media-invitations",
+          fixed_category: Post.media_invitation_category(),
+          categories_scope: :media_invitations,
+          subtitle: "Create press advisories and invitations for campaign events and briefings."
+        }
+
+      true ->
+        %{
+          singular_title: "post",
+          base_path: "/admin/posts",
+          fixed_category: nil,
+          categories_scope: :posts,
+          subtitle:
+            "Write the story, arrange sections, and upload images. Drafts stay private until published."
+        }
+    end
+  end
+
+  defp default_category(%{fixed_category: category}) when is_binary(category), do: category
+  defp default_category(_scope), do: hd(Content.post_categories(:posts))
+
+  defp fixed_category?(%{fixed_category: category}) when is_binary(category), do: true
+  defp fixed_category?(_scope), do: false
+
+  defp show_path(scope, post), do: scope.base_path <> "/#{post.id}"
 
   @impl true
   def render(assigns) do
     ~H"""
     <.admin_shell
       page_title={@page_title}
-      page_subtitle="Write the story, arrange sections, and upload images. Drafts stay private until published."
+      page_subtitle={@scope.subtitle}
       current_user={@current_user}
       current_path={@current_path}
     >
@@ -309,12 +343,20 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                   </p>
                 </div>
                 <div class="sm:col-span-2">
+                  <div :if={fixed_category?(@scope)}>
+                    <label class="mb-1 block text-sm font-medium text-zinc-700">Category</label>
+                    <input type="hidden" name="post[category]" value={@scope.fixed_category} />
+                    <div class="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-700">
+                      {@scope.fixed_category}
+                    </div>
+                  </div>
                   <.input
+                    :if={!fixed_category?(@scope)}
                     field={@form[:category]}
                     type="select"
                     label="Category"
                     prompt="Select a category"
-                    options={Content.post_categories()}
+                    options={Content.post_categories(@scope.categories_scope)}
                   />
                 </div>
               </div>
@@ -323,14 +365,25 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
             <.editor_card
               :if={@form[:category].value == Post.newsletter_category()}
               title="Newsletter embed"
-              description="Paste the Canva embed link for this newsletter. It updates live below and on the published page."
+              description="Add the issue metadata and Canva embed link. The preview below updates live and appears on the published page."
             >
+              <.input
+                field={@form[:newsletter_volume]}
+                type="text"
+                label="Volume No."
+                placeholder="Volume 01"
+              />
+
               <.input
                 field={@form[:canva_embed_url]}
                 type="text"
                 label="Canva embed link"
                 placeholder="https://www.canva.com/design/.../view?embed"
               />
+
+              <p class="mt-3 text-xs text-zinc-500">
+                Published date comes from the Publish panel on the right.
+              </p>
 
               <div
                 :if={Post.canva_embed_src(@form[:canva_embed_url].value)}
@@ -554,7 +607,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
             phx-disable-with="Saving..."
             class="rounded-lg bg-blueink px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blueink/90"
           >
-            Save post
+            Save {@scope.singular_title}
           </button>
         </div>
       </.form>
@@ -570,59 +623,20 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
   attr :label, :string, default: nil
 
   defp rich_text_area(assigns) do
+    # Seed CKEditor with HTML. Legacy marker content is converted once so the
+    # author sees formatted text rather than raw `{{…}}` markers.
+    assigns = assign(assigns, :html, MaragaInfoWeb.RichText.to_editor_html(assigns.value))
+
     ~H"""
     <div>
       <label :if={@label} class="mb-1 block text-sm font-medium text-zinc-700">{@label}</label>
-      <div
-        id={@id}
-        phx-hook="RichTextEditor"
-        class="overflow-hidden rounded-lg border border-zinc-300 focus-within:border-blueink focus-within:ring-1 focus-within:ring-blueink"
-      >
-        <div class="flex flex-wrap items-center gap-1 border-b border-zinc-200 bg-zinc-50 px-2 py-1.5">
-          <.rt_button cmd="bold" label="Bold">
-            <span class="font-bold">B</span>
-          </.rt_button>
-          <.rt_button cmd="italic" label="Italic">
-            <span class="italic">I</span>
-          </.rt_button>
-          <.rt_button cmd="underline" label="Underline">
-            <span class="underline">U</span>
-          </.rt_button>
-          <span class="mx-1 h-5 w-px bg-zinc-300"></span>
-          <.rt_button cmd="undo" label="Undo">
-            <.icon name="hero-arrow-uturn-left-mini" class="h-4 w-4" />
-          </.rt_button>
-          <.rt_button cmd="redo" label="Redo">
-            <.icon name="hero-arrow-uturn-right-mini" class="h-4 w-4" />
-          </.rt_button>
+      <div id={@id} phx-hook="CKEditor" data-ck-value={@html}>
+        <input type="hidden" name={@name} value={@html} phx-debounce="400" />
+        <div id={@id <> "-ck"} phx-update="ignore">
+          <div data-ck-editor></div>
         </div>
-        <textarea
-          name={@name}
-          rows={@rows}
-          phx-debounce="blur"
-          placeholder={@placeholder}
-          class="block w-full border-0 text-sm text-zinc-700 focus:ring-0"
-        >{@value}</textarea>
       </div>
     </div>
-    """
-  end
-
-  attr :cmd, :string, required: true
-  attr :label, :string, required: true
-  slot :inner_block, required: true
-
-  defp rt_button(assigns) do
-    ~H"""
-    <button
-      type="button"
-      data-rt-cmd={@cmd}
-      title={@label}
-      aria-label={@label}
-      class="flex h-7 min-w-7 items-center justify-center rounded px-1.5 text-sm text-zinc-700 transition hover:bg-zinc-200"
-    >
-      {render_slot(@inner_block)}
-    </button>
     """
   end
 

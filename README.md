@@ -6,7 +6,7 @@ A Phoenix LiveView website covering David Kenani Maraga — Kenya's former Chief
 
 - **Public site** — a landing page (hero, mission, agenda, gallery, newsletter) and a news/blog section.
 - **Blog** — SEO-optimised article pages with structured data (`schema.org` `NewsArticle`), Open Graph metadata, sectioned content (heading + body + images), previous/next navigation, and social sharing (Facebook, X, WhatsApp, LinkedIn, Telegram, email, copy link).
-- **Admin dashboard** — authenticated CRUD for blog posts at `/admin`, including multi-section content and image uploads.
+- **Admin dashboard** — authenticated CRUD for posts, newsletters, press releases, media invitations, photos, and videos at `/admin`, including multi-section content, newsletter embeds, richer text formatting, and local media uploads.
 - **Accounts** — email/password authentication with registration, confirmation, password reset, and an `is_admin` role (the first registered user is auto-promoted to admin).
 
 ## Tech stack
@@ -61,21 +61,25 @@ The seed script ([`priv/repo/seeds.exs`](priv/repo/seeds.exs)) creates:
 
 1. Sign in at [`/users/log_in`](http://localhost:4000/users/log_in) with the seeded admin credentials.
 2. Manage content at [`/admin`](http://localhost:4000/admin):
-   - `/admin/blogs` — list, create, edit, and view posts
-   - `/admin/media`, `/admin/pages`, `/admin/settings` — additional admin sections
 
-Uploaded images are stored under `priv/static/uploads/` and served from `/uploads`.
+- `/admin/posts` — general news and article posts
+- `/admin/newsletters` — newsletter issues with volume numbers and Canva embeds
+- `/admin/press-releases`, `/admin/media-invitations` — press-facing content
+- `/admin/media/photos`, `/admin/media/videos` — public gallery assets
+- `/admin/pages/*`, `/admin/settings` — additional admin sections
+
+Uploaded images and videos are stored under `priv/static/uploads/` and served from `/uploads`.
 
 ## Routes overview
 
-| Path | Description |
-| --- | --- |
-| `/` | Public landing page |
-| `/blog/:slug` | Public article page |
-| `/users/log_in`, `/users/reset_password` | Authentication |
-| `/users/settings` | Account settings (authenticated) |
-| `/admin`, `/admin/blogs/*` | Admin dashboard (admin only) |
-| `/dev/dashboard` | LiveDashboard (dev only) |
+| Path                                     | Description                      |
+| ---------------------------------------- | -------------------------------- |
+| `/`                                      | Public landing page              |
+| `/blog/:slug`                            | Public article page              |
+| `/users/log_in`, `/users/reset_password` | Authentication                   |
+| `/users/settings`                        | Account settings (authenticated) |
+| `/admin`, `/admin/blogs/*`               | Admin dashboard (admin only)     |
+| `/dev/dashboard`                         | LiveDashboard (dev only)         |
 
 ## Tests
 

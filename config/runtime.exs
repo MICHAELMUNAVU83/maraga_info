@@ -118,8 +118,8 @@ if config_env() == :prod do
   # The "From" address used by the bulk email composer.
   if from = System.get_env("MAIL_FROM") do
     config :maraga_info,
-      :mail_from,
-      {System.get_env("MAIL_FROM_NAME") || "David Maraga Campaign", from}
+           :mail_from,
+           {System.get_env("MAIL_FROM_NAME") || "David Maraga Campaign", from}
   end
 
   # Pick a real delivery adapter based on the env vars that are present.

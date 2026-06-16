@@ -29,6 +29,9 @@ defmodule MaragaInfoWeb.Router do
       live "/news", NewsLive.Index
       live "/newsletters", NewslettersLive.Index
       live "/press-releases", PressReleasesLive.Index
+      live "/media-invitations", PressReleasesLive.Index
+      live "/media/photos", MediaLive.Index
+      live "/media/videos", MediaLive.Index
       live "/media", MediaLive.Index
       live "/blog/:slug", BlogLive.Show
     end
@@ -87,10 +90,38 @@ defmodule MaragaInfoWeb.Router do
     live_session :admin_authenticated,
       on_mount: [{MaragaInfoWeb.UserAuth, :ensure_admin}] do
       live "/", DashboardLive, :index
+      live "/posts", PostLive.Index, :index
+      live "/posts/new", PostLive.Form, :new
+      live "/posts/:id/edit", PostLive.Form, :edit
+      live "/posts/:id", PostLive.Show, :show
+
+      live "/newsletters", PostLive.Index, :index
+      live "/newsletters/new", PostLive.Form, :new
+      live "/newsletters/:id/edit", PostLive.Form, :edit
+      live "/newsletters/:id", PostLive.Show, :show
+
+      live "/press-releases", PostLive.Index, :index
+      live "/press-releases/new", PostLive.Form, :new
+      live "/press-releases/:id/edit", PostLive.Form, :edit
+      live "/press-releases/:id", PostLive.Show, :show
+
+      live "/media-invitations", PostLive.Index, :index
+      live "/media-invitations/new", PostLive.Form, :new
+      live "/media-invitations/:id/edit", PostLive.Form, :edit
+      live "/media-invitations/:id", PostLive.Show, :show
+
       live "/volunteers", VolunteerLive.Index, :index
       live "/emails", EmailLive.Index, :index
+      live "/media/photos", MediaLive.Index, :index
+      live "/media/videos", MediaLive.Index, :index
       live "/media", MediaLive.Index, :index
       live "/pages", SectionLive, :pages
+      live "/pages/home", SectionLive, :page_home
+      live "/pages/about", SectionLive, :page_about
+      live "/pages/agenda", SectionLive, :page_agenda
+      live "/pages/resources", SectionLive, :page_resources
+      live "/pages/press", SectionLive, :page_press
+      live "/pages/shop", SectionLive, :page_shop
       live "/settings", SectionLive, :settings
 
       live "/blogs", PostLive.Index, :index

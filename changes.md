@@ -1,22 +1,21 @@
-The latest news items should flow chronologically in order of date published
+- [x] Fix the missing Home icon in the admin sidebar.
+- [x] Resize the hero text and move `Jiandikishe Kupiga Kura` fully into the yellow side.
+- [x] Remove `Tawala Maraga` and leave `Ukatiba Ndio Tiba` larger.
+- [x] Rework the footer layout so the campaign location block is centered and mobile is less busy.
+- [x] Change the header item from `Press Releases` to `Press`.
+- [x] Add `Press Releases` and `Media Invitations` under the Press dropdown.
+- [x] Add the 6 header page items under the admin Pages section.
+- [x] Split media into `Photos` and `Videos` in navigation and public/admin routes.
+- [x] Add richer text editor controls for color, highlight, and alignment.
+- [x] Add newsletter metadata support for `Volume No.` and published date display.
+- [x] Separate `Newsletters` from `Posts` in the admin navigation.
+- [x] Add search for admin posts.
+- [x] Add video upload support.
 
+Video upload flow:
 
-Let's also have a posts and pages  buttons on the side of the admin where Dashboard and Blogs etc are son one can views all posts at once and all pages
-
-
-
-Remove press releases under 'Resources' dropdown as they have their own menu
-
-
-Can we remove those social media icons on the footer and place them elsewhere eg right before footer and have them say something  like ...Join the conversation or Let's Connect ....make then bigger and vibrant
-
-
-
-The image right after the Header, can we make the presidential candidate 2027 text way bigger and change Jiandikishe kupiga kura to Reset.Restore. Rebuild Kenya. Then change that donate button to Jiandikishe  Kupiga kura since there is a donate button right below it
-
-
-Where we have Tawala Kenya. Tawall remove and put Ukatiba Ndio Tiba
-
-
-
-Also where are the editing tools on text? Bold, underline , Italics etc , redo, undo...text editor needs to be really easy to save time , add js for this
+1. Open `/admin/media/videos`.
+2. Click `Add video`.
+3. Upload the video file.
+4. Optionally upload a thumbnail image.
+5. Save the item to publish it to `/media/videos`.

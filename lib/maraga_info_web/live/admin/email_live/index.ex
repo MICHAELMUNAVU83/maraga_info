@@ -13,24 +13,23 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
     "preheader" => "Maraga's State of the Nation — Tuesday, June 16 at Ufungamano House.",
     "sender_name" => "David Maraga Campaign",
     "sender_title" => "Ukombozi 2027",
-    "body" =>
-      """
-      Dear {{name}},
+    "body" => """
+    Dear {{name}},
 
-      This Tuesday, June 16, former Chief Justice David Maraga will stand before the nation and say what many Kenyans have been waiting to hear.
+    This Tuesday, June 16, former Chief Justice David Maraga will stand before the nation and say what many Kenyans have been waiting to hear.
 
-      His State of the Nation address, "State of the Nation: The Way Forward," brings together moral authorities, opposition leaders, civil society, youth, and professionals for a frank national conversation about where Kenya is, and where it must go.
+    His State of the Nation address, "State of the Nation: The Way Forward," brings together moral authorities, opposition leaders, civil society, youth, and professionals for a frank national conversation about where Kenya is, and where it must go.
 
-      The address draws on findings from the Ukatiba Caravan, which engaged citizens across 43 counties earlier this year. Maraga will lay out a three-part national recovery agenda anchored in constitutionalism, human dignity, and economic renewal, and will present his vision for Ukombozi 2027.
+    The address draws on findings from the Ukatiba Caravan, which engaged citizens across 43 counties earlier this year. Maraga will lay out a three-part national recovery agenda anchored in constitutionalism, human dignity, and economic renewal, and will present his vision for Ukombozi 2027.
 
-      Your voice belongs in that room.
+    Your voice belongs in that room.
 
-      DATE: Tuesday, June 16, 2026
-      TIME: 9:00 AM to 1:00 PM
-      VENUE: Ufungamano House, Nairobi
+    DATE: Tuesday, June 16, 2026
+    TIME: 9:00 AM to 1:00 PM
+    VENUE: Ufungamano House, Nairobi
 
-      Come. Be part of the conversation that shapes what comes next.\
-      """
+    Come. Be part of the conversation that shapes what comes next.\
+    """
   }
 
   @impl true
@@ -188,7 +187,9 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   ## Helpers
 
   defp persist(%EmailCampaign{id: nil}, params), do: Campaigns.create_campaign(params)
-  defp persist(%EmailCampaign{} = campaign, params), do: Campaigns.update_campaign(campaign, params)
+
+  defp persist(%EmailCampaign{} = campaign, params),
+    do: Campaigns.update_campaign(campaign, params)
 
   defp reset_composer(socket) do
     campaign = %EmailCampaign{}
@@ -267,7 +268,9 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   defp schedule_tick, do: Process.send_after(self(), :tick, @poll_interval)
 
   defp present(nil), do: nil
-  defp present(value) when is_binary(value), do: if(String.trim(value) == "", do: nil, else: value)
+
+  defp present(value) when is_binary(value),
+    do: if(String.trim(value) == "", do: nil, else: value)
 
   defp status_tone("draft"), do: "draft"
   defp status_tone("sending"), do: "neutral"
@@ -338,13 +341,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                 placeholder="Short summary shown in the inbox preview"
               />
 
-              <.input
-                field={@form[:body]}
-                type="textarea"
-                label="Message"
-                rows="16"
-                required
-              />
+              <.input field={@form[:body]} type="textarea" label="Message" rows="16" required />
 
               <div class="grid gap-4 sm:grid-cols-2">
                 <.input field={@form[:sender_name]} type="text" label="Sign-off name" required />
@@ -429,12 +426,16 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                     <% _ -> %>
                       {(stats = campaign_progress(campaign, @live_stats)) &&
                         "Sent to #{stats.sent} of #{stats.total}" <>
-                          if(stats.failed > 0, do: " · #{stats.failed} failed", else: "")}
-                      &middot; {format_datetime(campaign.sent_at)}
+                          if(stats.failed > 0, do: " · #{stats.failed} failed", else: "")} &middot; {format_datetime(
+                        campaign.sent_at
+                      )}
                   <% end %>
                 </p>
 
-                <div :if={campaign.status == "sending"} class="mt-2 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-zinc-100">
+                <div
+                  :if={campaign.status == "sending"}
+                  class="mt-2 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-zinc-100"
+                >
                   <% stats = campaign_progress(campaign, @live_stats) %>
                   <div
                     class="h-full rounded-full bg-blueink transition-all"
@@ -510,6 +511,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   end
 
   defp progress_pct(%{total: 0}), do: 0
+
   defp progress_pct(%{sent: sent, failed: failed, total: total}) do
     round((sent + failed) / total * 100)
   end

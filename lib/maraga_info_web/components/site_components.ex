@@ -99,16 +99,26 @@ defmodule MaragaInfoWeb.SiteComponents do
               >
                 Events
               </a>
-              <.link navigate="/media" class="text-[15px] text-ink transition hover:text-crimson">
-                Media
-              </.link>
             </.nav_dropdown>
-            <.link
-              navigate="/press-releases"
-              class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
-            >
-              Press Releases
-            </.link>
+            <.nav_dropdown label="Press">
+              <.link
+                navigate="/press-releases"
+                class="text-[15px] text-ink transition hover:text-crimson"
+              >
+                Press Releases
+              </.link>
+              <a href="/media-invitations" class="text-[15px] text-ink transition hover:text-crimson">
+                Media Invitations
+              </a>
+            </.nav_dropdown>
+            <.nav_dropdown label="Media">
+              <a href="/media/photos" class="text-[15px] text-ink transition hover:text-crimson">
+                Photos
+              </a>
+              <a href="/media/videos" class="text-[15px] text-ink transition hover:text-crimson">
+                Videos
+              </a>
+            </.nav_dropdown>
             <a
               href="https://davidmaraga.com/shop"
               target="_blank"
@@ -221,19 +231,39 @@ defmodule MaragaInfoWeb.SiteComponents do
         >
           Blogs
         </a>
-        <.link
-          navigate="/media"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-        >
-          Media
-        </.link>
 
+        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
+          Press
+        </p>
         <.link
           navigate="/press-releases"
-          class="py-1 pt-3 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
         >
           Press Releases
         </.link>
+        <a
+          href="/media-invitations"
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
+          Media Invitations
+        </a>
+
+        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
+          Media
+        </p>
+        <a
+          href="/media/photos"
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
+          Photos
+        </a>
+        <a
+          href="/media/videos"
+          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        >
+          Videos
+        </a>
+
         <a
           href="#"
           class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
@@ -311,8 +341,8 @@ defmodule MaragaInfoWeb.SiteComponents do
 
     <footer id={@id} class="border-t border-white/10 bg-blueink text-white">
       <div class="mx-auto max-w-container px-4 py-8 lg:px-6 lg:py-10">
-        <div class="grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-start">
-          <div>
+        <div class="grid gap-8 border-b border-white/10 pb-6 text-center lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:text-left">
+          <div class="flex flex-col items-center gap-4 lg:items-start">
             <div class="flex items-center gap-3">
               <img
                 src="/images/PHOTO-2026-06-14-22-19-17.jpg"
@@ -332,18 +362,25 @@ defmodule MaragaInfoWeb.SiteComponents do
             <p class="mt-3 max-w-xl text-sm leading-6 text-white/72">
               Independent coverage, campaign updates and public record context in one place.
             </p>
+          </div>
 
-            <p class="mt-4 text-sm text-white/72">
-              <span class="font-head text-[11px] uppercase tracking-[0.2em] text-crimson">
-                Campaign HQ:
-              </span>
-              82 Westlands Rd, Nairobi, Kenya ·
-              <a href="tel:+254746900027" class="transition hover:text-crimson">+254 746 900 027</a>
+          <div class="mx-auto max-w-sm">
+            <p class="font-head text-[11px] uppercase tracking-[0.24em] text-crimson">
+              Campaign HQ
             </p>
+            <p class="mt-3 text-sm leading-6 text-white/78">
+              82 Westlands Rd, Nairobi, Kenya
+            </p>
+            <a
+              href="tel:+254746900027"
+              class="mt-1 inline-flex text-sm text-white/78 transition hover:text-crimson"
+            >
+              +254 746 900 027
+            </a>
           </div>
 
           <div class="flex flex-col gap-4 lg:items-end">
-            <nav class="flex flex-wrap gap-x-5 gap-y-2 font-head text-xs uppercase tracking-[0.2em] text-white/78 lg:justify-end">
+            <nav class="flex flex-wrap justify-center gap-x-5 gap-y-2 font-head text-xs uppercase tracking-[0.18em] text-white/78 lg:justify-end">
               <a href={section_href(@base_path, "top")} class="transition hover:text-crimson">Home</a>
               <a href={section_href(@base_path, "mission")} class="transition hover:text-crimson">
                 About
@@ -352,7 +389,8 @@ defmodule MaragaInfoWeb.SiteComponents do
               <a href={section_href(@base_path, "agenda")} class="transition hover:text-crimson">
                 Agenda
               </a>
-              <a href="/media" class="transition hover:text-crimson">Media</a>
+              <a href="/press-releases" class="transition hover:text-crimson">Press</a>
+              <a href="/media/photos" class="transition hover:text-crimson">Photos</a>
               <a
                 href="https://donations.davidmaraga.com/"
                 target="_blank"
@@ -365,17 +403,14 @@ defmodule MaragaInfoWeb.SiteComponents do
           </div>
         </div>
 
-        <div class="mt-6 flex flex-col gap-2 border-t border-white/15 pt-4 text-xs text-white/68 sm:flex-row sm:items-center sm:justify-between">
+        <div class="mt-4 flex flex-col gap-2 pt-4 text-center text-xs text-white/68 sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <p>
             © {Date.utc_today().year} David Maraga Info. Integrity, justice and service for Kenya.
           </p>
 
-          <div class="flex flex-wrap items-center gap-4 font-head uppercase tracking-[0.2em]">
+          <div class="flex flex-wrap items-center justify-center gap-4 font-head uppercase tracking-[0.18em] sm:justify-end">
             <a href="https://davidmaraga.info/" class="transition hover:text-crimson">
               davidmaraga.info
-            </a>
-            <a href={section_href(@base_path, "volunteer")} class="transition hover:text-crimson">
-              Volunteer
             </a>
           </div>
         </div>

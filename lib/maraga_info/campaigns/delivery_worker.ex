@@ -8,7 +8,11 @@ defmodule MaragaInfo.Campaigns.DeliveryWorker do
   alias MaragaInfo.Campaigns
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"delivery_id" => delivery_id}, attempt: attempt, max_attempts: max}) do
+  def perform(%Oban.Job{
+        args: %{"delivery_id" => delivery_id},
+        attempt: attempt,
+        max_attempts: max
+      }) do
     Campaigns.deliver(delivery_id, last_attempt?: attempt >= max)
   end
 

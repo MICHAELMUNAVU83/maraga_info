@@ -31,7 +31,7 @@ defmodule MaragaInfoWeb.Admin.DashboardLive do
     >
       <:actions>
         <.link
-          navigate={~p"/admin/blogs/new"}
+          navigate={~p"/admin/posts/new"}
           class="inline-flex items-center gap-2 rounded-lg bg-blueink px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blueink/90"
         >
           <.icon name="hero-plus-mini" class="h-4 w-4" /> New post
@@ -54,7 +54,7 @@ defmodule MaragaInfoWeb.Admin.DashboardLive do
         <.admin_panel title="Recent posts" subtitle="Your latest stories.">
           <:actions>
             <.link
-              navigate={~p"/admin/blogs"}
+              navigate={~p"/admin/posts"}
               class="text-sm font-medium text-blueink hover:underline"
             >
               View all
@@ -79,7 +79,7 @@ defmodule MaragaInfoWeb.Admin.DashboardLive do
                   label={to_string(post.status)}
                 />
                 <.link
-                  navigate={~p"/admin/blogs/#{post}/edit"}
+                  navigate={~p"/admin/posts/#{post}/edit"}
                   class="text-sm font-medium text-blueink hover:underline"
                 >
                   Edit
@@ -92,7 +92,7 @@ defmodule MaragaInfoWeb.Admin.DashboardLive do
             :if={@recent_posts == []}
             title="No posts yet"
             description="Start by adding the first article for the site."
-            link={~p"/admin/blogs/new"}
+            link={~p"/admin/posts/new"}
             link_label="Create first post"
           />
         </.admin_panel>

@@ -29,7 +29,19 @@ defmodule MaragaInfoWeb.AdminComponents do
             </.link>
 
             <nav class="space-y-0.5">
-              <.admin_nav_link :for={item <- @navigation} item={item} current_path={@current_path} />
+              <div :for={entry <- @navigation}>
+                <p
+                  :if={entry[:type] == :heading}
+                  class="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-400 first:pt-0"
+                >
+                  {entry.label}
+                </p>
+                <.admin_nav_link
+                  :if={entry[:type] != :heading}
+                  item={entry}
+                  current_path={@current_path}
+                />
+              </div>
             </nav>
 
             <div class="border-t border-zinc-200 pt-4">
@@ -198,11 +210,28 @@ defmodule MaragaInfoWeb.AdminComponents do
   defp navigation_items do
     [
       %{label: "Dashboard", href: ~p"/admin", icon: "hero-home"},
-      %{label: "Posts", href: ~p"/admin/blogs", icon: "hero-document-text"},
-      %{label: "Pages", href: ~p"/admin/pages", icon: "hero-rectangle-stack"},
+      %{type: :heading, label: "Content"},
+      %{label: "Posts", href: ~p"/admin/posts", icon: "hero-document-text"},
+      %{label: "Newsletters", href: ~p"/admin/newsletters", icon: "hero-newspaper"},
+      %{label: "Press Releases", href: ~p"/admin/press-releases", icon: "hero-megaphone"},
+      %{
+        label: "Media Invitations",
+        href: ~p"/admin/media-invitations",
+        icon: "hero-envelope-open"
+      },
+      %{label: "Photos", href: ~p"/admin/media/photos", icon: "hero-photo"},
+      %{label: "Videos", href: ~p"/admin/media/videos", icon: "hero-video-camera"},
+      %{type: :heading, label: "Pages"},
+      %{label: "Home", href: ~p"/admin/pages/home", icon: "hero-home-modern"},
+      %{label: "About Us", href: ~p"/admin/pages/about", icon: "hero-user-circle"},
+      %{label: "Our Agenda", href: ~p"/admin/pages/agenda", icon: "hero-clipboard-document-list"},
+      %{label: "Resources", href: ~p"/admin/pages/resources", icon: "hero-book-open"},
+      %{label: "Press", href: ~p"/admin/pages/press", icon: "hero-megaphone"},
+      %{label: "Shop", href: ~p"/admin/pages/shop", icon: "hero-shopping-bag"},
+      %{type: :heading, label: "Operations"},
       %{label: "Volunteers", href: ~p"/admin/volunteers", icon: "hero-users"},
       %{label: "Emails", href: ~p"/admin/emails", icon: "hero-envelope"},
-      %{label: "Media", href: ~p"/admin/media", icon: "hero-photo"},
+      %{type: :heading, label: "System"},
       %{label: "Settings", href: ~p"/admin/settings", icon: "hero-cog-6-tooth"}
     ]
   end

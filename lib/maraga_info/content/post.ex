@@ -5,11 +5,25 @@ defmodule MaragaInfo.Content.Post do
   alias MaragaInfo.Accounts.User
   alias MaragaInfo.Content.PostSection
 
+  @general_categories ["Latest News", "News", "Analysis", "Explainer", "Statements", "Speeches"]
   @newsletter_category "Newsletter"
+  @press_release_category "Press Releases"
+  @media_invitation_category "Media Invitations"
+  @special_categories [
+    @newsletter_category,
+    @press_release_category,
+    @media_invitation_category
+  ]
   @canva_embed_regex ~r{^https://(www\.)?canva\.com/design/[^/]+/[^/]+/view}
 
   @doc "The category whose posts carry a Canva embed."
   def newsletter_category, do: @newsletter_category
+
+  def press_release_category, do: @press_release_category
+  def media_invitation_category, do: @media_invitation_category
+  def general_categories, do: @general_categories
+  def special_categories, do: @special_categories
+  def all_categories, do: @general_categories ++ @special_categories
 
   schema "posts" do
     field :title, :string
@@ -19,6 +33,7 @@ defmodule MaragaInfo.Content.Post do
     field :seo_description, :string
     field :image_url, :string
     field :canva_embed_url, :string
+    field :newsletter_volume, :string
     field :status, Ecto.Enum, values: [:draft, :published], default: :draft
     field :published_at, :utc_datetime
     field :is_featured, :boolean, default: false
@@ -39,6 +54,7 @@ defmodule MaragaInfo.Content.Post do
       :seo_description,
       :image_url,
       :canva_embed_url,
+      :newsletter_volume,
       :body,
       :status,
       :published_at,
@@ -54,10 +70,12 @@ defmodule MaragaInfo.Content.Post do
     ])
     |> validate_length(:title, max: 160)
     |> validate_length(:category, max: 80)
+    |> validate_length(:newsletter_volume, max: 80)
     |> validate_format(:image_url, ~r/^(\/|https?:\/\/)/,
       message: "must start with /, http://, or https://"
     )
     |> validate_canva_embed()
+    |> validate_newsletter_volume()
     |> put_slug()
     |> validate_format(:slug, ~r/^[a-z0-9]+(?:-[a-z0-9]+)*$/,
       message: "must use lowercase letters, numbers, and hyphens only"
@@ -76,6 +94,14 @@ defmodule MaragaInfo.Content.Post do
       |> validate_format(:canva_embed_url, @canva_embed_regex,
         message: "must be a Canva embed link (e.g. https://www.canva.com/design/.../view?embed)"
       )
+    else
+      changeset
+    end
+  end
+
+  defp validate_newsletter_volume(changeset) do
+    if get_field(changeset, :category) == @newsletter_category do
+      validate_required(changeset, [:newsletter_volume])
     else
       changeset
     end
@@ -119,6 +145,7 @@ defmodule MaragaInfo.Content.Post do
 
       text ->
         text
+        |> strip_formatting()
         |> String.replace(~r/\s+/u, " ")
         |> String.trim()
         |> truncate(max)
@@ -140,6 +167,22 @@ defmodule MaragaInfo.Content.Post do
   end
 
   defp presence(_), do: nil
+
+  defp strip_formatting(text) do
+    if Regex.match?(~r|</?[a-zA-Z][^>]*>|, text) do
+      case Floki.parse_fragment(text) do
+        {:ok, tree} -> Floki.text(tree, sep: " ")
+        _ -> text
+      end
+    else
+      text
+      |> String.replace(~r/\{\{\/?(?:color|highlight|align)(?::[a-z-]+)?\}\}/u, "")
+      |> String.replace(~r/\*\*(.+?)\*\*/s, "\\1")
+      |> String.replace(~r/\+\+(.+?)\+\+/s, "\\1")
+      |> String.replace(~r/_(.+?)_/s, "\\1")
+      |> String.replace(~r/==(.+?)==/s, "\\1")
+    end
+  end
 
   defp truncate(text, max) when byte_size(text) <= max, do: text
 

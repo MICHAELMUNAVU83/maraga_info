@@ -99,7 +99,7 @@ defmodule MaragaInfoWeb.BlogLive.Show do
                 {section.heading}
               </h2>
 
-              <p :for={paragraph <- paragraphs(section.body)}>{format_inline(paragraph)}</p>
+              <div :if={present?(section.body)} class="rich-content">{render_body(section.body)}</div>
 
               <div :if={section.image_urls != []} class="space-y-6 sm:space-y-0">
                 <div class={[
@@ -121,7 +121,7 @@ defmodule MaragaInfoWeb.BlogLive.Show do
                 Full story
               </h2>
 
-              <p :for={paragraph <- paragraphs(@post.body)}>{format_inline(paragraph)}</p>
+              <div class="rich-content">{render_body(@post.body)}</div>
             </section>
 
             <.share_bar url={@canonical_url} title={@post.title} />
@@ -303,9 +303,7 @@ defmodule MaragaInfoWeb.BlogLive.Show do
     """
   end
 
-  defp paragraphs(text), do: RichText.paragraphs(text)
-
-  defp format_inline(text), do: RichText.format_inline(text)
+  defp render_body(text), do: RichText.render(text)
 
   defp present?(nil), do: false
   defp present?(value) when is_binary(value), do: String.trim(value) != ""
