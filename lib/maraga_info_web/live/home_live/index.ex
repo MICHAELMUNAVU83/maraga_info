@@ -140,6 +140,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <.hero_section />
       <.donate_section />
       <.mission_section />
+      <.documentary_section />
       <.news_section news_items={@news_items} />
       <.newsletter_section stats={@stats} />
       <%!-- <.shop_section shop_items={@shop_items} /> --%>
@@ -298,6 +299,39 @@ defmodule MaragaInfoWeb.HomeLive.Index do
               <polyline points="12 5 19 12 12 19" />
             </svg>
           </a>
+        </div>
+      </div>
+    </section>
+    """
+  end
+
+  defp documentary_section(assigns) do
+    ~H"""
+    <section id="documentary" class="bg-white py-20 lg:py-28">
+      <div class="mx-auto max-w-container px-4">
+        <.section_heading
+          title="The Maraga Story"
+          accent="Documentary"
+          description="The first autobiographical documentary on David Maraga, produced with NTV."
+        />
+
+        <div
+          id="documentary-frame"
+          phx-hook="RevealOnScroll"
+          class="reveal-on-scroll mx-auto mt-10 max-w-4xl overflow-hidden rounded-[5px] shadow-2xl"
+        >
+          <div class="relative w-full" style="padding-top: 56.25%;">
+            <iframe
+              class="absolute inset-0 h-full w-full"
+              src="https://www.youtube.com/embed/-2QefPbyXrQ"
+              title="David Maraga: The Autobiographical Documentary (NTV)"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen
+            >
+            </iframe>
+          </div>
         </div>
       </div>
     </section>
