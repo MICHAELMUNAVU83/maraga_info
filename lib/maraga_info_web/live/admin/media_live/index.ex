@@ -4,6 +4,7 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
   alias MaragaInfo.Content
   alias MaragaInfo.Content.MediaItem
   alias MaragaInfoWeb.Uploads
+  alias MaragaInfoWeb.VideoEmbed
 
   @max_image_mb 8
   @max_video_mb 80
@@ -464,7 +465,22 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
 
           <div :if={current_media_type(@form, @scope) == "video"} class="space-y-4">
             <div
-              :if={current_video(@video_url, @form)}
+              :if={current_video(@video_url, @form) && VideoEmbed.embed_src(current_video(@video_url, @form))}
+              class="overflow-hidden rounded-lg border border-zinc-200 bg-black"
+            >
+              <iframe
+                src={VideoEmbed.embed_src(current_video(@video_url, @form))}
+                title="Video preview"
+                class="aspect-video w-full"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+              >
+              </iframe>
+            </div>
+            <div
+              :if={current_video(@video_url, @form) && is_nil(VideoEmbed.embed_src(current_video(@video_url, @form)))}
               class="relative overflow-hidden rounded-lg border border-zinc-200 bg-black"
             >
               <video src={current_video(@video_url, @form)} controls class="aspect-video w-full">
@@ -490,6 +506,20 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
               </span>
               <.live_file_input upload={@uploads.video} class="sr-only" />
             </label>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-medium text-zinc-600">
+                Or paste a YouTube / Vimeo link
+              </label>
+              <.input
+                field={@form[:video_url]}
+                type="text"
+                placeholder="https://www.youtube.com/watch?v=…"
+              />
+              <p class="text-xs text-zinc-400">
+                The video will play inline on the site. Leave the upload empty when using a link.
+              </p>
+            </div>
 
             <p :for={entry <- @uploads.video.entries} class="text-xs text-zinc-500">
               Uploading {entry.client_name} — {entry.progress}%

@@ -43,7 +43,7 @@ defmodule MaragaInfoWeb.RichText do
   """
   def render(text) when is_binary(text) do
     if html?(text) do
-      text |> sanitize() |> Phoenix.HTML.raw()
+      text |> sanitize(:iframe) |> Phoenix.HTML.raw()
     else
       text |> legacy_html() |> Phoenix.HTML.raw()
     end
@@ -56,7 +56,7 @@ defmodule MaragaInfoWeb.RichText do
   marker content is converted so authors see formatted text, not raw markers.
   """
   def to_editor_html(text) when is_binary(text) do
-    if html?(text), do: sanitize(text), else: legacy_html(text)
+    if html?(text), do: sanitize(text, :oembed), else: legacy_html(text)
   end
 
   def to_editor_html(_), do: ""
@@ -67,29 +67,72 @@ defmodule MaragaInfoWeb.RichText do
   # HTML sanitisation
   # ----------------------------------------------------------------------------
 
-  defp sanitize(html) do
+  # `mode` controls how CKEditor media embeds (`<oembed url>`) are emitted:
+  #   :iframe — for display, embeds are turned into responsive video iframes
+  #   :oembed — for the editor, the original oembed markup is preserved so
+  #             CKEditor re-renders its media widget
+  defp sanitize(html, mode) do
     case Floki.parse_fragment(html) do
-      {:ok, tree} -> tree |> scrub_nodes() |> Floki.raw_html()
+      {:ok, tree} -> tree |> scrub_nodes(mode) |> Floki.raw_html()
       _ -> ""
     end
   end
 
-  defp scrub_nodes(nodes) when is_list(nodes), do: Enum.flat_map(nodes, &scrub_node/1)
+  defp scrub_nodes(nodes, mode) when is_list(nodes),
+    do: Enum.flat_map(nodes, &scrub_node(&1, mode))
 
-  defp scrub_node(text) when is_binary(text), do: [text]
+  defp scrub_node(text, _mode) when is_binary(text), do: [text]
 
-  defp scrub_node({tag, attrs, children}) do
+  defp scrub_node({tag, attrs, children}, mode) do
     tag = String.downcase(tag)
 
     cond do
+      tag == "oembed" -> embed_node(attrs, mode)
       tag in @drop_with_content -> []
-      Map.has_key?(@allowed_tags, tag) -> [{tag, scrub_attrs(attrs, @allowed_tags[tag]), scrub_nodes(children)}]
+      Map.has_key?(@allowed_tags, tag) -> [{tag, scrub_attrs(attrs, @allowed_tags[tag]), scrub_nodes(children, mode)}]
       # Unknown but harmless tag: drop the wrapper but keep its scrubbed contents.
-      true -> scrub_nodes(children)
+      true -> scrub_nodes(children, mode)
     end
   end
 
-  defp scrub_node(_), do: []
+  defp scrub_node(_, _mode), do: []
+
+  # CKEditor's MediaEmbed stores `<figure class="media"><oembed url="…"></oembed></figure>`.
+  # The figure wrapper is unwrapped by the generic clause above; here we turn the
+  # inner oembed into either a playable iframe (display) or back into the
+  # figure/oembed pair the editor understands.
+  defp embed_node(attrs, mode) do
+    url = attrs |> List.keyfind("url", 0, {"url", ""}) |> elem(1) |> String.trim()
+
+    case {mode, MaragaInfoWeb.VideoEmbed.embed_src(url)} do
+      {:iframe, src} when is_binary(src) ->
+        [embed_iframe(src)]
+
+      {:oembed, src} when is_binary(src) ->
+        [{"figure", [{"class", "media"}], [{"oembed", [{"url", url}], []}]}]
+
+      # Unknown provider: keep a safe link rather than an unresolved embed.
+      {_mode, nil} ->
+        if safe_href?(url), do: [{"p", [], [{"a", [{"href", url}, {"target", "_blank"}, {"rel", "noopener noreferrer"}], [url]}]}], else: []
+    end
+  end
+
+  defp embed_iframe(src) do
+    {"div", [{"class", "video-embed"}],
+     [
+       {"iframe",
+        [
+          {"src", src},
+          {"title", "Embedded video"},
+          {"loading", "lazy"},
+          {"frameborder", "0"},
+          {"allow",
+           "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"},
+          {"referrerpolicy", "strict-origin-when-cross-origin"},
+          {"allowfullscreen", "allowfullscreen"}
+        ], []}
+     ]}
+  end
 
   defp scrub_attrs(attrs, allowed) do
     for {name, value} <- attrs,

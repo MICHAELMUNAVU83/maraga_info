@@ -3,6 +3,7 @@ defmodule MaragaInfoWeb.MediaLive.Index do
 
   alias MaragaInfo.Content
   alias MaragaInfoWeb.Seo
+  alias MaragaInfoWeb.VideoEmbed
 
   @impl true
   def mount(_params, _session, socket) do
@@ -122,8 +123,23 @@ defmodule MaragaInfoWeb.MediaLive.Index do
           alt={@selected.title}
           class="max-h-[70vh] w-full rounded-[6px] object-contain"
         />
+        <div
+          :if={@selected.media_type == "video" && VideoEmbed.embed_src(@selected.video_url)}
+          class="aspect-video w-full overflow-hidden rounded-[6px] bg-black"
+        >
+          <iframe
+            src={VideoEmbed.embed_src(@selected.video_url)}
+            title={@selected.title}
+            class="h-full w-full"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+          >
+          </iframe>
+        </div>
         <video
-          :if={@selected.media_type == "video"}
+          :if={@selected.media_type == "video" && is_nil(VideoEmbed.embed_src(@selected.video_url))}
           src={@selected.video_url}
           poster={@selected.image_url}
           controls

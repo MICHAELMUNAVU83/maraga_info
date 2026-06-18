@@ -114,6 +114,7 @@ const Hooks = {
         List,
         Link,
         BlockQuote,
+        MediaEmbed,
         PasteFromOffice,
       } = CK;
 
@@ -133,6 +134,7 @@ const Hooks = {
           List,
           Link,
           BlockQuote,
+          MediaEmbed,
           PasteFromOffice,
         ],
         toolbar: [
@@ -156,7 +158,13 @@ const Hooks = {
           "|",
           "link",
           "blockQuote",
+          "mediaEmbed",
         ],
+        mediaEmbed: {
+          // Store the provider URL (<oembed url>) rather than a raw preview
+          // iframe; RichText turns it into a sandboxed iframe at render time.
+          previewsInData: false,
+        },
         heading: {
           options: [
             { model: "paragraph", title: "Paragraph", class: "ck-heading_paragraph" },
