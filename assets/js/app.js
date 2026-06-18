@@ -114,6 +114,7 @@ const Hooks = {
         List,
         Link,
         BlockQuote,
+        PasteFromOffice,
       } = CK;
 
       this.editor = await ClassicEditor.create(target, {
@@ -132,6 +133,7 @@ const Hooks = {
           List,
           Link,
           BlockQuote,
+          PasteFromOffice,
         ],
         toolbar: [
           "undo",

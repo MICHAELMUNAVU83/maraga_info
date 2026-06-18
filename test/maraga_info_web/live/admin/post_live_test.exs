@@ -4,10 +4,10 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
   import Phoenix.LiveViewTest
   import MaragaInfo.ContentFixtures
 
+  # The blog form pins the category (hidden input), so these attrs intentionally
+  # omit `category` — it's supplied by the scope.
   @create_attrs %{
     title: "some title",
-    category: "some category",
-    body: "some body",
     seo_description: "some seo_description",
     status: "published",
     published_at: "2026-06-12T13:48:00Z",
@@ -15,8 +15,6 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
   }
   @update_attrs %{
     title: "some updated title",
-    category: "some updated category",
-    body: "some updated body",
     seo_description: "some updated seo_description",
     status: "draft",
     published_at: "2026-06-13T13:48:00Z",
@@ -24,15 +22,13 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
   }
   @invalid_attrs %{
     title: nil,
-    category: nil,
-    body: nil,
     seo_description: nil,
     status: "draft",
     is_featured: false
   }
 
   defp create_post(%{user: user}) do
-    post = post_fixture(user)
+    post = post_fixture(user, %{category: MaragaInfo.Content.Post.blog_category()})
     %{post: post}
   end
 
@@ -66,7 +62,7 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
     test "lists all posts", %{conn: conn, post: post} do
       {:ok, _index_live, html} = live(conn, ~p"/admin/blogs")
 
-      assert html =~ "All posts"
+      assert html =~ "All blog posts"
       assert html =~ post.title
     end
 

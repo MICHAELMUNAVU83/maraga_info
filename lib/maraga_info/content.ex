@@ -16,6 +16,7 @@ defmodule MaragaInfo.Content do
   def post_categories(scope \\ :all)
 
   def post_categories(:posts), do: Post.general_categories()
+  def post_categories(:blogs), do: [Post.blog_category()]
   def post_categories(:all), do: Post.all_categories()
   def post_categories(_scope), do: Post.all_categories()
 
@@ -25,6 +26,15 @@ defmodule MaragaInfo.Content do
   def list_published_newsletters(opts \\ []) do
     opts
     |> Keyword.put(:category, Post.newsletter_category())
+    |> list_published_posts()
+  end
+
+  @doc """
+  Returns published blog posts, newest first.
+  """
+  def list_published_blogs(opts \\ []) do
+    opts
+    |> Keyword.put(:category, Post.blog_category())
     |> list_published_posts()
   end
 
@@ -215,6 +225,10 @@ defmodule MaragaInfo.Content do
 
   defp maybe_filter_post_scope(query, :media_invitations) do
     where(query, [post], post.category == ^Post.media_invitation_category())
+  end
+
+  defp maybe_filter_post_scope(query, :blogs) do
+    where(query, [post], post.category == ^Post.blog_category())
   end
 
   defp maybe_filter_post_search(query, nil), do: query

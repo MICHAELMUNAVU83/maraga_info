@@ -293,6 +293,15 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
           subtitle: "Create press advisories and invitations for campaign events and briefings."
         }
 
+      String.starts_with?(path, "/admin/blogs") ->
+        %{
+          singular_title: "Blog post",
+          base_path: "/admin/blogs",
+          fixed_category: Post.blog_category(),
+          categories_scope: :blogs,
+          subtitle: "Write a long-form blog article, arrange sections, and upload images."
+        }
+
       true ->
         %{
           singular_title: "post",
@@ -551,7 +560,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
               </div>
             </.editor_card>
 
-            <.editor_card title="Cover image">
+            <.editor_card title="Cover image (optional)">
               <div class="space-y-4">
                 <div
                   :if={current_cover(@cover_url, @form)}
@@ -559,7 +568,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                 >
                   <img
                     src={current_cover(@cover_url, @form)}
-                    class="aspect-video w-full object-cover object-top"
+                    class="mx-auto max-h-[420px] w-full object-contain"
                   />
                 </div>
 
@@ -578,8 +587,8 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                   {upload_error_to_string(err)}
                 </p>
 
-                <p :if={@form[:image_url].errors != []} class="text-xs text-red-600">
-                  A cover image is required.
+                <p :for={{msg, _} <- @form[:image_url].errors} class="text-xs text-red-600">
+                  {msg}
                 </p>
               </div>
             </.editor_card>

@@ -9,10 +9,12 @@ defmodule MaragaInfo.Content.Post do
   @newsletter_category "Newsletter"
   @press_release_category "Press Releases"
   @media_invitation_category "Media Invitations"
+  @blog_category "Blog"
   @special_categories [
     @newsletter_category,
     @press_release_category,
-    @media_invitation_category
+    @media_invitation_category,
+    @blog_category
   ]
   @canva_embed_regex ~r{^https://(www\.)?canva\.com/design/[^/]+/[^/]+/view}
 
@@ -21,6 +23,7 @@ defmodule MaragaInfo.Content.Post do
 
   def press_release_category, do: @press_release_category
   def media_invitation_category, do: @media_invitation_category
+  def blog_category, do: @blog_category
   def general_categories, do: @general_categories
   def special_categories, do: @special_categories
   def all_categories, do: @general_categories ++ @special_categories
@@ -65,7 +68,6 @@ defmodule MaragaInfo.Content.Post do
     |> validate_required([
       :title,
       :category,
-      :image_url,
       :status
     ])
     |> validate_length(:title, max: 160)

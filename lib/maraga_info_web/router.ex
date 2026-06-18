@@ -33,6 +33,7 @@ defmodule MaragaInfoWeb.Router do
       live "/media/photos", MediaLive.Index
       live "/media/videos", MediaLive.Index
       live "/media", MediaLive.Index
+      live "/blog", BlogLive.Index
       live "/blog/:slug", BlogLive.Show
     end
   end
@@ -95,6 +96,11 @@ defmodule MaragaInfoWeb.Router do
       live "/posts/:id/edit", PostLive.Form, :edit
       live "/posts/:id", PostLive.Show, :show
 
+      live "/blogs", PostLive.Index, :index
+      live "/blogs/new", PostLive.Form, :new
+      live "/blogs/:id/edit", PostLive.Form, :edit
+      live "/blogs/:id", PostLive.Show, :show
+
       live "/newsletters", PostLive.Index, :index
       live "/newsletters/new", PostLive.Form, :new
       live "/newsletters/:id/edit", PostLive.Form, :edit
@@ -123,12 +129,6 @@ defmodule MaragaInfoWeb.Router do
       live "/pages/press", SectionLive, :page_press
       live "/pages/shop", SectionLive, :page_shop
       live "/settings", SectionLive, :settings
-
-      live "/blogs", PostLive.Index, :index
-      live "/blogs/new", PostLive.Form, :new
-      live "/blogs/:id/edit", PostLive.Form, :edit
-
-      live "/blogs/:id", PostLive.Show, :show
     end
   end
 

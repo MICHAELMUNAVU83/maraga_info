@@ -212,6 +212,7 @@ defmodule MaragaInfoWeb.AdminComponents do
       %{label: "Dashboard", href: ~p"/admin", icon: "hero-home"},
       %{type: :heading, label: "Content"},
       %{label: "Posts", href: ~p"/admin/posts", icon: "hero-document-text"},
+      %{label: "Blogs", href: ~p"/admin/blogs", icon: "hero-pencil-square"},
       %{label: "Newsletters", href: ~p"/admin/newsletters", icon: "hero-newspaper"},
       %{label: "Press Releases", href: ~p"/admin/press-releases", icon: "hero-megaphone"},
       %{

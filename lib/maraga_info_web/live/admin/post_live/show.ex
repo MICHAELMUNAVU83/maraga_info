@@ -34,6 +34,9 @@ defmodule MaragaInfoWeb.Admin.PostLive.Show do
       String.starts_with?(path, "/admin/media-invitations") ->
         %{base_path: "/admin/media-invitations", singular: "media invitation"}
 
+      String.starts_with?(path, "/admin/blogs") ->
+        %{base_path: "/admin/blogs", singular: "blog post"}
+
       true ->
         %{base_path: "/admin/posts", singular: "story"}
     end

@@ -1,6 +1,8 @@
 defmodule MaragaInfoWeb.SiteComponents do
   use Phoenix.Component
 
+  alias MaragaInfo.Content
+
   @social_links [
     %{name: "x", href: "https://x.com/dkmaraga", label: "X"},
     %{name: "instagram", href: "https://www.instagram.com/maraga2027", label: "Instagram"},
@@ -12,7 +14,12 @@ defmodule MaragaInfoWeb.SiteComponents do
   attr :base_path, :string, default: ""
 
   def site_header(assigns) do
-    assigns = assign(assigns, :social_links, @social_links)
+    assigns =
+      assigns
+      |> assign(:social_links, @social_links)
+      |> assign_new(:news_categories, fn ->
+        Content.list_published_post_categories(scope: :posts)
+      end)
 
     ~H"""
     <header class="relative z-30 w-full bg-blueink">
@@ -87,12 +94,16 @@ defmodule MaragaInfoWeb.SiteComponents do
               <.link navigate="/news" class="text-[15px] text-ink transition hover:text-crimson">
                 News
               </.link>
-              <a
-                href={section_href(@base_path, "news")}
-                class="text-[15px] text-ink transition hover:text-crimson"
+              <.link
+                :for={category <- @news_categories}
+                navigate={news_category_href(category)}
+                class="pl-3 text-[14px] text-grayink transition hover:text-crimson"
               >
+                {category}
+              </.link>
+              <.link navigate="/blog" class="text-[15px] text-ink transition hover:text-crimson">
                 Blogs
-              </a>
+              </.link>
               <a
                 href={section_href(@base_path, "events")}
                 class="text-[15px] text-ink transition hover:text-crimson"
@@ -225,12 +236,19 @@ defmodule MaragaInfoWeb.SiteComponents do
         >
           News
         </.link>
-        <a
-          href={section_href(@base_path, "news")}
+        <.link
+          :for={category <- @news_categories}
+          navigate={news_category_href(category)}
+          class="py-1 pl-6 text-[13px] text-white/65 transition hover:text-crimson"
+        >
+          {category}
+        </.link>
+        <.link
+          navigate="/blog"
           class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
         >
           Blogs
-        </a>
+        </.link>
 
         <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
           Press
@@ -421,6 +439,9 @@ defmodule MaragaInfoWeb.SiteComponents do
 
   defp section_href("", section), do: "##{section}"
   defp section_href(base_path, section), do: "#{base_path}##{section}"
+
+  defp news_category_href(category),
+    do: "/news?category=" <> URI.encode_www_form(category)
 
   attr :link, :map, required: true
   attr :class, :string, default: ""

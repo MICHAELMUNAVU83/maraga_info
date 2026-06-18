@@ -67,11 +67,14 @@ defmodule MaragaInfoWeb.BlogLive.Show do
             </div>
           </div>
 
-          <div class="mx-auto mt-12 max-w-[1048px] overflow-hidden rounded-[8px] shadow-[0_18px_55px_rgba(15,30,80,0.12)]">
+          <div
+            :if={@post.image_url}
+            class="mx-auto mt-12 max-w-[1048px] overflow-hidden rounded-[8px] shadow-[0_18px_55px_rgba(15,30,80,0.12)]"
+          >
             <img
               src={@post.image_url}
               alt={@post.title}
-              class="h-[260px] w-full object-cover object-[center_30%] sm:h-[420px] lg:h-[560px]"
+              class="mx-auto max-h-[760px] w-full object-contain"
             />
           </div>
 

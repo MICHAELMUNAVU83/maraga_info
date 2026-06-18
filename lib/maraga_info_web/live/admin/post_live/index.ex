@@ -108,6 +108,20 @@ defmodule MaragaInfoWeb.Admin.PostLive.Index do
           empty_description: "Create the first media invitation to brief reporters and editors."
         }
 
+      String.starts_with?(path, "/admin/blogs") ->
+        %{
+          scope: :blogs,
+          title: "Blogs",
+          subtitle: "Write and publish long-form blog articles for the /blog section.",
+          singular_title: "Blog post",
+          new_label: "New blog post",
+          base_path: "/admin/blogs",
+          panel_title: "All blog posts",
+          panel_subtitle: "Search, review, and manage every blog article.",
+          empty_title: "No blog posts yet",
+          empty_description: "Create the first blog article to start the blog section."
+        }
+
       true ->
         %{
           scope: :posts,
