@@ -48,7 +48,7 @@ defmodule MaragaInfoWeb.NewsLive.Index do
 
       <section
         class="relative overflow-hidden bg-cover"
-        style="background-position: center 35%; background-image: url('/images/justin-lagat-7e16OcueiNs-unsplash.jpg');"
+        style="background-position: center 35%; background-image: url('/images/maraga-town.jpg');"
       >
         <div class="absolute inset-0 bg-blueink/70"></div>
         <div class="relative z-10 mx-auto flex min-h-[42vh] w-full max-w-container flex-col items-center justify-center px-4 py-24 text-center lg:px-6">

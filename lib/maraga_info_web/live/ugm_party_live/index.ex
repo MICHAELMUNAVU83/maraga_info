@@ -56,7 +56,7 @@ defmodule MaragaInfoWeb.UgmPartyLive.Index do
 
       <section
         class="relative overflow-hidden bg-cover"
-        style="background-position: center 30%; background-image: url('/images/justin-lagat-7e16OcueiNs-unsplash.jpg');"
+        style="background-position: center 30%; background-image: url('/images/maraga-town.jpg');"
       >
         <div aria-hidden="true" class="absolute inset-0 bg-blueink/80"></div>
 

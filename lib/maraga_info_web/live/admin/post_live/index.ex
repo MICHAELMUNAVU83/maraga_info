@@ -21,12 +21,14 @@ defmodule MaragaInfoWeb.Admin.PostLive.Index do
     path = URI.parse(url).path
     scope = scope_from_path(path)
     search_query = Map.get(params, "q", "")
+    category = Map.get(params, "category", "all")
 
     {:noreply,
      socket
      |> assign(:current_path, path)
      |> assign(:scope, scope)
-     |> assign(:page_title, scope.title)
+     |> assign(:category, category)
+     |> assign(:page_title, page_title(scope, category))
      |> assign(:page_subtitle, scope.subtitle)
      |> assign(:search_query, search_query)
      |> load_posts()}
@@ -56,6 +58,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Index do
     posts =
       Content.list_posts(
         scope: socket.assigns.scope.scope,
+        category: socket.assigns[:category],
         search: socket.assigns.search_query
       )
 
@@ -63,6 +66,9 @@ defmodule MaragaInfoWeb.Admin.PostLive.Index do
     |> assign(:stats, post_stats(posts))
     |> stream(:posts, posts, reset: true)
   end
+
+  defp page_title(scope, category) when category in [nil, "", "all"], do: scope.title
+  defp page_title(_scope, category), do: category
 
   defp scope_from_path(path) do
     cond do

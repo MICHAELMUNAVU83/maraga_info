@@ -7,6 +7,7 @@ defmodule MaragaInfo.Content do
   alias MaragaInfo.Repo
 
   alias MaragaInfo.Accounts.User
+  alias MaragaInfo.Content.Event
   alias MaragaInfo.Content.MediaItem
   alias MaragaInfo.Content.Post
 
@@ -354,5 +355,71 @@ defmodule MaragaInfo.Content do
 
   defp maybe_filter_media_type(query, media_type) do
     where(query, [item], item.media_type == ^to_string(media_type))
+  end
+
+  ## Events
+
+  @doc """
+  Returns events ordered by start time (soonest first).
+
+  Pass `status: :published` to limit to events shown on the public calendar, or
+  `from: datetime` to only include events that start on or after a given time.
+  """
+  def list_events(opts \\ []) do
+    Event
+    |> maybe_filter_event_published(Keyword.get(opts, :status))
+    |> maybe_filter_event_from(Keyword.get(opts, :from))
+    |> order_by([event], asc: event.starts_at)
+    |> maybe_limit(Keyword.get(opts, :limit))
+    |> Repo.all()
+  end
+
+  def list_published_events(opts \\ []) do
+    opts
+    |> Keyword.put(:status, :published)
+    |> list_events()
+  end
+
+  @doc """
+  Returns published events that start on or after the current time, soonest first.
+  """
+  def list_upcoming_events(opts \\ []) do
+    opts
+    |> Keyword.put(:from, DateTime.utc_now())
+    |> list_published_events()
+  end
+
+  def get_event!(id), do: Repo.get!(Event, id)
+
+  def create_event(attrs \\ %{}) do
+    %Event{}
+    |> Event.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_event(%Event{} = event, attrs) do
+    event
+    |> Event.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_event(%Event{} = event) do
+    Repo.delete(event)
+  end
+
+  def change_event(%Event{} = event, attrs \\ %{}) do
+    Event.changeset(event, attrs)
+  end
+
+  defp maybe_filter_event_published(query, :published) do
+    where(query, [event], event.is_published == true)
+  end
+
+  defp maybe_filter_event_published(query, _), do: query
+
+  defp maybe_filter_event_from(query, nil), do: query
+
+  defp maybe_filter_event_from(query, %DateTime{} = from) do
+    where(query, [event], event.starts_at >= ^from)
   end
 end

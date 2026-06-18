@@ -5,7 +5,7 @@ defmodule MaragaInfo.Content.Post do
   alias MaragaInfo.Accounts.User
   alias MaragaInfo.Content.PostSection
 
-  @general_categories ["Latest News", "News", "Analysis", "Explainer", "Statements", "Speeches"]
+  @general_categories ["Latest News", "Analysis", "Op-Ed", "Explainer"]
   @newsletter_category "Newsletter"
   @press_release_category "Press Releases"
   @media_invitation_category "Media Invitations"

@@ -18,7 +18,7 @@ defmodule MaragaInfoWeb.SiteComponents do
       assigns
       |> assign(:social_links, @social_links)
       |> assign_new(:news_categories, fn ->
-        Content.list_published_post_categories(scope: :posts)
+        Content.post_categories(:posts)
       end)
 
     ~H"""
@@ -104,12 +104,21 @@ defmodule MaragaInfoWeb.SiteComponents do
               <.link navigate="/blog" class="text-[15px] text-ink transition hover:text-crimson">
                 Blogs
               </.link>
-              <a
-                href={section_href(@base_path, "events")}
-                class="text-[15px] text-ink transition hover:text-crimson"
+              <p class="pt-1 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-grayink">
+                Media
+              </p>
+              <.link
+                navigate="/media/photos"
+                class="pl-3 text-[14px] text-grayink transition hover:text-crimson"
               >
-                Events
-              </a>
+                Photos
+              </.link>
+              <.link
+                navigate="/media/videos"
+                class="pl-3 text-[14px] text-grayink transition hover:text-crimson"
+              >
+                Videos
+              </.link>
             </.nav_dropdown>
             <.nav_dropdown label="Press">
               <.link
@@ -122,14 +131,12 @@ defmodule MaragaInfoWeb.SiteComponents do
                 Media Invitations
               </a>
             </.nav_dropdown>
-            <.nav_dropdown label="Media">
-              <a href="/media/photos" class="text-[15px] text-ink transition hover:text-crimson">
-                Photos
-              </a>
-              <a href="/media/videos" class="text-[15px] text-ink transition hover:text-crimson">
-                Videos
-              </a>
-            </.nav_dropdown>
+            <.link
+              navigate="/events"
+              class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+            >
+              Events
+            </.link>
             <a
               href="https://davidmaraga.com/shop"
               target="_blank"
@@ -249,6 +256,21 @@ defmodule MaragaInfoWeb.SiteComponents do
         >
           Blogs
         </.link>
+        <p class="pt-2 pl-3 font-head text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
+          Media
+        </p>
+        <.link
+          navigate="/media/photos"
+          class="py-1 pl-6 text-[13px] text-white/75 transition hover:text-crimson"
+        >
+          Photos
+        </.link>
+        <.link
+          navigate="/media/videos"
+          class="py-1 pl-6 text-[13px] text-white/75 transition hover:text-crimson"
+        >
+          Videos
+        </.link>
 
         <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
           Press
@@ -266,24 +288,17 @@ defmodule MaragaInfoWeb.SiteComponents do
           Media Invitations
         </a>
 
-        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
-          Media
-        </p>
-        <a
-          href="/media/photos"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+        <.link
+          navigate="/events"
+          class="py-1 pt-3 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
         >
-          Photos
-        </a>
-        <a
-          href="/media/videos"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-        >
-          Videos
-        </a>
+          Events
+        </.link>
 
         <a
-          href="#"
+          href="https://davidmaraga.com/shop"
+          target="_blank"
+          rel="noopener"
           class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
         >
           Shop

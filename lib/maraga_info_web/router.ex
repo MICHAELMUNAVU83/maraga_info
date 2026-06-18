@@ -27,6 +27,7 @@ defmodule MaragaInfoWeb.Router do
       live "/ugm-party", UgmPartyLive.Index
       live "/campaign-pillars", CampaignPillarsLive.Index
       live "/news", NewsLive.Index
+      live "/events", EventsLive.Index
       live "/newsletters", NewslettersLive.Index
       live "/press-releases", PressReleasesLive.Index
       live "/media-invitations", PressReleasesLive.Index
@@ -116,6 +117,7 @@ defmodule MaragaInfoWeb.Router do
       live "/media-invitations/:id/edit", PostLive.Form, :edit
       live "/media-invitations/:id", PostLive.Show, :show
 
+      live "/events", EventLive.Index, :index
       live "/volunteers", VolunteerLive.Index, :index
       live "/emails", EmailLive.Index, :index
       live "/media/photos", MediaLive.Index, :index

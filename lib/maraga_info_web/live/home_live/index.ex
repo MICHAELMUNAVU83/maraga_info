@@ -86,12 +86,6 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     }
   ]
 
-  @events [
-    %{day: "16", month: "Jun", title: "State of Nation: The Way Forward – 16 June 2026"},
-    %{day: "08", month: "Jun", title: "Nairobi National Park Protest – Maraga Arrested"},
-    %{day: "25", month: "May", title: "Ukombozi Campaign Launch – Lodwar, Turkana"}
-  ]
-
   # Layout classes for the 5-tile gallery collage, applied in order to the
   # media items fetched from the database.
   @gallery_layout [
@@ -106,6 +100,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   def mount(_params, _session, socket) do
     news_items = Content.list_published_posts(scope: :posts, limit: 4)
     gallery_images = build_gallery_images()
+    videos = build_campaign_videos()
+    events = Content.list_upcoming_events(limit: 3)
 
     {:ok,
      assign(socket,
@@ -117,10 +113,30 @@ defmodule MaragaInfoWeb.HomeLive.Index do
        news_items: news_items,
        stats: @stats,
        shop_items: @shop_items,
-       videos: @videos,
-       events: @events,
+       videos: videos,
+       events: events,
        gallery_images: gallery_images
      )}
+  end
+
+  # Builds the "Watch the Campaign" carousel from videos uploaded in the admin
+  # Videos library. Each clip links through to the public Videos gallery so the
+  # carousel always mirrors the Videos tab. Falls back to the curated samples
+  # when no videos have been published yet.
+  defp build_campaign_videos do
+    case Content.list_published_media_items(media_type: "video") do
+      [] ->
+        Enum.map(@videos, &Map.put(&1, :href, "/media/videos"))
+
+      items ->
+        Enum.map(items, fn item ->
+          %{
+            title: item.title,
+            thumb: item.image_url || "/images/gallery/1.jpg",
+            href: "/media/videos"
+          }
+        end)
+    end
   end
 
   # Pairs the published media items with the collage layout classes so the
@@ -377,7 +393,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     <section id="newsletter">
       <div
         class="relative bg-cover bg-center"
-        style="background-image: url('/images/justin-lagat-7e16OcueiNs-unsplash.jpg');"
+        style="background-image: url('/images/maraga-town.jpg');"
       >
         <div class="absolute inset-0 bg-black/60"></div>
 
@@ -504,15 +520,28 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <.video_carousel videos={@videos} />
 
       <div class="mx-auto max-w-container px-4">
-        <div class="mt-16" id="#events">
+        <div class="mt-16" id="events">
           <.section_heading
             title="Upcoming"
             accent="Events"
             description="Follow the latest news and updates from the campaign trail ."
           />
 
-          <div class="grid grid-cols-1 gap-7 md:grid-cols-3">
+          <div :if={@events != []} class="grid grid-cols-1 gap-7 md:grid-cols-3">
             <.event_card :for={event <- @events} event={event} />
+          </div>
+
+          <p :if={@events == []} class="text-center text-base leading-7 text-grayink">
+            No upcoming events scheduled yet — check the calendar for updates.
+          </p>
+
+          <div class="mt-10 text-center">
+            <.link
+              navigate={~p"/events"}
+              class="inline-flex items-center justify-center rounded-full bg-blueink px-8 py-3.5 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-white transition duration-300 hover:bg-crimson"
+            >
+              View Full Calendar
+            </.link>
           </div>
         </div>
       </div>
@@ -628,18 +657,22 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     ~H"""
     <article class="group flex items-stretch gap-4">
       <div class="flex shrink-0 flex-col items-center justify-center rounded-[5px] bg-blueink px-4 py-3 text-white">
-        <div class="font-head text-3xl leading-none">{@event.day}</div>
-        <div class="font-head text-sm uppercase tracking-wide">{@event.month}</div>
+        <div class="font-head text-3xl leading-none">
+          {Calendar.strftime(@event.starts_at, "%d")}
+        </div>
+        <div class="font-head text-sm uppercase tracking-wide">
+          {Calendar.strftime(@event.starts_at, "%b")}
+        </div>
       </div>
 
       <div class="flex-1">
-        <a href="#agenda">
+        <.link navigate={~p"/events"}>
           <h4 class="mt-0 font-head text-2xl uppercase tracking-[.5px] text-blueink transition hover:text-crimson">
             {@event.title}
           </h4>
-        </a>
-        <p class="mt-1 text-base leading-7 text-grayink">
-          Organizing for Action: We're the people who don't just support
+        </.link>
+        <p :if={@event.location} class="mt-1 text-base leading-7 text-grayink">
+          {@event.location}
         </p>
       </div>
     </article>
@@ -667,10 +700,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
   defp video_card(assigns) do
     ~H"""
-    <a
-      href={@video.href}
-      target="_blank"
-      rel="noopener"
+    <.link
+      navigate={@video.href}
       class="group relative block h-[220px] w-[320px] shrink-0 overflow-hidden rounded-[10px] shadow-[0_10px_30px_#0006] sm:h-[260px] sm:w-[420px]"
       style={"background-image: url('#{@video.thumb}'); background-size: cover; background-position: center;"}
     >
@@ -690,7 +721,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
         <p class="font-head text-sm uppercase tracking-[0.1em] text-white">{@video.title}</p>
       </div>
-    </a>
+    </.link>
     """
   end
 

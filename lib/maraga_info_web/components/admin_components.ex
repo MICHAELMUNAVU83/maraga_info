@@ -36,8 +36,13 @@ defmodule MaragaInfoWeb.AdminComponents do
                 >
                   {entry.label}
                 </p>
+                <.admin_nav_group
+                  :if={entry[:type] == :group}
+                  item={entry}
+                  current_path={@current_path}
+                />
                 <.admin_nav_link
-                  :if={entry[:type] != :heading}
+                  :if={entry[:type] not in [:heading, :group]}
                   item={entry}
                   current_path={@current_path}
                 />
@@ -190,6 +195,39 @@ defmodule MaragaInfoWeb.AdminComponents do
   attr :item, :map, required: true
   attr :current_path, :string, required: true
 
+  defp admin_nav_group(assigns) do
+    assigns = assign(assigns, :group_active, nav_active?(assigns.current_path, assigns.item.href))
+
+    ~H"""
+    <details open={@group_active} class="group">
+      <summary class={[
+        "flex cursor-pointer list-none items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition",
+        @group_active && "bg-blueink text-white",
+        !@group_active && "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+      ]}>
+        <.icon name={@item.icon} class="h-5 w-5" />
+        <span class="flex-1">{@item.label}</span>
+        <.icon
+          name="hero-chevron-right-mini"
+          class="h-4 w-4 transition group-open:rotate-90"
+        />
+      </summary>
+      <div class="mt-0.5 space-y-0.5 pl-7">
+        <.link
+          :for={child <- @item.children}
+          navigate={child.href}
+          class="block rounded-lg px-3 py-1.5 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900"
+        >
+          {child.label}
+        </.link>
+      </div>
+    </details>
+    """
+  end
+
+  attr :item, :map, required: true
+  attr :current_path, :string, required: true
+
   defp admin_nav_link(assigns) do
     ~H"""
     <.link
@@ -211,7 +249,17 @@ defmodule MaragaInfoWeb.AdminComponents do
     [
       %{label: "Dashboard", href: ~p"/admin", icon: "hero-home"},
       %{type: :heading, label: "Content"},
-      %{label: "Posts", href: ~p"/admin/posts", icon: "hero-document-text"},
+      %{
+        type: :group,
+        label: "News",
+        href: ~p"/admin/posts",
+        icon: "hero-newspaper",
+        children:
+          [%{label: "All News", href: ~p"/admin/posts"}] ++
+            Enum.map(MaragaInfo.Content.Post.general_categories(), fn category ->
+              %{label: category, href: ~p"/admin/posts?#{%{category: category}}"}
+            end)
+      },
       %{label: "Blogs", href: ~p"/admin/blogs", icon: "hero-pencil-square"},
       %{label: "Newsletters", href: ~p"/admin/newsletters", icon: "hero-newspaper"},
       %{label: "Press Releases", href: ~p"/admin/press-releases", icon: "hero-megaphone"},
@@ -230,6 +278,7 @@ defmodule MaragaInfoWeb.AdminComponents do
       %{label: "Press", href: ~p"/admin/pages/press", icon: "hero-megaphone"},
       %{label: "Shop", href: ~p"/admin/pages/shop", icon: "hero-shopping-bag"},
       %{type: :heading, label: "Operations"},
+      %{label: "Events", href: ~p"/admin/events", icon: "hero-calendar-days"},
       %{label: "Volunteers", href: ~p"/admin/volunteers", icon: "hero-users"},
       %{label: "Emails", href: ~p"/admin/emails", icon: "hero-envelope"},
       %{type: :heading, label: "System"},
