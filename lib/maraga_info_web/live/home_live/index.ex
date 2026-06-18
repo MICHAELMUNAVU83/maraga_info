@@ -102,9 +102,18 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     gallery_images = build_gallery_images()
     videos = build_campaign_videos()
     events = Content.list_upcoming_events(limit: 3)
+    featured_event = List.first(events)
+
+    # Auto-dismiss the upcoming-event popup after 10 minutes; the visitor can
+    # also close it sooner with the X button.
+    if connected?(socket) and featured_event do
+      Process.send_after(self(), :close_event_modal, :timer.minutes(10))
+    end
 
     {:ok,
      assign(socket,
+       featured_event: featured_event,
+       show_event_modal: featured_event != nil,
        page_title: Seo.default_title(),
        page_description: Seo.default_description(),
        canonical_url: Seo.site_url(),
@@ -117,6 +126,16 @@ defmodule MaragaInfoWeb.HomeLive.Index do
        events: events,
        gallery_images: gallery_images
      )}
+  end
+
+  @impl true
+  def handle_event("close_event_modal", _params, socket) do
+    {:noreply, assign(socket, :show_event_modal, false)}
+  end
+
+  @impl true
+  def handle_info(:close_event_modal, socket) do
+    {:noreply, assign(socket, :show_event_modal, false)}
   end
 
   # Builds the "Watch the Campaign" carousel from videos uploaded in the admin
@@ -152,6 +171,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   def render(assigns) do
     ~H"""
     <div id="top" class="min-h-screen bg-white">
+      <.upcoming_event_modal :if={@show_event_modal && @featured_event} event={@featured_event} />
       <.site_header />
       <.hero_section />
       <.donate_section />
@@ -646,6 +666,87 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           </h6>
         </a>
         <div class="mt-1 font-head text-lg font-medium text-crimson">{@item.price}</div>
+      </div>
+    </div>
+    """
+  end
+
+  attr :event, :map, required: true
+
+  defp upcoming_event_modal(assigns) do
+    ~H"""
+    <div
+      id="upcoming-event-modal"
+      class="fixed inset-0 z-[100] flex items-center justify-center px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="upcoming-event-title"
+    >
+      <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        phx-click="close_event_modal"
+        aria-hidden="true"
+      >
+      </div>
+
+      <div class="relative w-full max-w-lg overflow-hidden rounded-[14px] bg-white shadow-2xl">
+        <button
+          type="button"
+          phx-click="close_event_modal"
+          class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-blueink shadow-md transition hover:bg-crimson hover:text-white"
+          aria-label="Close"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+
+        <img
+          :if={@event.image_url}
+          src={@event.image_url}
+          alt={@event.title}
+          class="h-48 w-full object-cover"
+        />
+
+        <div class="p-6 sm:p-8">
+          <p class="font-head text-sm font-bold uppercase tracking-[0.2em] text-crimson">
+            Upcoming Event
+          </p>
+
+          <h3
+            id="upcoming-event-title"
+            class="mt-3 font-head text-3xl uppercase leading-tight tracking-[0.5px] text-blueink"
+          >
+            {@event.title}
+          </h3>
+
+          <div class="mt-4 flex items-center gap-3 text-grayink">
+            <div class="flex shrink-0 flex-col items-center justify-center rounded-[5px] bg-blueink px-4 py-2 text-white">
+              <span class="font-head text-2xl leading-none">
+                {Calendar.strftime(@event.starts_at, "%d")}
+              </span>
+              <span class="font-head text-xs uppercase tracking-wide">
+                {Calendar.strftime(@event.starts_at, "%b")}
+              </span>
+            </div>
+            <div class="text-base leading-6">
+              <p>{Calendar.strftime(@event.starts_at, "%A, %d %B %Y")}</p>
+              <p :if={!@event.all_day}>{Calendar.strftime(@event.starts_at, "%-I:%M %p")}</p>
+              <p :if={@event.location} class="text-grayink/80">{@event.location}</p>
+            </div>
+          </div>
+
+          <p :if={@event.description} class="mt-4 line-clamp-3 text-base leading-7 text-grayink">
+            {@event.description}
+          </p>
+
+          <.link
+            navigate={~p"/events"}
+            class="mt-6 inline-flex w-full items-center justify-center rounded-full bg-crimson px-8 py-3 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-blueink"
+          >
+            View Event
+          </.link>
+        </div>
       </div>
     </div>
     """

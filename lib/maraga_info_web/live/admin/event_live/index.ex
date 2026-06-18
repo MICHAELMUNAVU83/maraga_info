@@ -3,6 +3,10 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
 
   alias MaragaInfo.Content
   alias MaragaInfo.Content.Event
+  alias MaragaInfoWeb.Uploads
+
+  @max_image_mb 8
+  defp max_image_mb, do: @max_image_mb
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,6 +17,14 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
      |> assign(:show_form, false)
      |> assign(:editing, nil)
      |> assign(:form, nil)
+     |> assign(:image_url, nil)
+     |> allow_upload(:image,
+       accept: ~w(.jpg .jpeg .png .webp),
+       max_entries: 1,
+       max_file_size: @max_image_mb * 1_000_000,
+       auto_upload: true,
+       progress: &handle_progress/3
+     )
      |> load_events()}
   end
 
@@ -29,6 +41,7 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
      socket
      |> assign(:show_form, true)
      |> assign(:editing, event)
+     |> assign(:image_url, nil)
      |> assign_form(Content.change_event(event))}
   end
 
@@ -39,11 +52,20 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
      socket
      |> assign(:show_form, true)
      |> assign(:editing, event)
+     |> assign(:image_url, event.image_url)
      |> assign_form(Content.change_event(event))}
   end
 
   def handle_event("close_form", _params, socket) do
-    {:noreply, assign(socket, show_form: false, editing: nil, form: nil)}
+    {:noreply, assign(socket, show_form: false, editing: nil, form: nil, image_url: nil)}
+  end
+
+  def handle_event("cancel_upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :image, ref)}
+  end
+
+  def handle_event("remove_image", _params, socket) do
+    {:noreply, assign(socket, :image_url, nil)}
   end
 
   def handle_event("validate", %{"event" => params}, socket) do
@@ -56,7 +78,12 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
   end
 
   def handle_event("save", %{"event" => params}, socket) do
-    save_event(socket, socket.assigns.editing, normalize_params(params))
+    params =
+      params
+      |> normalize_params()
+      |> Map.put("image_url", socket.assigns.image_url)
+
+    save_event(socket, socket.assigns.editing, params)
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
@@ -67,13 +94,22 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
     {:noreply, socket |> put_flash(:info, "Event deleted") |> load_events()}
   end
 
+  defp handle_progress(:image, entry, socket) do
+    if entry.done? do
+      url = consume_uploaded_entry(socket, entry, fn meta -> Uploads.store_entry(meta, entry) end)
+      {:noreply, assign(socket, :image_url, url)}
+    else
+      {:noreply, socket}
+    end
+  end
+
   defp save_event(socket, %Event{id: nil}, params) do
     case Content.create_event(params) do
       {:ok, _event} ->
         {:noreply,
          socket
          |> put_flash(:info, "Event added")
-         |> assign(show_form: false, editing: nil, form: nil)
+         |> assign(show_form: false, editing: nil, form: nil, image_url: nil)
          |> load_events()}
 
       {:error, changeset} ->
@@ -87,7 +123,7 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
         {:noreply,
          socket
          |> put_flash(:info, "Event updated")
-         |> assign(show_form: false, editing: nil, form: nil)
+         |> assign(show_form: false, editing: nil, form: nil, image_url: nil)
          |> load_events()}
 
       {:error, changeset} ->
@@ -100,6 +136,15 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
   end
 
   defp assign_form(socket, changeset), do: assign(socket, :form, to_form(changeset))
+
+  defp image_errors(upload) do
+    Enum.flat_map(upload.entries, &upload_errors(upload, &1)) ++ upload_errors(upload)
+  end
+
+  defp upload_error_to_string(:too_large), do: "File is too large (max #{@max_image_mb}MB)"
+  defp upload_error_to_string(:too_many_files), do: "Too many files"
+  defp upload_error_to_string(:not_accepted), do: "Unsupported file type"
+  defp upload_error_to_string(_), do: "Invalid file"
 
   # `datetime-local` inputs send "YYYY-MM-DDTHH:MM" with no timezone; turn those
   # into UTC datetimes the schema can cast.
@@ -223,6 +268,38 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
           </div>
 
           <.input field={@form[:description]} type="textarea" label="Description (optional)" rows="3" />
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-zinc-700">Photo (optional)</label>
+
+            <div :if={@image_url} class="relative mb-3 overflow-hidden rounded-lg border border-zinc-200">
+              <img src={@image_url} class="mx-auto max-h-64 w-full object-contain" />
+              <button
+                type="button"
+                phx-click="remove_image"
+                class="absolute right-2 top-2 rounded-md bg-white/90 p-1 text-zinc-700 shadow-sm transition hover:text-red-600"
+                aria-label="Remove photo"
+              >
+                <.icon name="hero-x-mark-mini" class="h-4 w-4" />
+              </button>
+            </div>
+
+            <label class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-600 transition hover:border-blueink hover:text-blueink">
+              <.icon name="hero-arrow-up-tray" class="h-5 w-5" />
+              <span class="font-medium">{if @image_url, do: "Replace photo", else: "Upload photo"}</span>
+              <span class="text-xs text-zinc-400">JPG, PNG or WEBP up to {max_image_mb()}MB</span>
+              <.live_file_input upload={@uploads.image} class="sr-only" />
+            </label>
+
+            <p :for={entry <- @uploads.image.entries} class="mt-2 text-xs text-zinc-500">
+              Uploading {entry.client_name} — {entry.progress}%
+            </p>
+
+            <p :for={err <- image_errors(@uploads.image)} class="mt-1 text-xs text-red-600">
+              {upload_error_to_string(err)}
+            </p>
+          </div>
+
           <.input field={@form[:all_day]} type="checkbox" label="All-day event" />
           <.input field={@form[:is_published]} type="checkbox" label="Show on public calendar" />
 

@@ -11,6 +11,7 @@ defmodule MaragaInfo.Content.Event do
     field :title, :string
     field :description, :string
     field :location, :string
+    field :image_url, :string
     field :starts_at, :utc_datetime
     field :ends_at, :utc_datetime
     field :all_day, :boolean, default: false
@@ -26,6 +27,7 @@ defmodule MaragaInfo.Content.Event do
       :title,
       :description,
       :location,
+      :image_url,
       :starts_at,
       :ends_at,
       :all_day,
