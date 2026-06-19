@@ -194,7 +194,15 @@ defmodule MaragaInfoWeb.EventsLive.Index do
 
   defp upcoming_card(assigns) do
     ~H"""
-    <article class="flex items-stretch gap-4 rounded-[8px] bg-white p-4 shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
+    <article class="overflow-hidden rounded-[8px] bg-white shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
+      <img
+        :if={present?(@event.image_url)}
+        src={@event.image_url}
+        alt={@event.title}
+        class="h-40 w-full object-cover"
+        loading="lazy"
+      />
+      <div class="flex items-stretch gap-4 p-4">
       <div class="flex shrink-0 flex-col items-center justify-center rounded-[5px] bg-blueink px-4 py-3 text-white">
         <div class="font-head text-3xl leading-none">
           {Calendar.strftime(@event.starts_at, "%d")}
@@ -216,6 +224,7 @@ defmodule MaragaInfoWeb.EventsLive.Index do
           <.icon name="hero-map-pin-mini" class="h-4 w-4 text-crimson" />
           {@event.location}
         </p>
+      </div>
       </div>
     </article>
     """
