@@ -11,6 +11,8 @@ defmodule MaragaInfo.Campaigns.EmailDelivery do
   schema "email_deliveries" do
     field :email, :string
     field :name, :string
+    # Which variant this recipient received: "A" or "B".
+    field :variant, :string, default: "A"
     field :status, :string, default: "pending"
     field :error, :string
     field :sent_at, :utc_datetime
@@ -23,7 +25,7 @@ defmodule MaragaInfo.Campaigns.EmailDelivery do
   @doc false
   def changeset(delivery, attrs) do
     delivery
-    |> cast(attrs, [:campaign_id, :email, :name, :status, :error, :sent_at])
+    |> cast(attrs, [:campaign_id, :email, :name, :variant, :status, :error, :sent_at])
     |> validate_required([:campaign_id, :email, :status])
     |> validate_inclusion(:status, @statuses)
     |> unique_constraint([:campaign_id, :email],

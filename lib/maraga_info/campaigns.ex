@@ -72,11 +72,14 @@ defmodule MaragaInfo.Campaigns do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     rows =
-      Enum.map(recipients, fn r ->
+      recipients
+      |> Enum.with_index()
+      |> Enum.map(fn {r, index} ->
         %{
           campaign_id: campaign.id,
           email: r.email,
           name: r.name,
+          variant: assign_variant(campaign, index),
           status: "pending",
           inserted_at: now,
           updated_at: now
@@ -110,10 +113,19 @@ defmodule MaragaInfo.Campaigns do
 
   def send_campaign(%EmailCampaign{}), do: {:error, :already_sent}
 
-  @doc "Sends a single preview/test email immediately (bypasses Oban)."
-  def send_test_email(%EmailCampaign{} = campaign, email) when is_binary(email) do
+  # Even split: alternating recipients go to B when A/B testing is on, so the
+  # pool is divided ~50/50 between the two variants. Without A/B everyone gets A.
+  defp assign_variant(%EmailCampaign{ab_test: true}, index) when rem(index, 2) == 1, do: "B"
+  defp assign_variant(_campaign, _index), do: "A"
+
+  @doc """
+  Sends a single preview/test email immediately (bypasses Oban). `variant`
+  selects which version (`"A"` or `"B"`) to send; defaults to `"A"`.
+  """
+  def send_test_email(%EmailCampaign{} = campaign, email, variant \\ "A")
+      when is_binary(email) do
     campaign
-    |> CampaignEmail.build(%{email: email, name: "Friend"}, from())
+    |> CampaignEmail.build(variant, %{email: email, name: "Friend"}, from_address())
     |> Mailer.deliver()
   end
 
@@ -131,8 +143,9 @@ defmodule MaragaInfo.Campaigns do
       email =
         CampaignEmail.build(
           delivery.campaign,
+          delivery.variant,
           %{email: delivery.email, name: delivery.name},
-          from()
+          from_address()
         )
 
       case Mailer.deliver(email) do
@@ -171,6 +184,27 @@ defmodule MaragaInfo.Campaigns do
     %{sent: sent, failed: failed, pending: pending, total: sent + failed + pending}
   end
 
+  @doc """
+  Per-variant delivery counts for an A/B campaign, as `%{"A" => stats, "B" =>
+  stats}`. Variants with no deliveries are omitted.
+  """
+  def variant_stats(campaign_id) do
+    EmailDelivery
+    |> where([d], d.campaign_id == ^campaign_id)
+    |> group_by([d], [d.variant, d.status])
+    |> select([d], {d.variant, d.status, count(d.id)})
+    |> Repo.all()
+    |> Enum.group_by(fn {variant, _status, _count} -> variant end)
+    |> Map.new(fn {variant, rows} ->
+      counts = Map.new(rows, fn {_v, status, count} -> {status, count} end)
+      sent = Map.get(counts, "sent", 0)
+      failed = Map.get(counts, "failed", 0)
+      pending = Map.get(counts, "pending", 0)
+
+      {variant, %{sent: sent, failed: failed, pending: pending, total: sent + failed + pending}}
+    end)
+  end
+
   ## Internal
 
   defp mark_delivery(%EmailDelivery{} = delivery, attrs) do
@@ -201,7 +235,14 @@ defmodule MaragaInfo.Campaigns do
     end
   end
 
-  defp from, do: Application.fetch_env!(:maraga_info, :mail_from)
+  # The configured sending address. Each variant supplies its own display name,
+  # so we only need the email here.
+  defp from_address do
+    case Application.fetch_env!(:maraga_info, :mail_from) do
+      {_name, email} -> email
+      email when is_binary(email) -> email
+    end
+  end
 
   defp now, do: DateTime.utc_now() |> DateTime.truncate(:second)
 

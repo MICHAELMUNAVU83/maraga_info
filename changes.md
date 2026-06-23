@@ -11,6 +11,8 @@
 - [x] Separate `Newsletters` from `Posts` in the admin navigation.
 - [x] Add search for admin posts.
 - [x] Add video upload support.
+- [x] Campaigns: author full HTML email bodies with a live per-recipient preview.
+- [x] Campaigns: A/B testing that splits the volunteer list evenly between two variants, sent via Oban.
 
 Video upload flow:
 

@@ -8,28 +8,67 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
 
   @poll_interval 2_000
 
+  @default_body """
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </head>
+    <body style="margin:0; padding:0; background-color:#f0f4ff; font-family:Helvetica, Arial, sans-serif; color:#222222;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f4ff;">
+        <tr>
+          <td align="center" style="padding:32px 16px;">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:600px; background-color:#ffffff; border-radius:16px; overflow:hidden;">
+              <tr>
+                <td style="background-color:#32673B; padding:28px 40px;" align="center">
+                  <span style="color:#ffffff; font-size:24px; font-weight:700;">David Maraga</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="height:4px; background-color:#CEB04E; line-height:4px; font-size:4px;">&nbsp;</td>
+              </tr>
+              <tr>
+                <td style="padding:40px; font-size:16px; line-height:1.7;">
+                  <h1 style="margin:0 0 16px 0; font-size:24px; color:#32673B;">Kenya Cannot Wait</h1>
+                  <p style="margin:0 0 18px 0;">Dear {{name}},</p>
+                  <p style="margin:0 0 18px 0;">
+                    Write your message here. Use <strong>{{name}}</strong> or
+                    {{first_name}} anywhere to greet each volunteer personally.
+                  </p>
+                  <p style="margin:24px 0 0 0;">Warm regards,<br /><strong>David Maraga Campaign</strong></p>
+                </td>
+              </tr>
+              <tr>
+                <td style="background-color:#0f172a; padding:24px 40px; color:#94a3b8; font-size:12px; line-height:1.6;">
+                  You are receiving this because you joined the movement.<br />
+                  Constitutionalism &middot; Human dignity &middot; Economic renewal
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+  </html>
+  """
+
+  @default_body_b String.replace(
+                    @default_body,
+                    "Kenya Cannot Wait",
+                    "It's Time. Stand With Maraga."
+                  )
+
   @default_attrs %{
     "subject" => "Kenya Cannot Wait. Be at Ufungamano This Tuesday.",
     "preheader" => "Maraga's State of the Nation — Tuesday, June 16 at Ufungamano House.",
     "sender_name" => "David Maraga Campaign",
     "sender_title" => "Ukombozi 2027",
-    "body" => """
-    Dear {{name}},
-
-    This Tuesday, June 16, former Chief Justice David Maraga will stand before the nation and say what many Kenyans have been waiting to hear.
-
-    His State of the Nation address, "State of the Nation: The Way Forward," brings together moral authorities, opposition leaders, civil society, youth, and professionals for a frank national conversation about where Kenya is, and where it must go.
-
-    The address draws on findings from the Ukatiba Caravan, which engaged citizens across 43 counties earlier this year. Maraga will lay out a three-part national recovery agenda anchored in constitutionalism, human dignity, and economic renewal, and will present his vision for Ukombozi 2027.
-
-    Your voice belongs in that room.
-
-    DATE: Tuesday, June 16, 2026
-    TIME: 9:00 AM to 1:00 PM
-    VENUE: Ufungamano House, Nairobi
-
-    Come. Be part of the conversation that shapes what comes next.\
-    """
+    "body" => @default_body,
+    "ab_test" => "false",
+    "subject_b" => "It's Time. Stand With Maraga This Tuesday.",
+    "sender_name_b" => "Team Maraga",
+    "body_b" => @default_body_b
   }
 
   @impl true
@@ -39,10 +78,11 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
      |> assign(:page_title, "Email broadcasts")
      |> assign(
        :page_subtitle,
-       "Design a beautiful email and send it to the whole volunteer database. Delivery runs in the background through Oban with automatic retries."
+       "Design an HTML email and send it to the whole volunteer database. Run an A/B test to split the list between two versions. Delivery runs in the background through Oban with automatic retries."
      )
      |> assign(:recipient_count, Campaigns.recipient_count())
      |> assign(:test_email, "")
+     |> assign(:preview_variant, "A")
      |> assign(:confirm_send, false)
      |> assign(:polling, false)
      |> reset_composer()
@@ -74,6 +114,16 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
     {:noreply, assign(socket, :test_email, value)}
   end
 
+  def handle_event("preview_variant", %{"variant" => variant}, socket)
+      when variant in ~w(A B) do
+    changeset = Campaigns.change_campaign(socket.assigns.campaign, socket.assigns.draft_params)
+
+    {:noreply,
+     socket
+     |> assign(:preview_variant, variant)
+     |> refresh_preview(changeset)}
+  end
+
   def handle_event("save_draft", %{"email_campaign" => params}, socket) do
     case persist(socket.assigns.campaign, params) do
       {:ok, campaign} ->
@@ -91,6 +141,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   def handle_event("send_test", _payload, socket) do
     params = socket.assigns.draft_params
     email = String.trim(socket.assigns.test_email)
+    variant = socket.assigns.preview_variant
 
     cond do
       email == "" ->
@@ -100,9 +151,10 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
         changeset = Campaigns.change_campaign(socket.assigns.campaign, params)
         campaign = Ecto.Changeset.apply_changes(changeset)
 
-        case Campaigns.send_test_email(campaign, email) do
+        case Campaigns.send_test_email(campaign, email, variant) do
           {:ok, _} ->
-            {:noreply, put_flash(socket, :info, "Test email sent to #{email}.")}
+            {:noreply,
+             put_flash(socket, :info, "Test of variant #{variant} sent to #{email}.")}
 
           {:error, reason} ->
             {:noreply, put_flash(socket, :error, "Could not send test: #{inspect(reason)}")}
@@ -198,6 +250,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
     socket
     |> assign(:campaign, campaign)
     |> assign(:draft_params, @default_attrs)
+    |> assign(:preview_variant, "A")
     |> assign_form(changeset)
     |> refresh_preview(changeset)
   end
@@ -219,24 +272,47 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
       "body" => campaign.body,
       "sender_name" => campaign.sender_name,
       "sender_title" => campaign.sender_title,
-      "reply_to" => campaign.reply_to
+      "reply_to" => campaign.reply_to,
+      "ab_test" => to_string(campaign.ab_test),
+      "subject_b" => campaign.subject_b,
+      "sender_name_b" => campaign.sender_name_b,
+      "body_b" => campaign.body_b
     }
   end
 
   defp assign_form(socket, changeset), do: assign(socket, :form, to_form(changeset))
 
   defp refresh_preview(socket, changeset) do
-    preview = Ecto.Changeset.apply_changes(changeset) |> preview_defaults()
-    assign(socket, :preview_html, CampaignEmail.render_html(preview, %{name: "Jane Mwangi"}))
+    campaign = Ecto.Changeset.apply_changes(changeset) |> preview_defaults()
+    variant = effective_preview_variant(socket, campaign)
+    content = CampaignEmail.variant_content(campaign, variant)
+    html = CampaignEmail.render_html(content, %{name: "Jane Mwangi"})
+
+    socket
+    |> assign(:preview_variant, variant)
+    |> assign(:preview_html, html)
   end
+
+  # A/B preview only makes sense while A/B testing is on; otherwise pin to A.
+  defp effective_preview_variant(socket, %EmailCampaign{ab_test: true}),
+    do: socket.assigns.preview_variant
+
+  defp effective_preview_variant(_socket, _campaign), do: "A"
 
   defp preview_defaults(%EmailCampaign{} = campaign) do
     %EmailCampaign{
       campaign
       | subject: present(campaign.subject) || "Your subject line",
-        body: present(campaign.body) || "Start writing your message…",
-        sender_name: present(campaign.sender_name) || "Your name"
+        body: present(campaign.body) || placeholder_body("Start writing your HTML email…"),
+        sender_name: present(campaign.sender_name) || "Your name",
+        subject_b: present(campaign.subject_b) || "Variant B subject line",
+        body_b: present(campaign.body_b) || placeholder_body("Variant B — start writing…"),
+        sender_name_b: present(campaign.sender_name_b) || "Your name"
     }
+  end
+
+  defp placeholder_body(text) do
+    ~s(<div style="font-family:Helvetica,Arial,sans-serif; color:#94a3b8; padding:40px; text-align:center;">#{text}</div>)
   end
 
   defp load_campaigns(socket) do
@@ -247,9 +323,15 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
       |> Enum.filter(&(&1.status == "sending"))
       |> Map.new(fn c -> {c.id, Campaigns.delivery_stats(c.id)} end)
 
+    variant_stats =
+      campaigns
+      |> Enum.filter(& &1.ab_test)
+      |> Map.new(fn c -> {c.id, Campaigns.variant_stats(c.id)} end)
+
     socket
     |> assign(:campaigns, campaigns)
     |> assign(:live_stats, live_stats)
+    |> assign(:variant_stats, variant_stats)
   end
 
   defp ensure_polling(socket) do
@@ -330,7 +412,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
           <%!-- Composer --%>
           <.admin_panel
             title="Design your email"
-            subtitle="Use {{name}} anywhere to drop in each recipient's name. Lines like DATE: / TIME: / VENUE: become a highlighted details card."
+            subtitle="Paste a complete HTML email. Use {{name}} or {{first_name}} anywhere to greet each recipient."
           >
             <div class="space-y-4">
               <.input field={@form[:subject]} type="text" label="Subject line" required />
@@ -341,11 +423,37 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                 placeholder="Short summary shown in the inbox preview"
               />
 
-              <.input field={@form[:body]} type="textarea" label="Message" rows="16" required />
+              <.input field={@form[:sender_name]} type="text" label="Sender name (From)" required />
 
-              <div class="grid gap-4 sm:grid-cols-2">
-                <.input field={@form[:sender_name]} type="text" label="Sign-off name" required />
-                <.input field={@form[:sender_title]} type="text" label="Sign-off title" />
+              <.input
+                field={@form[:body]}
+                type="textarea"
+                label="HTML email body"
+                rows="16"
+                required
+              />
+
+              <%!-- A/B testing --%>
+              <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+                <.input
+                  field={@form[:ab_test]}
+                  type="checkbox"
+                  label="Run an A/B test (split the list evenly between two versions)"
+                />
+
+                <div :if={@form[:ab_test].value in [true, "true"]} class="mt-4 space-y-4 border-t border-zinc-200 pt-4">
+                  <p class="text-xs text-zinc-500">
+                    Variant B goes to half the volunteers, variant A to the other half.
+                  </p>
+                  <.input field={@form[:subject_b]} type="text" label="Variant B — subject line" />
+                  <.input field={@form[:sender_name_b]} type="text" label="Variant B — sender name" />
+                  <.input
+                    field={@form[:body_b]}
+                    type="textarea"
+                    label="Variant B — HTML email body"
+                    rows="12"
+                  />
+                </div>
               </div>
 
               <.input
@@ -368,7 +476,10 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
               </div>
 
               <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-                <p class="text-sm font-medium text-zinc-900">Send yourself a test first</p>
+                <p class="text-sm font-medium text-zinc-900">
+                  Send yourself a test first
+                  <span class="text-zinc-500">(variant {@preview_variant})</span>
+                </p>
                 <div class="mt-2 flex flex-col gap-2 sm:flex-row">
                   <input
                     type="email"
@@ -393,6 +504,26 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
 
           <%!-- Live preview --%>
           <.admin_panel title="Live preview" subtitle="Exactly how it lands in the inbox.">
+            <:actions>
+              <div
+                :if={@form[:ab_test].value in [true, "true"]}
+                class="inline-flex rounded-lg border border-zinc-200 bg-zinc-100 p-0.5"
+              >
+                <button
+                  :for={variant <- ~w(A B)}
+                  type="button"
+                  phx-click="preview_variant"
+                  phx-value-variant={variant}
+                  class={[
+                    "rounded-md px-3 py-1 text-xs font-semibold transition",
+                    @preview_variant == variant && "bg-white text-zinc-900 shadow-sm",
+                    @preview_variant != variant && "text-zinc-500 hover:text-zinc-700"
+                  ]}
+                >
+                  Variant {variant}
+                </button>
+              </div>
+            </:actions>
             <iframe
               srcdoc={@preview_html}
               title="Email preview"
@@ -408,12 +539,13 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
           <div :if={@campaigns != []} class="divide-y divide-zinc-100">
             <div
               :for={campaign <- @campaigns}
-              class="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
+              class="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:justify-between"
             >
               <div class="min-w-0">
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                   <p class="truncate font-medium text-zinc-900">{campaign.subject}</p>
                   <.admin_badge tone={status_tone(campaign.status)} label={campaign.status} />
+                  <.admin_badge :if={campaign.ab_test} tone="neutral" label="A/B" />
                 </div>
                 <p class="mt-0.5 text-sm text-zinc-500">
                   <%= case campaign.status do %>
@@ -431,6 +563,22 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                       )}
                   <% end %>
                 </p>
+
+                <%!-- Per-variant breakdown for A/B campaigns --%>
+                <div
+                  :if={campaign.ab_test and campaign.status != "draft"}
+                  class="mt-2 flex flex-wrap gap-2"
+                >
+                  <span
+                    :for={variant <- ~w(A B)}
+                    :if={vstats = Map.get(Map.get(@variant_stats, campaign.id, %{}), variant)}
+                    class="inline-flex items-center gap-1.5 rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-600"
+                  >
+                    <span class="font-semibold text-zinc-900">{variant}</span>
+                    {vstats.sent}/{vstats.total} sent<%= if vstats.failed > 0,
+                      do: " · #{vstats.failed} failed" %>
+                  </span>
+                </div>
 
                 <div
                   :if={campaign.status == "sending"}
@@ -477,7 +625,9 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
               <h2 class="text-lg font-semibold text-zinc-900">Send this email now?</h2>
               <p class="mt-1 text-sm text-zinc-500">
                 This will queue <span class="font-semibold text-zinc-900">{@recipient_count}</span>
-                emails to every volunteer with an email address. Delivery runs in the background and can't be undone.
+                emails to every volunteer with an email address.<span :if={@campaign.ab_test}>
+                  The list is split evenly between variant A and variant B.</span>
+                Delivery runs in the background and can't be undone.
               </p>
             </div>
           </div>
@@ -485,6 +635,12 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
           <div class="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
             <p class="text-xs uppercase tracking-wide text-zinc-400">Subject</p>
             <p class="mt-0.5 text-sm font-medium text-zinc-900">{@campaign.subject}</p>
+            <p :if={@campaign.ab_test} class="mt-2 text-xs uppercase tracking-wide text-zinc-400">
+              Variant B subject
+            </p>
+            <p :if={@campaign.ab_test} class="mt-0.5 text-sm font-medium text-zinc-900">
+              {@campaign.subject_b}
+            </p>
           </div>
 
           <div class="flex items-center justify-end gap-3">
