@@ -91,34 +91,32 @@ defmodule MaragaInfoWeb.SiteComponents do
               >
                 Newsletters
               </.link>
-              <.link navigate="/news" class="text-[15px] text-ink transition hover:text-crimson">
-                News
-              </.link>
-              <.link
-                :for={category <- @news_categories}
-                navigate={news_category_href(category)}
-                class="pl-3 text-[14px] text-grayink transition hover:text-crimson"
-              >
-                {category}
-              </.link>
+              <.nav_submenu label="News" navigate="/news">
+                <.link
+                  :for={category <- @news_categories}
+                  navigate={news_category_href(category)}
+                  class="text-[14px] text-grayink transition hover:text-crimson"
+                >
+                  {category}
+                </.link>
+              </.nav_submenu>
               <.link navigate="/blog" class="text-[15px] text-ink transition hover:text-crimson">
                 Blogs
               </.link>
-              <p class="pt-1 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-grayink">
-                Media
-              </p>
-              <.link
-                navigate="/media/photos"
-                class="pl-3 text-[14px] text-grayink transition hover:text-crimson"
-              >
-                Photos
-              </.link>
-              <.link
-                navigate="/media/videos"
-                class="pl-3 text-[14px] text-grayink transition hover:text-crimson"
-              >
-                Videos
-              </.link>
+              <.nav_submenu label="Media">
+                <.link
+                  navigate="/media/photos"
+                  class="text-[14px] text-grayink transition hover:text-crimson"
+                >
+                  Photos
+                </.link>
+                <.link
+                  navigate="/media/videos"
+                  class="text-[14px] text-grayink transition hover:text-crimson"
+                >
+                  Videos
+                </.link>
+              </.nav_submenu>
             </.nav_dropdown>
             <.nav_dropdown label="Press">
               <.link
@@ -243,34 +241,69 @@ defmodule MaragaInfoWeb.SiteComponents do
         >
           News
         </.link>
-        <.link
-          :for={category <- @news_categories}
-          navigate={news_category_href(category)}
-          class="py-1 pl-6 text-[13px] text-white/65 transition hover:text-crimson"
-        >
-          {category}
-        </.link>
+        <details class="group pl-3">
+          <summary class="flex cursor-pointer list-none items-center justify-between py-1 text-[13px] uppercase tracking-[0.16em] text-white/65 transition hover:text-crimson">
+            Categories
+            <svg
+              class="h-4 w-4 transition group-open:rotate-180"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </summary>
+          <div class="grid gap-1 pb-1 pl-3 pt-1">
+            <.link
+              :for={category <- @news_categories}
+              navigate={news_category_href(category)}
+              class="py-1 text-[13px] text-white/65 transition hover:text-crimson"
+            >
+              {category}
+            </.link>
+          </div>
+        </details>
         <.link
           navigate="/blog"
           class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
         >
           Blogs
         </.link>
-        <p class="pt-2 pl-3 font-head text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
-          Media
-        </p>
-        <.link
-          navigate="/media/photos"
-          class="py-1 pl-6 text-[13px] text-white/75 transition hover:text-crimson"
-        >
-          Photos
-        </.link>
-        <.link
-          navigate="/media/videos"
-          class="py-1 pl-6 text-[13px] text-white/75 transition hover:text-crimson"
-        >
-          Videos
-        </.link>
+        <details class="group pl-3">
+          <summary class="flex cursor-pointer list-none items-center justify-between py-1 text-[14px] text-white/85 transition hover:text-crimson">
+            Media
+            <svg
+              class="h-4 w-4 transition group-open:rotate-180"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </summary>
+          <div class="grid gap-1 pb-1 pl-3 pt-1">
+            <.link
+              navigate="/media/photos"
+              class="py-1 text-[13px] text-white/75 transition hover:text-crimson"
+            >
+              Photos
+            </.link>
+            <.link
+              navigate="/media/videos"
+              class="py-1 text-[13px] text-white/75 transition hover:text-crimson"
+            >
+              Videos
+            </.link>
+          </div>
+        </details>
 
         <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
           Press
@@ -340,6 +373,43 @@ defmodule MaragaInfoWeb.SiteComponents do
       </button>
       <div class="absolute left-0 top-full z-50 hidden min-w-[200px] grid-cols-1 gap-y-2 rounded-md bg-white p-6 shadow-2xl group-hover:grid group-focus-within:grid">
         {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
+
+  attr :label, :string, required: true
+  attr :navigate, :string, default: nil
+  slot :inner_block, required: true
+
+  defp nav_submenu(assigns) do
+    ~H"""
+    <div class="grid gap-y-2">
+      <div class="group/nav-sub rounded-md transition hover:bg-slate-50 focus-within:bg-slate-50">
+        <div class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5">
+          <%= if @navigate do %>
+            <.link navigate={@navigate} class="text-[15px] text-ink transition hover:text-crimson">
+              {@label}
+            </.link>
+          <% else %>
+            <span class="text-[15px] text-ink">{@label}</span>
+          <% end %>
+          <svg
+            class="h-4 w-4 text-grayink transition group-hover/nav-sub:text-crimson group-focus-within/nav-sub:text-crimson"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="9 6 15 12 9 18" />
+          </svg>
+        </div>
+        <div class="hidden gap-y-2 pb-2 pl-5 pr-2 group-hover/nav-sub:grid group-focus-within/nav-sub:grid">
+          {render_slot(@inner_block)}
+        </div>
       </div>
     </div>
     """

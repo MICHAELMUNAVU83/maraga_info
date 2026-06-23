@@ -28,6 +28,9 @@ A Phoenix LiveView website covering David Kenani Maraga — Kenya's former Chief
 ## Getting started
 
 ```bash
+# Create your local env file (runtime.exs auto-loads it)
+cp .env.example .env
+
 # Install deps, create & migrate the database, build assets, and seed data
 mix setup
 
@@ -40,6 +43,7 @@ iex -S mix phx.server
 Then visit [`localhost:4000`](http://localhost:4000).
 
 `mix setup` runs `deps.get`, `ecto.setup` (create + migrate + seed), `assets.setup`, and `assets.build`.
+`config/runtime.exs` auto-loads `.env` for local runs, so `BREVO_API_KEY` and related mail vars are available when you start Phoenix.
 
 ## Database & seeds
 

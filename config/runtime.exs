@@ -1,5 +1,57 @@
 import Config
 
+root_dir = Path.expand("..", __DIR__)
+
+strip_wrapping_quotes = fn value ->
+  trimmed = String.trim(value)
+
+  cond do
+    String.length(trimmed) >= 2 and String.starts_with?(trimmed, "\"") and
+        String.ends_with?(trimmed, "\"") ->
+      trimmed
+      |> String.trim_leading("\"")
+      |> String.trim_trailing("\"")
+
+    String.length(trimmed) >= 2 and String.starts_with?(trimmed, "'") and
+        String.ends_with?(trimmed, "'") ->
+      trimmed
+      |> String.trim_leading("'")
+      |> String.trim_trailing("'")
+
+    true ->
+      trimmed
+  end
+end
+
+load_dotenv_file = fn path ->
+  if File.exists?(path) do
+    path
+    |> File.stream!()
+    |> Stream.map(&String.trim/1)
+    |> Enum.each(fn
+      "" ->
+        :ok
+
+      "#" <> _comment ->
+        :ok
+
+      line ->
+        case Regex.run(~r/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/, line) do
+          [_, key, raw_value] ->
+            if System.get_env(key) in [nil, ""] do
+              System.put_env(key, strip_wrapping_quotes.(raw_value))
+            end
+
+          _ ->
+            :ok
+        end
+    end)
+  end
+end
+
+[Path.join(root_dir, ".env"), Path.join(root_dir, ".env.#{config_env()}")]
+|> Enum.each(load_dotenv_file)
+
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
 # system starts, so it is typically used to load production configuration

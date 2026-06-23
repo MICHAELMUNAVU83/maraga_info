@@ -249,6 +249,145 @@ const Hooks = {
   },
 };
 
+const EXIT_INTENT_SESSION_KEY = "maraga_exit_intent_seen";
+const EXIT_INTENT_ARM_DELAY_MS = 6000;
+
+function initExitIntentModal() {
+  const modal = document.querySelector("[data-exit-intent-modal]");
+  if (!modal) return;
+
+  const path = window.location.pathname;
+  const isPrivatePath =
+    path.startsWith("/admin") ||
+    path.startsWith("/users") ||
+    path.startsWith("/dev");
+
+  const supportsExitIntent =
+    window.matchMedia("(pointer: fine)").matches &&
+    !window.matchMedia("(max-width: 1023px)").matches;
+
+  if (isPrivatePath || !supportsExitIntent) return;
+
+  const donateButton = modal.querySelector("[data-exit-intent-donate]");
+  const closeTargets = modal.querySelectorAll("[data-exit-intent-close]");
+  let isOpen = false;
+  let startTime = Date.now();
+  let bypassBeforeUnload = false;
+
+  const markSeen = () => {
+    try {
+      window.sessionStorage.setItem(EXIT_INTENT_SESSION_KEY, "true");
+    } catch (_e) {}
+  };
+
+  const seenThisSession = () => {
+    try {
+      return window.sessionStorage.getItem(EXIT_INTENT_SESSION_KEY) === "true";
+    } catch (_e) {
+      return false;
+    }
+  };
+
+  const openModal = () => {
+    if (isOpen || seenThisSession()) return;
+
+    isOpen = true;
+    markSeen();
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("overflow-hidden");
+    donateButton?.focus();
+  };
+
+  const closeModal = () => {
+    if (!isOpen) return;
+
+    isOpen = false;
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("overflow-hidden");
+  };
+
+  const isSamePageAnchor = (link) => {
+    const href = link.getAttribute("href") || "";
+    if (href.startsWith("#")) return true;
+
+    try {
+      const url = new URL(link.href, window.location.href);
+
+      return (
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname &&
+        url.search === window.location.search &&
+        url.hash !== ""
+      );
+    } catch (_e) {
+      return false;
+    }
+  };
+
+  const shouldBypassBeforeUnload = (event, link) => {
+    if (!link) return false;
+    if (event.defaultPrevented || event.button !== 0) return false;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
+    if (link.hasAttribute("download")) return false;
+    if ((link.getAttribute("target") || "").toLowerCase() === "_blank") return false;
+    if (isSamePageAnchor(link)) return false;
+
+    return true;
+  };
+
+  const handleMouseOut = (event) => {
+    if (event.relatedTarget || event.toElement) return;
+    if (event.clientY > 12) return;
+    if (Date.now() - startTime < EXIT_INTENT_ARM_DELAY_MS) return;
+
+    openModal();
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Escape") closeModal();
+  };
+
+  const handleDocumentClick = (event) => {
+    const link = event.target.closest("a[href]");
+    if (!shouldBypassBeforeUnload(event, link)) return;
+
+    bypassBeforeUnload = true;
+  };
+
+  const handleBeforeUnload = (event) => {
+    if (bypassBeforeUnload) return undefined;
+    if (Date.now() - startTime < EXIT_INTENT_ARM_DELAY_MS) return undefined;
+
+    event.preventDefault();
+    event.returnValue = "";
+    return "";
+  };
+
+  const handleFormSubmit = () => {
+    bypassBeforeUnload = true;
+  };
+
+  closeTargets.forEach((element) => {
+    element.addEventListener("click", closeModal);
+  });
+
+  document.addEventListener("mouseout", handleMouseOut);
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("click", handleDocumentClick);
+  document.addEventListener("submit", handleFormSubmit);
+  window.addEventListener("beforeunload", handleBeforeUnload);
+
+  window.addEventListener("phx:page-loading-stop", () => {
+    startTime = Date.now();
+    bypassBeforeUnload = false;
+    closeModal();
+  });
+}
+
 let csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");
@@ -265,6 +404,7 @@ window.addEventListener("phx:page-loading-stop", (_info) => topbar.hide());
 
 // connect if there are any LiveViews on the page
 liveSocket.connect();
+initExitIntentModal();
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()

@@ -44,10 +44,43 @@ defmodule MaragaInfo.Brevo do
   end
 
   def send_email(%{} = attrs) do
+    attrs = maybe_put_default_sender(attrs)
+
     with {:ok, api_key} <- api_key(),
          {:ok, payload} <- build_payload(attrs),
          {:ok, response} <- post(payload, api_key) do
       {:ok, response}
+    end
+  end
+
+  @doc """
+  Sends a simple test email to the given recipient.
+
+  When no recipient is provided, it sends to the configured sender address so you
+  can quickly test a self-send.
+  """
+  def send_test_email(recipient_email \\ nil) do
+    case default_sender() do
+      nil ->
+        {:error, :missing_test_sender}
+
+      sender ->
+        with {:ok, recipient_email} <- test_recipient_email(recipient_email, sender),
+             {:ok, recipient} <- normalize_contact(%{email: recipient_email}, "recipient") do
+          send_email(%{
+            sender: sender,
+            to: [recipient],
+            subject: "Brevo test email",
+            html_content: """
+            <html>
+              <body>
+                <p>This is a test email from Maraga Info.</p>
+                <p>If you received this, Brevo is working.</p>
+              </body>
+            </html>
+            """
+          })
+        end
     end
   end
 
@@ -109,6 +142,47 @@ defmodule MaragaInfo.Brevo do
       key -> {:ok, key}
     end
   end
+
+  defp maybe_put_default_sender(%{} = attrs) do
+    case fetch_any(attrs, [:sender, "sender"]) do
+      nil ->
+        case default_sender() do
+          nil -> attrs
+          sender -> Map.put(attrs, :sender, sender)
+        end
+
+      _sender ->
+        attrs
+    end
+  end
+
+  defp default_sender do
+    case Application.get_env(:maraga_info, :mail_from) do
+      {name, email} when is_binary(name) and is_binary(email) ->
+        trimmed_email = String.trim(email)
+
+        if trimmed_email == "" do
+          nil
+        else
+          %{
+            name: String.trim(name),
+            email: trimmed_email
+          }
+        end
+
+      _ ->
+        nil
+    end
+  end
+
+  defp test_recipient_email(nil, %{email: email}), do: {:ok, email}
+
+  defp test_recipient_email(email, _sender) when is_binary(email) do
+    normalize_string(email, "recipient_email")
+  end
+
+  defp test_recipient_email(_email, _sender),
+    do: {:error, {:invalid_payload, "recipient_email must be a string"}}
 
   defp decode_body(nil), do: nil
   defp decode_body(""), do: nil

@@ -494,7 +494,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             <.stat_card :for={stat <- @stats} stat={stat} />
           </div>
 
-          <p class="mt-14 text-center font-head text-base uppercase tracking-[0.35em] text-white/72 sm:text-lg">
+          <p class="mt-14 text-center font-head text-2xl uppercase tracking-[0.28em] text-white/72 sm:text-3xl md:text-4xl">
             Ukatiba Ndio Tiba
           </p>
         </div>
@@ -757,7 +757,11 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   defp event_card(assigns) do
     ~H"""
     <article class="group flex flex-col gap-4">
-      <.link :if={@event.image_url} navigate={~p"/events"} class="block overflow-hidden rounded-[10px]">
+      <.link
+        :if={@event.image_url}
+        navigate={~p"/events"}
+        class="block overflow-hidden rounded-[10px]"
+      >
         <img
           src={@event.image_url}
           alt={@event.title}
@@ -767,25 +771,25 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       </.link>
 
       <div class="flex items-stretch gap-4">
-      <div class="flex shrink-0 flex-col items-center justify-center rounded-[5px] bg-blueink px-4 py-3 text-white">
-        <div class="font-head text-3xl leading-none">
-          {Calendar.strftime(@event.starts_at, "%d")}
+        <div class="flex shrink-0 flex-col items-center justify-center rounded-[5px] bg-blueink px-4 py-3 text-white">
+          <div class="font-head text-3xl leading-none">
+            {Calendar.strftime(@event.starts_at, "%d")}
+          </div>
+          <div class="font-head text-sm uppercase tracking-wide">
+            {Calendar.strftime(@event.starts_at, "%b")}
+          </div>
         </div>
-        <div class="font-head text-sm uppercase tracking-wide">
-          {Calendar.strftime(@event.starts_at, "%b")}
-        </div>
-      </div>
 
-      <div class="flex-1">
-        <.link navigate={~p"/events"}>
-          <h4 class="mt-0 font-head text-2xl uppercase tracking-[.5px] text-blueink transition hover:text-crimson">
-            {@event.title}
-          </h4>
-        </.link>
-        <p :if={@event.location} class="mt-1 text-base leading-7 text-grayink">
-          {@event.location}
-        </p>
-      </div>
+        <div class="flex-1">
+          <.link navigate={~p"/events"}>
+            <h4 class="mt-0 font-head text-2xl uppercase tracking-[.5px] text-blueink transition hover:text-crimson">
+              {@event.title}
+            </h4>
+          </.link>
+          <p :if={@event.location} class="mt-1 text-base leading-7 text-grayink">
+            {@event.location}
+          </p>
+        </div>
       </div>
     </article>
     """
