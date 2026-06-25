@@ -14,6 +14,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
      socket
      |> assign(:target_section, nil)
      |> assign(:cover_url, nil)
+     |> assign(:cover_removed, false)
      |> allow_upload(:cover,
        accept: ~w(.jpg .jpeg .png .webp),
        max_entries: 1,
@@ -50,6 +51,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     |> assign(:page_title, "New #{socket.assigns.scope.singular_title}")
     |> assign(:post, post)
     |> assign(:sections, [])
+    |> assign(:cover_removed, false)
     |> assign_form(Content.change_post(post))
   end
 
@@ -60,6 +62,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     |> assign(:page_title, "Edit #{socket.assigns.scope.singular_title}")
     |> assign(:post, post)
     |> assign(:cover_url, nil)
+    |> assign(:cover_removed, false)
     |> assign(:sections, Enum.map(post.sections, &to_section_map/1))
     |> assign_form(Content.change_post(post))
   end
@@ -85,7 +88,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     final_params =
       post_params
       |> Map.put("sections", build_section_attrs(sections))
-      |> maybe_put_cover(socket.assigns.cover_url)
+      |> put_cover(socket.assigns.cover_url, socket.assigns.cover_removed)
 
     save_post(socket, socket.assigns.live_action, final_params, sections)
   end
@@ -133,13 +136,21 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
   end
 
   def handle_event("remove_cover", _params, socket) do
-    {:noreply, assign(socket, :cover_url, nil)}
+    socket =
+      Enum.reduce(socket.assigns.uploads.cover.entries, socket, fn entry, acc ->
+        cancel_upload(acc, :cover, entry.ref)
+      end)
+
+    {:noreply,
+     socket
+     |> assign(:cover_url, nil)
+     |> assign(:cover_removed, true)}
   end
 
   defp handle_progress(:cover, entry, socket) do
     if entry.done? do
       url = consume_uploaded_entry(socket, entry, fn meta -> Uploads.store_entry(meta, entry) end)
-      {:noreply, assign(socket, :cover_url, url)}
+      {:noreply, socket |> assign(:cover_url, url) |> assign(:cover_removed, false)}
     else
       {:noreply, socket}
     end
@@ -234,9 +245,13 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     blank?(section.heading) and blank?(section.body) and section.image_urls == []
   end
 
-  defp maybe_put_cover(params, nil), do: params
-  defp maybe_put_cover(params, ""), do: params
-  defp maybe_put_cover(params, url), do: Map.put(params, "image_url", url)
+  # A newly uploaded cover wins; otherwise an explicit removal clears the saved
+  # image_url (cast treats "" as nil). With neither, the field is left untouched.
+  defp put_cover(params, url, _removed) when is_binary(url) and url != "",
+    do: Map.put(params, "image_url", url)
+
+  defp put_cover(params, _url, true), do: Map.put(params, "image_url", "")
+  defp put_cover(params, _url, _removed), do: params
 
   defp update_section(sections, index, fun), do: List.update_at(sections, index, fun)
 
@@ -253,10 +268,13 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
   defp blank?(value) when is_binary(value), do: String.trim(value) == ""
   defp blank?(_), do: false
 
-  defp current_cover(cover_url, _form) when is_binary(cover_url) and cover_url != "",
+  defp current_cover(_cover_url, true, _form), do: nil
+
+  defp current_cover(cover_url, _removed, _form) when is_binary(cover_url) and cover_url != "",
     do: cover_url
 
-  defp current_cover(_cover_url, form), do: Phoenix.HTML.Form.input_value(form, :image_url)
+  defp current_cover(_cover_url, _removed, form),
+    do: Phoenix.HTML.Form.input_value(form, :image_url)
 
   defp upload_error_to_string(:too_large), do: "File is too large (max #{@max_image_mb}MB)"
   defp upload_error_to_string(:too_many_files), do: "Too many files"
@@ -563,13 +581,22 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
             <.editor_card title="Cover image (optional)">
               <div class="space-y-4">
                 <div
-                  :if={current_cover(@cover_url, @form)}
-                  class="overflow-hidden rounded-lg border border-zinc-200"
+                  :if={current_cover(@cover_url, @cover_removed, @form)}
+                  class="group relative overflow-hidden rounded-lg border border-zinc-200"
                 >
                   <img
-                    src={current_cover(@cover_url, @form)}
+                    src={current_cover(@cover_url, @cover_removed, @form)}
                     class="mx-auto max-h-[420px] w-full object-contain"
                   />
+                  <button
+                    type="button"
+                    phx-click="remove_cover"
+                    data-confirm="Remove this cover image?"
+                    class="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-white/90 px-2.5 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition hover:bg-white hover:text-red-600"
+                    aria-label="Remove cover image"
+                  >
+                    <.icon name="hero-trash-mini" class="h-4 w-4" /> Remove
+                  </button>
                 </div>
 
                 <label class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-600 transition hover:border-blueink hover:text-blueink">
