@@ -49,4 +49,18 @@ defmodule MaragaInfoWeb.BlogLive.ShowTest do
   test "unknown slugs redirect to home", %{conn: conn} do
     assert {:error, {:live_redirect, %{to: "/"}}} = live(conn, ~p"/blog/missing-post")
   end
+
+  test "renders a post without an image using the default SEO image", %{conn: conn} do
+    post =
+      post_fixture(%{
+        title: "Post without an image",
+        slug: "post-without-an-image",
+        image_url: nil
+      })
+
+    {:ok, _view, html} = live(conn, ~p"/blog/#{post.slug}")
+
+    assert html =~ "Post without an image"
+    assert html =~ ~s("image":["https://davidmaraga.info/images/IMG_2052.jpg"])
+  end
 end

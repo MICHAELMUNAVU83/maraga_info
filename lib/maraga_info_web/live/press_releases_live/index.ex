@@ -79,7 +79,11 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
   defp news_card(assigns) do
     ~H"""
     <article class="group flex flex-col overflow-hidden rounded-[5px] bg-white shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
-      <.link navigate={~p"/blog/#{@item.slug}"} class="block overflow-hidden">
+      <.link
+        :if={present?(@item.image_url)}
+        navigate={~p"/blog/#{@item.slug}"}
+        class="block overflow-hidden"
+      >
         <img
           src={@item.image_url}
           alt={@item.title}
@@ -116,6 +120,10 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
 
   defp format_post_date(%DateTime{} = published_at),
     do: Calendar.strftime(published_at, "%b %-d, %Y")
+
+  defp present?(nil), do: false
+  defp present?(value) when is_binary(value), do: String.trim(value) != ""
+  defp present?(_value), do: false
 
   defp scope_from_path(path) do
     if String.ends_with?(path, "/media-invitations") do

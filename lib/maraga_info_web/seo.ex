@@ -78,7 +78,7 @@ defmodule MaragaInfoWeb.Seo do
         "description" => post.seo_description,
         "datePublished" => iso8601(post.published_at),
         "dateModified" => iso8601(post.updated_at || post.published_at),
-        "image" => [absolute_url(post.image_url)],
+        "image" => [absolute_url(post.image_url || @default_image)],
         "mainEntityOfPage" => article_url(post.slug),
         "about" => person_schema(),
         "author" => publisher_schema(),
