@@ -201,10 +201,10 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
       <div class="relative z-10 mx-auto flex min-h-[100vh] w-full max-w-container items-center px-4 lg:px-6">
         <div class="w-full text-center">
-          <h3 class="font-serifi text-3xl italic text-white sm:text-4xl md:text-5xl lg:text-6xl">
+          <h3 class="font-head text-[40px] font-semibold uppercase leading-[1.05] tracking-[3px] text-white md:text-[60px] lg:text-[76px]">
             David Kenani Maraga -  2027
           </h3>
-          <h1 class="mt-4 font-head text-[40px] font-semibold uppercase leading-[1.05] tracking-[3px] text-white md:text-[60px] lg:text-[76px]">
+          <h1 class="mt-4 font-serifi text-3xl italic text-white sm:text-4xl md:text-5xl lg:text-6xl">
             Reset. Restore. <br /> Rebuild Kenya.
           </h1>
 
@@ -413,7 +413,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     <section id="newsletter">
       <div
         class="relative bg-cover bg-center"
-        style="background-image: url('/images/maraga-town.jpg');"
+        style="background-image: url('/images/maraga-town-old.jpg');"
       >
         <div class="absolute inset-0 bg-black/60"></div>
 
