@@ -161,11 +161,14 @@ defmodule MaragaInfoWeb.BlogLive.Show do
 
   defp share_bar(assigns) do
     %{url: url, title: title} = assigns
+    url = share_value(url, Seo.site_url())
+    title = share_value(title, Seo.site_name())
     encoded_url = URI.encode_www_form(url)
     encoded_title = URI.encode_www_form(title)
 
     assigns =
       assign(assigns,
+        url: url,
         facebook_url: "https://www.facebook.com/sharer/sharer.php?u=#{encoded_url}",
         x_url: "https://twitter.com/intent/tweet?url=#{encoded_url}&text=#{encoded_title}",
         whatsapp_url: "https://api.whatsapp.com/send?text=#{encoded_title}%20#{encoded_url}",
@@ -307,6 +310,12 @@ defmodule MaragaInfoWeb.BlogLive.Show do
   end
 
   defp render_body(text), do: RichText.render(text)
+
+  defp share_value(value, fallback) when is_binary(value) do
+    if String.trim(value) == "", do: fallback, else: value
+  end
+
+  defp share_value(_, fallback), do: fallback
 
   defp present?(nil), do: false
   defp present?(value) when is_binary(value), do: String.trim(value) != ""

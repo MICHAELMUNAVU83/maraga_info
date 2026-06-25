@@ -63,4 +63,19 @@ defmodule MaragaInfoWeb.BlogLive.ShowTest do
     assert html =~ "Post without an image"
     assert html =~ ~s("image":["https://davidmaraga.info/images/IMG_2052.jpg"])
   end
+
+  test "renders sharing controls for a title-less press release", %{conn: conn} do
+    post =
+      post_fixture(%{
+        title: nil,
+        slug: "title-less-press-release",
+        category: "Press Releases"
+      })
+
+    {:ok, _view, html} = live(conn, ~p"/blog/#{post.slug}")
+
+    assert html =~ "Share this story"
+    assert html =~ "David+Maraga+Info"
+    assert html =~ ~s(data-url="https://davidmaraga.info/blog/title-less-press-release")
+  end
 end

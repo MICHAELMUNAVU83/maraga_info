@@ -101,5 +101,22 @@ defmodule MaragaInfo.ContentTest do
       post = post_fixture()
       assert %Ecto.Changeset{} = Content.change_post(post)
     end
+
+    test "adjacent_published_posts/1 does not wrap the newest post to the oldest" do
+      older =
+        post_fixture(%{
+          slug: "older-adjacent-post",
+          published_at: ~U[2026-06-11 12:00:00Z]
+        })
+
+      newest =
+        post_fixture(%{
+          slug: "newest-adjacent-post",
+          published_at: ~U[2026-06-13 12:00:00Z]
+        })
+
+      assert {nil, next_post} = Content.adjacent_published_posts(newest)
+      assert next_post.id == older.id
+    end
   end
 end

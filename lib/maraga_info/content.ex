@@ -191,7 +191,10 @@ defmodule MaragaInfo.Content do
     if is_nil(index) do
       {nil, nil}
     else
-      {Enum.at(posts, index - 1), Enum.at(posts, index + 1)}
+      previous_post = if index > 0, do: Enum.at(posts, index - 1)
+      next_post = Enum.at(posts, index + 1)
+
+      {previous_post, next_post}
     end
   end
 
