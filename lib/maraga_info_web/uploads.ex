@@ -12,16 +12,29 @@ defmodule MaragaInfoWeb.Uploads do
   """
   def store_entry(meta, entry) do
     File.mkdir_p!(@upload_dir)
-    extension = extension(entry)
+    extension = extension(entry.client_name, entry.client_type)
     filename = "#{entry.uuid}#{extension}"
     dest = Path.join(@upload_dir, filename)
     File.cp!(meta.path, dest)
     {:ok, "/uploads/#{filename}"}
   end
 
-  defp extension(entry) do
-    case Path.extname(entry.client_name) do
-      "" -> ext_from_type(entry.client_type)
+  @doc """
+  Copies a plain `Plug.Upload` (e.g. an inline image posted from the CKEditor
+  upload adapter) into `priv/static/uploads` and returns its public path.
+  """
+  def store_plug_upload(%Plug.Upload{} = upload) do
+    File.mkdir_p!(@upload_dir)
+    extension = extension(upload.filename, upload.content_type)
+    filename = "#{Ecto.UUID.generate()}#{extension}"
+    dest = Path.join(@upload_dir, filename)
+    File.cp!(upload.path, dest)
+    {:ok, "/uploads/#{filename}"}
+  end
+
+  defp extension(client_name, client_type) do
+    case Path.extname(client_name || "") do
+      "" -> ext_from_type(client_type)
       ext -> String.downcase(ext)
     end
   end

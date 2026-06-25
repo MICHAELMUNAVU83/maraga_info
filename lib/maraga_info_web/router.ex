@@ -17,6 +17,15 @@ defmodule MaragaInfoWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # Admin-only JSON endpoints (e.g. inline editor image uploads). Keeps CSRF
+  # protection while negotiating JSON instead of HTML.
+  pipeline :admin_api do
+    plug :accepts, ["json"]
+    plug :fetch_session
+    plug :protect_from_forgery
+    plug :fetch_current_user
+  end
+
   scope "/", MaragaInfoWeb do
     pipe_through :browser
 
@@ -37,6 +46,12 @@ defmodule MaragaInfoWeb.Router do
       live "/blog", BlogLive.Index
       live "/blog/:slug", BlogLive.Show
     end
+  end
+
+  scope "/admin", MaragaInfoWeb do
+    pipe_through [:admin_api, :require_admin_user]
+
+    post "/uploads/image", UploadController, :image
   end
 
   # Other scopes may use custom stacks.

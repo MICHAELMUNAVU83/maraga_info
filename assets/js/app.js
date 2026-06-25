@@ -116,7 +116,19 @@ const Hooks = {
         BlockQuote,
         MediaEmbed,
         PasteFromOffice,
+        Image,
+        ImageToolbar,
+        ImageCaption,
+        ImageStyle,
+        ImageResize,
+        ImageUpload,
+        SimpleUploadAdapter,
       } = CK;
+
+      const csrfToken =
+        document
+          .querySelector("meta[name='csrf-token']")
+          ?.getAttribute("content") || "";
 
       this.editor = await ClassicEditor.create(target, {
         licenseKey: "GPL",
@@ -136,6 +148,13 @@ const Hooks = {
           BlockQuote,
           MediaEmbed,
           PasteFromOffice,
+          Image,
+          ImageToolbar,
+          ImageCaption,
+          ImageStyle,
+          ImageResize,
+          ImageUpload,
+          SimpleUploadAdapter,
         ],
         toolbar: [
           "undo",
@@ -158,12 +177,30 @@ const Hooks = {
           "|",
           "link",
           "blockQuote",
+          "uploadImage",
           "mediaEmbed",
         ],
         mediaEmbed: {
           // Store the provider URL (<oembed url>) rather than a raw preview
           // iframe; RichText turns it into a sandboxed iframe at render time.
           previewsInData: false,
+        },
+        image: {
+          toolbar: [
+            "imageStyle:inline",
+            "imageStyle:block",
+            "imageStyle:side",
+            "|",
+            "toggleImageCaption",
+            "imageTextAlternative",
+          ],
+        },
+        simpleUpload: {
+          // Inline images POST to an admin-only endpoint that stores the file
+          // and returns its public /uploads URL. RichText whitelists the
+          // resulting <figure class="image">/<img> markup.
+          uploadUrl: "/admin/uploads/image",
+          headers: { "X-CSRF-Token": csrfToken },
         },
         heading: {
           options: [

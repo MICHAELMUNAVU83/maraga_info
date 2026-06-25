@@ -386,7 +386,7 @@ defmodule MaragaInfoWeb.SiteComponents do
     ~H"""
     <div class="grid gap-y-2">
       <div class="group/nav-sub rounded-md transition hover:bg-slate-50 focus-within:bg-slate-50">
-        <div class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5">
+        <div class="flex items-center justify-between gap-3 rounded-md  py-1.5">
           <%= if @navigate do %>
             <.link navigate={@navigate} class="text-[15px] text-ink transition hover:text-crimson">
               {@label}

@@ -29,8 +29,19 @@ defmodule MaragaInfoWeb.RichText do
     "ol" => [],
     "li" => [],
     "blockquote" => [],
-    "a" => ["href", "target", "rel"]
+    "a" => ["href", "target", "rel"],
+    "img" => ["src", "alt", "width", "height", "class", "style"],
+    "figcaption" => []
   }
+
+  # CKEditor classes kept on image figures/imgs (block/inline placement and
+  # resize state). Anything else is dropped to keep the markup predictable.
+  @image_classes ~w(
+    image image-inline image_resized
+    image-style-block image-style-inline image-style-side
+    image-style-align-left image-style-align-center image-style-align-right
+    image-style-align-block-left image-style-align-block-right
+  )
 
   # Tags dropped together with their contents (rather than unwrapped), so their
   # raw text never leaks into the page.
@@ -88,6 +99,7 @@ defmodule MaragaInfoWeb.RichText do
 
     cond do
       tag == "oembed" -> embed_node(attrs, mode)
+      tag == "figure" -> figure_node(attrs, children, mode)
       tag in @drop_with_content -> []
       Map.has_key?(@allowed_tags, tag) -> [{tag, scrub_attrs(attrs, @allowed_tags[tag]), scrub_nodes(children, mode)}]
       # Unknown but harmless tag: drop the wrapper but keep its scrubbed contents.
@@ -115,6 +127,30 @@ defmodule MaragaInfoWeb.RichText do
       {_mode, nil} ->
         if safe_href?(url), do: [{"p", [], [{"a", [{"href", url}, {"target", "_blank"}, {"rel", "noopener noreferrer"}], [url]}]}], else: []
     end
+  end
+
+  # `<figure>` is used both by media embeds (`class="media"`) and inline images
+  # (`class="image"`). Media figures are unwrapped so the inner <oembed> clause
+  # produces the right markup; image figures are kept so CKEditor re-renders the
+  # image widget and captions survive.
+  defp figure_node(attrs, children, mode) do
+    classes = figure_classes(attrs)
+
+    if "media" in classes do
+      scrub_nodes(children, mode)
+    else
+      kept = Enum.filter(classes, &(&1 in @image_classes))
+      attr = if kept == [], do: [], else: [{"class", Enum.join(kept, " ")}]
+      style = scrub_attrs(attrs, ["style"])
+      [{"figure", attr ++ style, scrub_nodes(children, mode)}]
+    end
+  end
+
+  defp figure_classes(attrs) do
+    attrs
+    |> List.keyfind("class", 0, {"class", ""})
+    |> elem(1)
+    |> String.split(~r/\s+/, trim: true)
   end
 
   defp embed_iframe(src) do
@@ -147,7 +183,20 @@ defmodule MaragaInfoWeb.RichText do
   defp clean_attr("href", value), do: if(safe_href?(value), do: String.trim(value))
   defp clean_attr("target", _), do: "_blank"
   defp clean_attr("rel", _), do: "noopener noreferrer"
+  defp clean_attr("src", value), do: if(safe_src?(value), do: String.trim(value))
+  defp clean_attr("class", value), do: clean_image_class(value)
+  defp clean_attr(name, value) when name in ["width", "height"],
+    do: if(Regex.match?(~r/^\d{1,4}$/, String.trim(value)), do: String.trim(value))
+
   defp clean_attr(_, value), do: value
+
+  # Only keep recognised CKEditor image classes; drop the attribute otherwise.
+  defp clean_image_class(value) do
+    case value |> String.split(~r/\s+/, trim: true) |> Enum.filter(&(&1 in @image_classes)) do
+      [] -> nil
+      kept -> Enum.join(kept, " ")
+    end
+  end
 
   # Keep only colour and alignment declarations with validated values.
   defp clean_style(value) do
@@ -174,6 +223,11 @@ defmodule MaragaInfoWeb.RichText do
   defp keep_style("text-align", val) when val in ["left", "center", "right", "justify"],
     do: ["text-align: #{val}"]
 
+  # Image resize stores the chosen size as an inline width on the figure/img.
+  defp keep_style("width", val) do
+    if Regex.match?(~r/^\d{1,3}(\.\d+)?(px|%|em|rem)$/, val), do: ["width: #{val}"], else: []
+  end
+
   defp keep_style(_, _), do: []
 
   defp safe_color?(val) do
@@ -189,6 +243,14 @@ defmodule MaragaInfoWeb.RichText do
     String.starts_with?(v, "http://") or String.starts_with?(v, "https://") or
       String.starts_with?(v, "mailto:") or String.starts_with?(v, "/") or
       String.starts_with?(v, "#")
+  end
+
+  # Image sources: stored uploads (`/uploads/…`) or remote http(s) URLs only.
+  defp safe_src?(value) do
+    v = value |> String.trim() |> String.downcase()
+
+    String.starts_with?(v, "http://") or String.starts_with?(v, "https://") or
+      String.starts_with?(v, "/")
   end
 
   # ----------------------------------------------------------------------------
