@@ -66,10 +66,10 @@ defmodule MaragaInfo.Content.Post do
     ])
     |> cast_embed(:sections, with: &PostSection.changeset/2)
     |> validate_required([
-      :title,
       :category,
       :status
     ])
+    |> validate_title_required()
     |> validate_length(:title, max: 160)
     |> validate_length(:category, max: 80)
     |> validate_length(:newsletter_volume, max: 80)
@@ -98,6 +98,16 @@ defmodule MaragaInfo.Content.Post do
       )
     else
       changeset
+    end
+  end
+
+  # The title is required for every category except press releases, where it
+  # may be left blank.
+  defp validate_title_required(changeset) do
+    if get_field(changeset, :category) == @press_release_category do
+      changeset
+    else
+      validate_required(changeset, [:title])
     end
   end
 
