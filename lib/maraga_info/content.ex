@@ -10,6 +10,7 @@ defmodule MaragaInfo.Content do
   alias MaragaInfo.Content.Event
   alias MaragaInfo.Content.MediaItem
   alias MaragaInfo.Content.Post
+  alias MaragaInfo.Content.SiteSetting
 
   @doc """
   Returns the canonical list of post categories used in the admin form.
@@ -424,5 +425,46 @@ defmodule MaragaInfo.Content do
 
   defp maybe_filter_event_from(query, %DateTime{} = from) do
     where(query, [event], event.starts_at >= ^from)
+  end
+
+  ## Site settings
+
+  @doc """
+  Returns all site settings whose key starts with `prefix` as a flat map of
+  key → value. Returns all settings when no prefix is given.
+  """
+  def list_settings_map(prefix \\ nil) do
+    query =
+      if prefix do
+        from(s in SiteSetting, where: like(s.key, ^"#{prefix}%"))
+      else
+        SiteSetting
+      end
+
+    query
+    |> Repo.all()
+    |> Map.new(fn s -> {s.key, s.value} end)
+  end
+
+  @doc """
+  Upserts a map of `key => value` pairs into site_settings.
+  Existing keys are updated; missing keys are inserted.
+  """
+  def upsert_settings(attrs_map) do
+    Enum.each(attrs_map, fn {key, value} ->
+      case Repo.get_by(SiteSetting, key: key) do
+        nil ->
+          %SiteSetting{}
+          |> SiteSetting.changeset(%{key: key, value: value || ""})
+          |> Repo.insert!()
+
+        setting ->
+          setting
+          |> SiteSetting.changeset(%{value: value || ""})
+          |> Repo.update!()
+      end
+    end)
+
+    :ok
   end
 end

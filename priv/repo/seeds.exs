@@ -277,3 +277,4 @@ end)
 
 # --- Sub-seeds -----------------------------------------------------------
 Code.eval_file(Path.join([__DIR__, "seeds", "email_campaigns.exs"]))
+Code.eval_file(Path.join([__DIR__, "seeds", "landing_content.exs"]))

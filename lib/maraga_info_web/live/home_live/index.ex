@@ -11,49 +11,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     %{name: "youtube", href: "https://www.youtube.com/@dkmaraga", label: "YouTube"}
   ]
 
-  @stats [
-    %{
-      value: "1,250",
-      label: "Judgments",
-      description: "Decisions that shaped Kenya's law"
-    },
-    %{
-      value: "#1",
-      label: "In Africa",
-      description: "Annulled a presidential election",
-      badge: "Historic First"
-    },
-    %{
-      value: "47",
-      label: "Counties",
-      description: "Justice delivered to every corner"
-    },
-    %{
-      value: "0",
-      label: "Tolerance",
-      description: "For corruption & impunity"
-    }
-  ]
-
-  @shop_items [
-    %{
-      name: "American Flag",
-      price: "$ 20.00 USD",
-      image: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=1080&q=80"
-    },
-    %{
-      name: "Vote Badge",
-      price: "$ 15.00 USD",
-      image: "https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=1080&q=80"
-    },
-    %{
-      name: "American Flags and Pins",
-      price: "$ 20.00 USD",
-      image: "https://images.unsplash.com/photo-1559521783-1d1599583485?w=1080&q=80"
-    }
-  ]
-
-  @videos [
+  @fallback_videos [
     %{
       title: "Maraga Arrested at Nairobi Protest",
       thumb: "/images/maxresdefault.jpg",
@@ -104,6 +62,9 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     events = Content.list_upcoming_events(limit: 3)
     featured_event = List.first(events)
 
+    content = Content.list_settings_map("home.")
+    stats = build_stats(content)
+
     # Auto-dismiss the upcoming-event popup after 10 minutes; the visitor can
     # also close it sooner with the X button.
     if connected?(socket) and featured_event do
@@ -120,12 +81,12 @@ defmodule MaragaInfoWeb.HomeLive.Index do
        structured_data: Seo.home_structured_data(news_items),
        social_links: @social_links,
        news_items: news_items,
-       stats: @stats,
-       shop_items: @shop_items,
+       stats: stats,
        videos: videos,
        events: events,
        gallery_images: gallery_images,
-       selected_gallery_image: nil
+       selected_gallery_image: nil,
+       content: content
      )}
   end
 
@@ -149,14 +110,10 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     {:noreply, assign(socket, :show_event_modal, false)}
   end
 
-  # Builds the "Watch the Campaign" carousel from videos uploaded in the admin
-  # Videos library. Each clip links through to the public Videos gallery so the
-  # carousel always mirrors the Videos tab. Falls back to the curated samples
-  # when no videos have been published yet.
   defp build_campaign_videos do
     case Content.list_published_media_items(media_type: "video") do
       [] ->
-        Enum.map(@videos, &Map.put(&1, :href, "/media/videos"))
+        Enum.map(@fallback_videos, &Map.put(&1, :href, "/media/videos"))
 
       items ->
         Enum.map(items, fn item ->
@@ -169,8 +126,6 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     end
   end
 
-  # Pairs the published media items with the collage layout classes so the
-  # gallery shows exactly five images sourced from the database.
   defp build_gallery_images do
     Content.list_landing_media_items()
     |> Enum.take(length(@gallery_layout))
@@ -185,20 +140,68 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     end)
   end
 
+  defp build_stats(content) do
+    [
+      %{
+        value: get_content(content, "home.stats.stat1_value", "1,250"),
+        label: get_content(content, "home.stats.stat1_label", "Judgments"),
+        description:
+          get_content(content, "home.stats.stat1_description", "Decisions that shaped Kenya's law")
+      },
+      %{
+        value: get_content(content, "home.stats.stat2_value", "#1"),
+        label: get_content(content, "home.stats.stat2_label", "In Africa"),
+        description:
+          get_content(
+            content,
+            "home.stats.stat2_description",
+            "Annulled a presidential election"
+          ),
+        badge: get_content(content, "home.stats.stat2_badge", "Historic First")
+      },
+      %{
+        value: get_content(content, "home.stats.stat3_value", "47"),
+        label: get_content(content, "home.stats.stat3_label", "Counties"),
+        description:
+          get_content(
+            content,
+            "home.stats.stat3_description",
+            "Justice delivered to every corner"
+          )
+      },
+      %{
+        value: get_content(content, "home.stats.stat4_value", "0"),
+        label: get_content(content, "home.stats.stat4_label", "Tolerance"),
+        description:
+          get_content(content, "home.stats.stat4_description", "For corruption & impunity")
+      }
+    ]
+  end
+
+  # Returns the setting value, falling back to the default when the key is
+  # absent or the stored value is an empty string.
+  defp get_content(content, key, default) do
+    case Map.get(content, key) do
+      nil -> default
+      "" -> default
+      value -> value
+    end
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
     <div id="top" class="min-h-screen bg-white">
       <.upcoming_event_modal :if={@show_event_modal && @featured_event} event={@featured_event} />
       <.site_header />
-      <.hero_section />
-      <.donate_section />
-      <.mission_section />
-      <.documentary_section />
-      <.news_section news_items={@news_items} />
-      <.newsletter_section stats={@stats} />
+      <.hero_section content={@content} />
+      <.donate_section content={@content} />
+      <.mission_section content={@content} />
+      <.documentary_section content={@content} />
+      <.news_section news_items={@news_items} content={@content} />
+      <.newsletter_section stats={@stats} content={@content} />
       <%!-- <.shop_section shop_items={@shop_items} /> --%>
-      <.agenda_section events={@events} videos={@videos} />
+      <.agenda_section events={@events} videos={@videos} content={@content} />
       <.gallery_section gallery_images={@gallery_images} />
       <.site_footer id="footer" />
 
@@ -240,12 +243,32 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     """
   end
 
+  attr :content, :map, default: %{}
+
   defp hero_section(assigns) do
+    assigns =
+      assign(assigns,
+        bg_image: get_content(assigns.content, "home.hero.bg_image", "/images/IMG_2075.jpg"),
+        title:
+          get_content(assigns.content, "home.hero.title", "David Kenani Maraga -  2027"),
+        tagline: get_content(assigns.content, "home.hero.tagline", "Reset. Restore. Rebuild Kenya."),
+        cta1_label: get_content(assigns.content, "home.hero.cta1_label", "Read More"),
+        cta1_href: get_content(assigns.content, "home.hero.cta1_href", "#mission"),
+        cta2_label:
+          get_content(assigns.content, "home.hero.cta2_label", "Jiandikishe Kupiga Kura"),
+        cta2_href:
+          get_content(
+            assigns.content,
+            "home.hero.cta2_href",
+            "https://www.iebc.or.ke/iebc/?constituency"
+          )
+      )
+
     ~H"""
     <section
       id="hero"
       class="relative overflow-hidden bg-cover"
-      style="background-position: center 30%; background-image: url('/images/IMG_2075.jpg');"
+      style={"background-position: center 30%; background-image: url('#{@bg_image}');"}
     >
       <div aria-hidden="true" class="absolute inset-0">
         <div class="hero-color-slide hero-color-slide-left"></div>
@@ -255,29 +278,29 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <div class="relative z-10 mx-auto flex min-h-[100vh] w-full max-w-container items-center px-4 lg:px-6">
         <div class="w-full text-center">
           <h3 class="font-head text-[40px] font-semibold uppercase leading-[1.05] tracking-[3px] text-white md:text-[60px] lg:text-[76px]">
-            David Kenani Maraga -  2027
+            {@title}
           </h3>
           <h1 class="mt-4 font-serifi text-3xl italic text-white sm:text-4xl md:text-5xl lg:text-6xl">
-            Reset. Restore. <br /> Rebuild Kenya.
+            {@tagline}
           </h1>
 
           <div class="mt-12 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:gap-0">
             <div class="flex sm:w-1/2 sm:justify-end sm:pr-3">
               <a
-                href="#mission"
+                href={@cta1_href}
                 class="inline-flex w-full min-w-[190px] items-center justify-center rounded-full bg-white px-8 py-3.5 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-blueink transition duration-300 hover:bg-crimson sm:w-auto"
               >
-                Read More
+                {@cta1_label}
               </a>
             </div>
             <div class="flex sm:w-1/2 sm:justify-start sm:pl-3">
               <a
-                href="https://www.iebc.or.ke/iebc/?constituency"
+                href={@cta2_href}
                 rel="noopener"
                 target="_blank"
                 class="inline-flex w-full min-w-[190px] items-center justify-center rounded-full border-2 border-white px-8 py-3.5 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-white transition duration-300 hover:bg-white hover:text-blueink sm:w-auto"
               >
-                Jiandikishe Kupiga Kura
+                {@cta2_label}
               </a>
             </div>
           </div>
@@ -287,7 +310,21 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     """
   end
 
+  attr :content, :map, default: %{}
+
   defp donate_section(assigns) do
+    assigns =
+      assign(assigns,
+        donate_url:
+          get_content(assigns.content, "home.donate.button_url", "https://donations.davidmaraga.com/"),
+        volunteer_url:
+          get_content(
+            assigns.content,
+            "home.donate.volunteer_url",
+            "https://www.davidmaraga.com/volunteer"
+          )
+      )
+
     ~H"""
     <section class="relative w-full overflow-hidden bg-ghost px-4 shadow-[0_10px_50px_#0000000a]">
       <div class="mx-auto flex max-w-container flex-col items-top justify-center gap-8 py-8 lg:flex-row lg:justify-between">
@@ -314,7 +351,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           <div class="flex flex-wrap items-center justify-center gap-3 sm:justify-end">
             <a
               type="button"
-              href="https://donations.davidmaraga.com/"
+              href={@donate_url}
               rel="noopener"
               target="_blank"
               class="rounded-[5px] border-2 border-red-500 bg-red-500 px-[44px] py-5 text-lg font-semibold text-white transition hover:bg-transparent hover:text-red-500"
@@ -323,7 +360,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             </a>
             <a
               type="button"
-              href="https://www.davidmaraga.com/volunteer"
+              href={@volunteer_url}
               rel="noopener"
               target="_blank"
               class="rounded-[5px] border-2 border-crimson bg-crimson px-[44px] py-5 text-lg font-semibold text-white transition hover:bg-transparent hover:text-crimson"
@@ -337,7 +374,33 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     """
   end
 
+  attr :content, :map, default: %{}
+
   defp mission_section(assigns) do
+    assigns =
+      assign(assigns,
+        image: get_content(assigns.content, "home.mission.image", "/images/IMG_2052.jpg"),
+        heading_prefix:
+          get_content(assigns.content, "home.mission.heading_prefix", "A man of"),
+        heading_accent1:
+          get_content(assigns.content, "home.mission.heading_accent1", "integrity"),
+        heading_mid:
+          get_content(
+            assigns.content,
+            "home.mission.heading_mid",
+            "for a time that demands"
+          ),
+        heading_accent2:
+          get_content(assigns.content, "home.mission.heading_accent2", "character."),
+        quote:
+          get_content(
+            assigns.content,
+            "home.mission.quote",
+            "David Maraga — the judge who annulled a presidential election and proved no one is above the law. A reformer who digitized courts, expanded access to justice, and authored over 1,250 judgments. Fearless, principled, and relentless — Kenya's greatest judicial guardian"
+          ),
+        cta_href: get_content(assigns.content, "home.mission.cta_href", "#footer")
+      )
+
     ~H"""
     <section
       id="mission"
@@ -351,8 +414,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       >
         <div class="w-full lg:w-[58%]">
           <img
-            src="/images/IMG_2052.jpg"
-            alt="Government building with national flag"
+            src={@image}
+            alt="David Maraga"
             loading="lazy"
             class="h-[360px] w-full rounded-[5px] object-cover object-[center_30%] shadow-2xl sm:h-[620px] lg:h-[820px]"
           />
@@ -360,17 +423,16 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
         <div class="relative z-10 -mt-12 w-[92%] rounded-[5px] bg-blueink px-8 py-10 shadow-2xl sm:px-10 lg:-ml-[14%] lg:mt-0 lg:w-[44%] lg:px-12 lg:py-12">
           <h2 class="font-head text-4xl uppercase text-white md:text-5xl">
-            A man of <span class="text-crimson">integrity</span>
-            for a time that demands <span class="text-crimson"> character. </span>
+            {@heading_prefix} <span class="text-crimson">{@heading_accent1}</span>
+            {@heading_mid} <span class="text-crimson">{@heading_accent2}</span>
           </h2>
 
           <p class="mt-4 font-serifi text-xl italic leading-relaxed tracking-[.5px] text-white">
-            "
-            David Maraga — the judge who annulled a presidential election and proved no one is above the law. A reformer who digitized courts, expanded access to justice, and authored over 1,250 judgments. Fearless, principled, and relentless — Kenya's greatest judicial guardian"
+            " {@quote}"
           </p>
 
           <a
-            href="#footer"
+            href={@cta_href}
             class="mt-8 inline-flex items-center gap-2 font-head text-[15px] font-semibold uppercase tracking-wide text-white transition hover:text-crimson"
           >
             Bio
@@ -394,14 +456,36 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     """
   end
 
+  attr :content, :map, default: %{}
+
   defp documentary_section(assigns) do
+    assigns =
+      assign(assigns,
+        title_prefix:
+          get_content(assigns.content, "home.documentary.title_prefix", "The Maraga Story"),
+        title_accent:
+          get_content(assigns.content, "home.documentary.title_accent", "Documentary"),
+        description:
+          get_content(
+            assigns.content,
+            "home.documentary.description",
+            "The first autobiographical documentary on David Maraga, produced with NTV."
+          ),
+        youtube_url:
+          get_content(
+            assigns.content,
+            "home.documentary.youtube_url",
+            "https://www.youtube.com/embed/-2QefPbyXrQ"
+          )
+      )
+
     ~H"""
     <section id="documentary" class="bg-white py-20 lg:py-28">
       <div class="mx-auto max-w-container px-4">
         <.section_heading
-          title="The Maraga Story"
-          accent="Documentary"
-          description="The first autobiographical documentary on David Maraga, produced with NTV."
+          title={"#{@title_prefix} #{@title_accent}"}
+          accent={@title_accent}
+          description={@description}
         />
 
         <div
@@ -412,8 +496,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           <div class="relative w-full" style="padding-top: 56.25%;">
             <iframe
               class="absolute inset-0 h-full w-full"
-              src="https://www.youtube.com/embed/-2QefPbyXrQ"
-              title="David Maraga: The Autobiographical Documentary (NTV)"
+              src={@youtube_url}
+              title="David Maraga: The Autobiographical Documentary"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerpolicy="strict-origin-when-cross-origin"
@@ -428,15 +512,28 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   end
 
   attr :news_items, :list, required: true
+  attr :content, :map, default: %{}
 
   defp news_section(assigns) do
+    assigns =
+      assign(assigns,
+        title_prefix: get_content(assigns.content, "home.news.title_prefix", "latest"),
+        title_accent: get_content(assigns.content, "home.news.title_accent", "News"),
+        description:
+          get_content(
+            assigns.content,
+            "home.news.description",
+            "Get the latest updates on the campaign trail, policy positions, and more."
+          )
+      )
+
     ~H"""
     <section id="news" phx-hook="RevealOnScroll" class="reveal-on-scroll bg-ghost py-20">
       <div class="mx-auto max-w-container px-4">
         <.section_heading
-          title="latest News"
-          accent="News"
-          description="Get the latest updates on the campaign trail, policy positions, and more."
+          title={"#{@title_prefix} #{@title_accent}"}
+          accent={@title_accent}
+          description={@description}
         />
 
         <div
@@ -460,13 +557,43 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   end
 
   attr :stats, :list, required: true
+  attr :content, :map, default: %{}
 
   defp newsletter_section(assigns) do
+    assigns =
+      assign(assigns,
+        bg_image:
+          get_content(
+            assigns.content,
+            "home.newsletter.bg_image",
+            "/images/maraga-town-old.jpg"
+          ),
+        eyebrow: get_content(assigns.content, "home.newsletter.eyebrow", "Stay in the loop"),
+        heading:
+          get_content(assigns.content, "home.newsletter.heading", "Subscribe to the newsletter"),
+        description:
+          get_content(
+            assigns.content,
+            "home.newsletter.description",
+            "Get campaign updates, rally announcements, and policy highlights delivered straight to your inbox."
+          ),
+        cta_href: get_content(assigns.content, "home.newsletter.cta_href", "#footer"),
+        stats_eyebrow: get_content(assigns.content, "home.stats.eyebrow", "Kenya 2027"),
+        stats_heading: get_content(assigns.content, "home.stats.heading", "David Maraga"),
+        stats_tagline:
+          get_content(
+            assigns.content,
+            "home.stats.tagline",
+            "For President · Integrity · Justice · Nation"
+          ),
+        stats_motto: get_content(assigns.content, "home.stats.motto", "Ukatiba Ndio Tiba")
+      )
+
     ~H"""
     <section id="newsletter">
       <div
         class="relative bg-cover bg-center"
-        style="background-image: url('/images/maraga-town-old.jpg');"
+        style={"background-image: url('#{@bg_image}');"}
       >
         <div class="absolute inset-0 bg-black/60"></div>
 
@@ -489,16 +616,16 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             <path d="m3 7 9 6 9-6" />
           </svg>
 
-          <h3 class="font-serifi text-2xl italic text-white">Stay in the loop</h3>
+          <h3 class="font-serifi text-2xl italic text-white">{@eyebrow}</h3>
           <h2 class="mt-2 font-head text-4xl uppercase tracking-[.5px] text-white md:text-5xl">
-            Subscribe to the newsletter
+            {@heading}
           </h2>
           <p class="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
-            Get campaign updates, rally announcements, and policy highlights delivered straight to your inbox.
+            {@description}
           </p>
 
           <a
-            href="#footer"
+            href={@cta_href}
             class="mt-8 inline-flex items-center gap-2 rounded-[5px] bg-crimson px-[30px] py-[18px] font-head text-[15px] font-semibold uppercase tracking-wide text-white transition hover:bg-blueink"
           >
             Subscribe For Updates
@@ -532,13 +659,13 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             </div>
 
             <p class="mt-10 font-head text-sm uppercase tracking-[0.45em] text-[#d0b216] sm:text-base">
-              Kenya 2027
+              {@stats_eyebrow}
             </p>
             <h2 class="mt-4 font-head text-4xl font-bold uppercase tracking-[0.06em] text-white sm:text-5xl md:text-6xl">
-              David Maraga
+              {@stats_heading}
             </h2>
             <p class="mt-4 font-head text-sm uppercase tracking-[0.45em] text-white/70 sm:text-base">
-              For President · Integrity · Justice · Nation
+              {@stats_tagline}
             </p>
             <div class="mx-auto mt-8 h-1 w-24 rounded-full bg-[#d0b216]"></div>
           </div>
@@ -548,28 +675,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           </div>
 
           <p class="mt-14 text-center font-head text-2xl uppercase tracking-[0.28em] text-white/72 sm:text-3xl md:text-4xl">
-            Ukatiba Ndio Tiba
+            {@stats_motto}
           </p>
-        </div>
-      </div>
-    </section>
-    """
-  end
-
-  attr :shop_items, :list, required: true
-
-  defp shop_section(assigns) do
-    ~H"""
-    <section id="shop" class="bg-white py-20">
-      <div class="mx-auto max-w-container px-4">
-        <.section_heading
-          title="Shop for campaign"
-          accent="campaign"
-          description="The Brady Bunch the Brady Bunch that is the way we all go on got a dream"
-        />
-
-        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          <.shop_card :for={item <- @shop_items} item={item} />
         </div>
       </div>
     </section>
@@ -578,15 +685,40 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
   attr :events, :list, required: true
   attr :videos, :list, required: true
+  attr :content, :map, default: %{}
 
   defp agenda_section(assigns) do
+    assigns =
+      assign(assigns,
+        videos_title_prefix:
+          get_content(assigns.content, "home.agenda.title_prefix", "Watch the"),
+        videos_title_accent:
+          get_content(assigns.content, "home.agenda.title_accent", "Campaign"),
+        videos_description:
+          get_content(
+            assigns.content,
+            "home.agenda.description",
+            "Catch the latest moments from the trail — tap any clip to watch on YouTube and social media."
+          ),
+        events_title_prefix:
+          get_content(assigns.content, "home.events.title_prefix", "Upcoming"),
+        events_title_accent:
+          get_content(assigns.content, "home.events.title_accent", "Events"),
+        events_description:
+          get_content(
+            assigns.content,
+            "home.events.description",
+            "Follow the latest news and updates from the campaign trail ."
+          )
+      )
+
     ~H"""
     <section id="agenda" class="bg-white py-20">
       <div class="mx-auto max-w-container px-4">
         <.section_heading
-          title="Watch the Campaign"
-          accent="Campaign"
-          description="Catch the latest moments from the trail — tap any clip to watch on YouTube and social media."
+          title={"#{@videos_title_prefix} #{@videos_title_accent}"}
+          accent={@videos_title_accent}
+          description={@videos_description}
         />
       </div>
 
@@ -595,9 +727,9 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <div class="mx-auto max-w-container px-4">
         <div class="mt-16" id="events">
           <.section_heading
-            title="Upcoming"
-            accent="Events"
-            description="Follow the latest news and updates from the campaign trail ."
+            title={"#{@events_title_prefix} #{@events_title_accent}"}
+            accent={@events_title_accent}
+            description={@events_description}
           />
 
           <div :if={@events != []} class="grid grid-cols-1 gap-7 md:grid-cols-3">
@@ -695,32 +827,6 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         </p>
       </div>
     </article>
-    """
-  end
-
-  attr :item, :map, required: true
-
-  defp shop_card(assigns) do
-    ~H"""
-    <div class="group">
-      <a href="#shop" class="block overflow-hidden rounded-[5px]">
-        <img
-          src={@item.image}
-          alt={@item.name}
-          loading="lazy"
-          class="h-[420px] w-full object-cover object-[center_30%] transition duration-500 group-hover:scale-105"
-        />
-      </a>
-
-      <div class="mt-5 text-center">
-        <a href="#shop">
-          <h6 class="font-head text-lg uppercase text-blueink transition hover:text-crimson">
-            {@item.name}
-          </h6>
-        </a>
-        <div class="mt-1 font-head text-lg font-medium text-crimson">{@item.price}</div>
-      </div>
-    </div>
     """
   end
 
