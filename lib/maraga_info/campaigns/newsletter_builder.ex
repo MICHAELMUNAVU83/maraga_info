@@ -294,24 +294,24 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
 
               <!-- FOOTER (inside main card so border-radius wraps it) -->
               <tr>
-                <td class="px" style="padding:28px 44px 0 44px">
+                <td class="px" style="padding:18px 44px 0 44px">
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
-                      <td valign="middle">
-                        <span class="head-font" style="font-size:52px;font-weight:700;color:#026631;letter-spacing:1px;line-height:1;">MARAGA</span><span class="head-font" style="font-size:21px;font-weight:700;color:#026631;vertical-align:super;line-height:1;">'27</span>
+                      <td valign="middle" style="width:40%">
+                        <span class="head-font" style="font-size:36px;font-weight:700;color:#026631;letter-spacing:1px;line-height:1;">MARAGA</span><span class="head-font" style="font-size:15px;font-weight:700;color:#026631;vertical-align:super;line-height:1;">'27</span>
                       </td>
-                      <td valign="middle" align="right">
-                        <p class="head-font" style="margin:0;font-size:12px;font-weight:600;color:#026631;letter-spacing:0.3px;line-height:18px;">&#128205; David Maraga Campaign Headquarters</p>
-                        <p class="body-font" style="margin:2px 0 8px 0;font-size:12px;color:#555555;line-height:17px;">4th Flr, Off Vihiga Rd, Kileleshwa, Nairobi</p>
-                        <p class="body-font" style="margin:0;font-size:12px;color:#555555;line-height:20px;">&#128222; +254 746 900 027</p>
-                        <p class="body-font" style="margin:0;font-size:12px;line-height:20px;"><a href="https://davidmaraga.com/" target="_blank" style="color:#026631;text-decoration:none;">&#9993; DavidMaraga.com</a></p>
+                      <td valign="middle" align="right" style="width:60%">
+                        <p class="head-font" style="margin:0 0 2px 0;font-size:11px;font-weight:600;color:#026631;letter-spacing:0.3px;line-height:16px;"><span style="color:#026631;">&#9679;</span> David Maraga Campaign Headquarters</p>
+                        <p class="body-font" style="margin:0 0 5px 12px;font-size:11px;color:#555555;line-height:15px;">4th Flr, Off Vihiga Rd, Kileleshwa, Nairobi</p>
+                        <p class="body-font" style="margin:0 0 1px 0;font-size:11px;color:#555555;line-height:16px;"><span style="color:#026631;">&#9679;</span> +254 746 900 027</p>
+                        <p class="body-font" style="margin:0;font-size:11px;line-height:16px;"><a href="https://davidmaraga.com/" target="_blank" style="color:#026631;text-decoration:none;"><span style="color:#026631;">&#9679;</span> DavidMaraga.com</a></p>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
               <tr>
-                <td class="px" style="padding:14px 44px 0 44px">
+                <td class="px" style="padding:10px 44px 0 44px">
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr><td style="height:2px;background-color:#026631;font-size:0;line-height:0;">&nbsp;</td></tr>
                   </table>

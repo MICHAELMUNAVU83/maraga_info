@@ -167,46 +167,50 @@ if config_env() == :prod do
   #
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
 
-  # The "From" address used by the bulk email composer.
-  if from = System.get_env("MAIL_FROM") do
-    config :maraga_info,
-           :mail_from,
-           {System.get_env("MAIL_FROM_NAME") || "David Maraga Campaign", from}
-  end
+end
 
-  # Pick a real delivery adapter based on the env vars that are present.
-  # Brevo (HTTP API via Finch) takes priority, then Mailgun, then SMTP.
-  # The Local adapter is kept so the app still boots without mail credentials.
-  cond do
-    System.get_env("BREVO_API_KEY") ->
-      config :maraga_info, MaragaInfo.Mailer,
-        adapter: Swoosh.Adapters.Brevo,
-        api_key: System.get_env("BREVO_API_KEY")
+# The "From" address and delivery adapter are configured for all environments
+# so that test sends work in dev as well as production.
 
-      config :swoosh, :api_client, Swoosh.ApiClient.Finch
-      config :swoosh, :finch_name, MaragaInfo.Finch
+# The "From" address used by the bulk email composer.
+if from = System.get_env("MAIL_FROM") do
+  config :maraga_info,
+         :mail_from,
+         {System.get_env("MAIL_FROM_NAME") || "David Maraga Campaign", from}
+end
 
-    System.get_env("MAILGUN_API_KEY") ->
-      config :maraga_info, MaragaInfo.Mailer,
-        adapter: Swoosh.Adapters.Mailgun,
-        api_key: System.get_env("MAILGUN_API_KEY"),
-        domain: System.get_env("MAILGUN_DOMAIN")
+# Pick a real delivery adapter based on the env vars that are present.
+# Brevo (HTTP API via Finch) takes priority, then Mailgun, then SMTP.
+# The Local adapter is kept so the app still boots without mail credentials.
+cond do
+  System.get_env("BREVO_API_KEY") ->
+    config :maraga_info, MaragaInfo.Mailer,
+      adapter: Swoosh.Adapters.Brevo,
+      api_key: System.get_env("BREVO_API_KEY")
 
-      config :swoosh, :api_client, Swoosh.ApiClient.Finch
-      config :swoosh, :finch_name, MaragaInfo.Finch
+    config :swoosh, :api_client, Swoosh.ApiClient.Finch
+    config :swoosh, :finch_name, MaragaInfo.Finch
 
-    System.get_env("SMTP_RELAY") ->
-      config :maraga_info, MaragaInfo.Mailer,
-        adapter: Swoosh.Adapters.SMTP,
-        relay: System.get_env("SMTP_RELAY"),
-        username: System.get_env("SMTP_USERNAME"),
-        password: System.get_env("SMTP_PASSWORD"),
-        port: String.to_integer(System.get_env("SMTP_PORT") || "587"),
-        tls: :always,
-        auth: :always,
-        retries: 2
+  System.get_env("MAILGUN_API_KEY") ->
+    config :maraga_info, MaragaInfo.Mailer,
+      adapter: Swoosh.Adapters.Mailgun,
+      api_key: System.get_env("MAILGUN_API_KEY"),
+      domain: System.get_env("MAILGUN_DOMAIN")
 
-    true ->
-      :ok
-  end
+    config :swoosh, :api_client, Swoosh.ApiClient.Finch
+    config :swoosh, :finch_name, MaragaInfo.Finch
+
+  System.get_env("SMTP_RELAY") ->
+    config :maraga_info, MaragaInfo.Mailer,
+      adapter: Swoosh.Adapters.SMTP,
+      relay: System.get_env("SMTP_RELAY"),
+      username: System.get_env("SMTP_USERNAME"),
+      password: System.get_env("SMTP_PASSWORD"),
+      port: String.to_integer(System.get_env("SMTP_PORT") || "587"),
+      tls: :always,
+      auth: :always,
+      retries: 2
+
+  true ->
+    :ok
 end
