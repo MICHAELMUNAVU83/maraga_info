@@ -124,13 +124,24 @@ defmodule MaragaInfoWeb.HomeLive.Index do
        shop_items: @shop_items,
        videos: videos,
        events: events,
-       gallery_images: gallery_images
+       gallery_images: gallery_images,
+       selected_gallery_image: nil
      )}
   end
 
   @impl true
   def handle_event("close_event_modal", _params, socket) do
     {:noreply, assign(socket, :show_event_modal, false)}
+  end
+
+  def handle_event("open_gallery_image", %{"id" => id}, socket) do
+    selected = Enum.find(socket.assigns.gallery_images, &(to_string(&1.id) == id))
+
+    {:noreply, assign(socket, :selected_gallery_image, selected)}
+  end
+
+  def handle_event("close_gallery_image", _params, socket) do
+    {:noreply, assign(socket, :selected_gallery_image, nil)}
   end
 
   @impl true
@@ -164,7 +175,14 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     Content.list_landing_media_items()
     |> Enum.take(length(@gallery_layout))
     |> Enum.zip(@gallery_layout)
-    |> Enum.map(fn {item, layout} -> Map.put(layout, :image, item.image_url) end)
+    |> Enum.map(fn {item, layout} ->
+      layout
+      |> Map.put(:id, item.id)
+      |> Map.put(:image, item.image_url)
+      |> Map.put(:title, item.title)
+      |> Map.put(:category, item.category)
+      |> Map.put(:description, item.description)
+    end)
   end
 
   @impl true
@@ -183,6 +201,41 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <.agenda_section events={@events} videos={@videos} />
       <.gallery_section gallery_images={@gallery_images} />
       <.site_footer id="footer" />
+
+      <.modal
+        :if={@selected_gallery_image}
+        id="home-gallery-lightbox"
+        show
+        on_cancel={JS.push("close_gallery_image")}
+      >
+        <img
+          src={@selected_gallery_image.image}
+          alt={@selected_gallery_image.title}
+          class="max-h-[70vh] w-full rounded-[6px] object-contain"
+        />
+        <div class="mt-5">
+          <span class="font-head text-xs uppercase tracking-[0.18em] text-crimson">
+            {@selected_gallery_image.category}
+          </span>
+          <h3 class="mt-1 font-head text-2xl uppercase tracking-[0.04em] text-blueink">
+            {@selected_gallery_image.title}
+          </h3>
+          <p
+            :if={present?(@selected_gallery_image.description)}
+            class="mt-3 text-base leading-7 text-grayink"
+          >
+            {@selected_gallery_image.description}
+          </p>
+          <a
+            href={@selected_gallery_image.image}
+            target="_blank"
+            rel="noopener"
+            class="mt-5 inline-flex items-center gap-2 font-head text-xs font-semibold uppercase tracking-[0.16em] text-crimson transition hover:text-blueink"
+          >
+            Open full size <.icon name="hero-arrow-top-right-on-square-mini" class="h-4 w-4" />
+          </a>
+        </div>
+      </.modal>
     </div>
     """
   end
@@ -870,10 +923,16 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
   defp gallery_item(assigns) do
     ~H"""
-    <a href="#gallery" class={["group relative block overflow-hidden", @image.class]}>
+    <button
+      type="button"
+      phx-click="open_gallery_image"
+      phx-value-id={@image.id}
+      class={["group relative block overflow-hidden text-left", @image.class]}
+      aria-label={"Open #{@image.title}"}
+    >
       <img
         src={@image.image}
-        alt="Campaign gallery"
+        alt={@image.title}
         loading="lazy"
         class={[
           @image.height_class,
@@ -883,7 +942,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <span class="absolute inset-0 flex items-center justify-center bg-blueink/0 text-4xl font-light text-white opacity-0 transition group-hover:bg-blueink/60 group-hover:opacity-100 sm:text-5xl">
         +
       </span>
-    </a>
+    </button>
     """
   end
 
@@ -904,4 +963,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
   defp format_post_date(%DateTime{} = published_at),
     do: Calendar.strftime(published_at, "%b %-d, %Y")
+
+  defp present?(nil), do: false
+  defp present?(value) when is_binary(value), do: String.trim(value) != ""
 end

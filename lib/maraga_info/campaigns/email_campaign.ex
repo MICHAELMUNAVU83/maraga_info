@@ -29,6 +29,9 @@ defmodule MaragaInfo.Campaigns.EmailCampaign do
     field :body_b, :string
     field :sender_name_b, :string
 
+    # Section-based builder (takes precedence over body when non-empty)
+    field :sections, {:array, :map}, default: []
+
     # Shared metadata
     field :preheader, :string
     field :sender_title, :string
@@ -58,7 +61,8 @@ defmodule MaragaInfo.Campaigns.EmailCampaign do
       :sender_name_b,
       :preheader,
       :sender_title,
-      :reply_to
+      :reply_to,
+      :sections
     ])
     |> update_change(:subject, &squish/1)
     |> update_change(:subject_b, &squish/1)

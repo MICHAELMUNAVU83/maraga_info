@@ -235,15 +235,9 @@ defmodule MaragaInfoWeb.SiteComponents do
         >
           Newsletters
         </.link>
-        <.link
-          navigate="/news"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-        >
-          News
-        </.link>
         <details class="group pl-3">
-          <summary class="flex cursor-pointer list-none items-center justify-between py-1 text-[13px] uppercase tracking-[0.16em] text-white/65 transition hover:text-crimson">
-            Categories
+          <summary class="flex cursor-pointer list-none items-center gap-2 py-1 text-[14px] text-white/85 transition hover:text-crimson">
+            News
             <svg
               class="h-4 w-4 transition group-open:rotate-180"
               viewBox="0 0 24 24"
@@ -258,6 +252,15 @@ defmodule MaragaInfoWeb.SiteComponents do
             </svg>
           </summary>
           <div class="grid gap-1 pb-1 pl-3 pt-1">
+            <.link
+              navigate="/news"
+              class="py-1 text-[13px] text-white/75 transition hover:text-crimson"
+            >
+              All News
+            </.link>
+            <p class="pt-1 font-head text-[12px] font-semibold uppercase tracking-[0.16em] text-white/55">
+              Categories
+            </p>
             <.link
               :for={category <- @news_categories}
               navigate={news_category_href(category)}
@@ -371,8 +374,10 @@ defmodule MaragaInfoWeb.SiteComponents do
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
-      <div class="absolute left-0 top-full z-50 hidden min-w-[200px] grid-cols-1 gap-y-2 rounded-md bg-white p-6 shadow-2xl group-hover:grid group-focus-within:grid">
-        {render_slot(@inner_block)}
+      <div class="absolute left-0 top-full z-50 hidden pt-3 group-hover:block group-focus-within:block">
+        <div class="grid min-w-[220px] grid-cols-1 gap-y-2 rounded-md bg-white p-6 shadow-2xl">
+          {render_slot(@inner_block)}
+        </div>
       </div>
     </div>
     """
@@ -384,9 +389,9 @@ defmodule MaragaInfoWeb.SiteComponents do
 
   defp nav_submenu(assigns) do
     ~H"""
-    <div class="grid gap-y-2">
+    <div class="relative">
       <div class="group/nav-sub rounded-md transition hover:bg-slate-50 focus-within:bg-slate-50">
-        <div class="flex items-center justify-between gap-3 rounded-md  py-1.5">
+        <div class="flex items-center justify-between gap-3 rounded-md py-1.5">
           <%= if @navigate do %>
             <.link navigate={@navigate} class="text-[15px] text-ink transition hover:text-crimson">
               {@label}
@@ -407,7 +412,7 @@ defmodule MaragaInfoWeb.SiteComponents do
             <polyline points="9 6 15 12 9 18" />
           </svg>
         </div>
-        <div class="hidden gap-y-2 pb-2 pl-5 pr-2 group-hover/nav-sub:grid group-focus-within/nav-sub:grid">
+        <div class="absolute left-full top-0 z-[60] hidden min-w-[190px] grid-cols-1 gap-y-2 rounded-md bg-white p-4 shadow-2xl group-hover/nav-sub:grid group-focus-within/nav-sub:grid">
           {render_slot(@inner_block)}
         </div>
       </div>

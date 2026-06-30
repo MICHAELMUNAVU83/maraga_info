@@ -53,7 +53,7 @@ defmodule MaragaInfoWeb.DavidMaragaLive.Index do
         <div class="relative z-10 mx-auto flex w-full max-w-container flex-col items-center px-4 py-28 text-center lg:px-6 lg:py-36">
           <h3 class="font-serifi text-2xl italic text-white">Life of the Former Chief Justice</h3>
           <h1 class="mt-3 font-head text-[40px] font-semibold uppercase leading-[1.05] tracking-[2px] text-white md:text-[64px]">
-            David Kenani <span class="text-crimson">Maraga</span>
+            David <span class="text-crimson">Maraga</span>
           </h1>
           <p class="mt-6 max-w-3xl font-serifi text-lg italic leading-8 text-white/85 sm:text-xl">
             "A man of integrity for a time that demands character."

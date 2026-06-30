@@ -274,3 +274,6 @@ Enum.each(media_items, fn attrs ->
     item -> Content.update_media_item(item, attrs)
   end
 end)
+
+# --- Sub-seeds -----------------------------------------------------------
+Code.eval_file(Path.join([__DIR__, "seeds", "email_campaigns.exs"]))

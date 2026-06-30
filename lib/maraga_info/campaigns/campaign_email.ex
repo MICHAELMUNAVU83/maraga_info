@@ -2,13 +2,14 @@ defmodule MaragaInfo.Campaigns.CampaignEmail do
   @moduledoc """
   Turns an `EmailCampaign` variant plus a recipient into a Swoosh email.
 
-  The body is authored as a complete HTML document and sent as-is; the only
-  transformation is replacing the `{{name}}` / `{{first_name}}` placeholders for
-  the recipient. The variant's `sender_name` becomes the From display name.
+  When a campaign has `sections`, the HTML is assembled via `NewsletterBuilder`.
+  Otherwise the raw `body` field is used as-is. The placeholders `{{name}}` /
+  `{{first_name}}` are replaced per recipient in either path.
   """
   import Swoosh.Email
 
   alias MaragaInfo.Campaigns.EmailCampaign
+  alias MaragaInfo.Campaigns.NewsletterBuilder
 
   @doc """
   Builds a ready-to-deliver `Swoosh.Email` for one recipient and variant.
@@ -31,13 +32,16 @@ defmodule MaragaInfo.Campaigns.CampaignEmail do
 
   @doc """
   Resolves the content for a variant: `"A"` uses the primary fields, `"B"` uses
-  the `*_b` fields. Returns a `%{subject:, sender_name:, body:}` map.
+  the `*_b` fields. Returns a map with `:subject`, `:sender_name`, `:body`, and
+  `:sections` (sections are shared between variants).
   """
   def variant_content(%EmailCampaign{} = campaign, "B") do
     %{
       subject: campaign.subject_b,
       sender_name: campaign.sender_name_b,
-      body: campaign.body_b
+      body: campaign.body_b,
+      preheader: campaign.preheader,
+      sections: campaign.sections || []
     }
   end
 
@@ -45,17 +49,26 @@ defmodule MaragaInfo.Campaigns.CampaignEmail do
     %{
       subject: campaign.subject,
       sender_name: campaign.sender_name,
-      body: campaign.body
+      body: campaign.body,
+      preheader: campaign.preheader,
+      sections: campaign.sections || []
     }
   end
 
   @doc """
   Renders the HTML document for a recipient (used for delivery and preview).
 
-  Accepts either a full campaign + variant, or an already-resolved content map.
+  When the campaign has sections, builds the HTML via `NewsletterBuilder`.
+  Otherwise uses the raw `body` field.
   """
   def render_html(%EmailCampaign{} = campaign, variant, recipient) when is_binary(variant) do
     render_html(variant_content(campaign, variant), recipient)
+  end
+
+  def render_html(%{sections: sections, preheader: preheader}, recipient)
+      when is_list(sections) and sections != [] do
+    NewsletterBuilder.build_html(sections, preheader: preheader)
+    |> personalize(recipient)
   end
 
   def render_html(%{body: body}, recipient) do
@@ -64,6 +77,11 @@ defmodule MaragaInfo.Campaigns.CampaignEmail do
   end
 
   @doc "Plain-text fallback derived from the HTML body."
+  def render_text(%{sections: sections} = content, recipient)
+      when is_list(sections) and sections != [] do
+    render_html(content, recipient) |> html_to_text()
+  end
+
   def render_text(%{body: body}, recipient) do
     (body || "")
     |> personalize(recipient)

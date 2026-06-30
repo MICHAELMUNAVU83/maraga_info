@@ -156,6 +156,15 @@ defmodule MaragaInfoWeb.MediaLive.Index do
           <p :if={present?(@selected.description)} class="mt-3 text-base leading-7 text-grayink">
             {@selected.description}
           </p>
+          <a
+            :if={@selected.media_type != "video"}
+            href={@selected.image_url}
+            target="_blank"
+            rel="noopener"
+            class="mt-5 inline-flex items-center gap-2 font-head text-xs font-semibold uppercase tracking-[0.16em] text-crimson transition hover:text-blueink"
+          >
+            Open full size <.icon name="hero-arrow-top-right-on-square-mini" class="h-4 w-4" />
+          </a>
         </div>
       </.modal>
     </div>
@@ -194,6 +203,12 @@ defmodule MaragaInfoWeb.MediaLive.Index do
         </span>
         <span class="font-head text-xl uppercase tracking-[0.04em] text-white">
           {@item.title}
+        </span>
+        <span
+          :if={@item.media_type != "video"}
+          class="font-head text-[11px] uppercase tracking-[0.22em] text-white/80"
+        >
+          View photo
         </span>
         <span
           :if={@item.media_type == "video"}
