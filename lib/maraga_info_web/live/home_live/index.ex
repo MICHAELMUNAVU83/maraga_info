@@ -3,6 +3,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
   alias MaragaInfo.Content
   alias MaragaInfo.Content.Post
+  alias MaragaInfo.Volunteers
   alias MaragaInfoWeb.Seo
 
   @social_links [
@@ -86,6 +87,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
        events: events,
        gallery_images: gallery_images,
        selected_gallery_image: nil,
+       subscribed: false,
+       subscribe_error: nil,
        content: content
      )}
   end
@@ -103,6 +106,35 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
   def handle_event("close_gallery_image", _params, socket) do
     {:noreply, assign(socket, :selected_gallery_image, nil)}
+  end
+
+  def handle_event("subscribe_email", %{"email" => email}, socket) do
+    case Volunteers.create_volunteer(%{
+           email: email,
+           additional_info: "Newsletter subscriber (website)"
+         }) do
+      {:ok, _volunteer} ->
+        {:noreply, assign(socket, subscribed: true, subscribe_error: nil)}
+
+      {:error, changeset} ->
+        # An already-registered email is still a "success" for the visitor.
+        if already_subscribed?(changeset) do
+          {:noreply, assign(socket, subscribed: true, subscribe_error: nil)}
+        else
+          {:noreply,
+           assign(socket,
+             subscribed: false,
+             subscribe_error: "Please enter a valid email address."
+           )}
+        end
+    end
+  end
+
+  defp already_subscribed?(%Ecto.Changeset{errors: errors}) do
+    Enum.any?(errors, fn
+      {:email, {_message, opts}} -> Keyword.get(opts, :constraint) == :unique
+      _ -> false
+    end)
   end
 
   @impl true
@@ -199,9 +231,15 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <.mission_section content={@content} />
       <.documentary_section content={@content} />
       <.news_section news_items={@news_items} content={@content} />
-      <.newsletter_section stats={@stats} content={@content} />
+      <.events_section events={@events} content={@content} />
+      <.newsletter_section
+        stats={@stats}
+        content={@content}
+        subscribed={@subscribed}
+        subscribe_error={@subscribe_error}
+      />
       <%!-- <.shop_section shop_items={@shop_items} /> --%>
-      <.agenda_section events={@events} videos={@videos} content={@content} />
+      <.agenda_section videos={@videos} content={@content} />
       <.gallery_section gallery_images={@gallery_images} />
       <.site_footer id="footer" />
 
@@ -365,7 +403,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
               target="_blank"
               class="rounded-[5px] border-2 border-crimson bg-crimson px-[44px] py-5 text-lg font-semibold text-white transition hover:bg-transparent hover:text-crimson"
             >
-              Volunteer
+              Join The Movement
             </a>
           </div>
         </div>
@@ -558,6 +596,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
   attr :stats, :list, required: true
   attr :content, :map, default: %{}
+  attr :subscribed, :boolean, default: false
+  attr :subscribe_error, :string, default: nil
 
   defp newsletter_section(assigns) do
     assigns =
@@ -570,14 +610,13 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           ),
         eyebrow: get_content(assigns.content, "home.newsletter.eyebrow", "Stay in the loop"),
         heading:
-          get_content(assigns.content, "home.newsletter.heading", "Subscribe to the newsletter"),
+          get_content(assigns.content, "home.newsletter.heading", "Subscribe to Our Emails"),
         description:
           get_content(
             assigns.content,
             "home.newsletter.description",
             "Get campaign updates, rally announcements, and policy highlights delivered straight to your inbox."
           ),
-        cta_href: get_content(assigns.content, "home.newsletter.cta_href", "#footer"),
         stats_eyebrow: get_content(assigns.content, "home.stats.eyebrow", "Kenya 2027"),
         stats_heading: get_content(assigns.content, "home.stats.heading", "David Maraga"),
         stats_tagline:
@@ -624,13 +663,9 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             {@description}
           </p>
 
-          <a
-            href={@cta_href}
-            class="mt-8 inline-flex items-center gap-2 rounded-[5px] bg-crimson px-[30px] py-[18px] font-head text-[15px] font-semibold uppercase tracking-wide text-white transition hover:bg-blueink"
-          >
-            Subscribe For Updates
+          <div :if={@subscribed} class="mt-8 flex items-center gap-2 text-lg text-white">
             <svg
-              class="h-4 w-4"
+              class="h-6 w-6 text-white"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -639,10 +674,47 @@ defmodule MaragaInfoWeb.HomeLive.Index do
               stroke-linejoin="round"
               aria-hidden="true"
             >
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
+              <path d="M20 6 9 17l-5-5" />
             </svg>
-          </a>
+            Thanks! You're on the list — we'll be in touch.
+          </div>
+
+          <form
+            :if={!@subscribed}
+            phx-submit="subscribe_email"
+            class="mt-8 flex w-full max-w-xl flex-col items-stretch gap-3 sm:flex-row"
+          >
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="Enter your email address"
+              class="w-full flex-1 rounded-[5px] border border-white/30 bg-white/95 px-5 py-[18px] text-base text-blueink outline-none placeholder:text-grayink focus:border-crimson"
+            />
+            <button
+              type="submit"
+              class="inline-flex items-center justify-center gap-2 rounded-[5px] bg-crimson px-[30px] py-[18px] font-head text-[15px] font-semibold uppercase tracking-wide text-white transition hover:bg-blueink"
+            >
+              Subscribe
+              <svg
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </button>
+          </form>
+
+          <p :if={@subscribe_error} class="mt-3 text-sm text-white">
+            {@subscribe_error}
+          </p>
         </div>
       </div>
 
@@ -684,6 +756,53 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   end
 
   attr :events, :list, required: true
+  attr :content, :map, default: %{}
+
+  defp events_section(assigns) do
+    assigns =
+      assign(assigns,
+        events_title_prefix:
+          get_content(assigns.content, "home.events.title_prefix", "Upcoming"),
+        events_title_accent:
+          get_content(assigns.content, "home.events.title_accent", "Events"),
+        events_description:
+          get_content(
+            assigns.content,
+            "home.events.description",
+            "Follow the latest news and updates from the campaign trail ."
+          )
+      )
+
+    ~H"""
+    <section id="events" class="bg-ghost py-20">
+      <div class="mx-auto max-w-container px-4">
+        <.section_heading
+          title={"#{@events_title_prefix} #{@events_title_accent}"}
+          accent={@events_title_accent}
+          description={@events_description}
+        />
+
+        <div :if={@events != []} class="grid grid-cols-1 gap-7 md:grid-cols-3">
+          <.event_card :for={event <- @events} event={event} />
+        </div>
+
+        <p :if={@events == []} class="text-center text-base leading-7 text-grayink">
+          No upcoming events scheduled yet — check the calendar for updates.
+        </p>
+
+        <div class="mt-10 text-center">
+          <.link
+            navigate={~p"/events"}
+            class="inline-flex items-center justify-center rounded-full bg-blueink px-8 py-3.5 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-white transition duration-300 hover:bg-crimson"
+          >
+            View Full Calendar
+          </.link>
+        </div>
+      </div>
+    </section>
+    """
+  end
+
   attr :videos, :list, required: true
   attr :content, :map, default: %{}
 
@@ -699,16 +818,6 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             assigns.content,
             "home.agenda.description",
             "Catch the latest moments from the trail — tap any clip to watch on YouTube and social media."
-          ),
-        events_title_prefix:
-          get_content(assigns.content, "home.events.title_prefix", "Upcoming"),
-        events_title_accent:
-          get_content(assigns.content, "home.events.title_accent", "Events"),
-        events_description:
-          get_content(
-            assigns.content,
-            "home.events.description",
-            "Follow the latest news and updates from the campaign trail ."
           )
       )
 
@@ -723,33 +832,6 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       </div>
 
       <.video_carousel videos={@videos} />
-
-      <div class="mx-auto max-w-container px-4">
-        <div class="mt-16" id="events">
-          <.section_heading
-            title={"#{@events_title_prefix} #{@events_title_accent}"}
-            accent={@events_title_accent}
-            description={@events_description}
-          />
-
-          <div :if={@events != []} class="grid grid-cols-1 gap-7 md:grid-cols-3">
-            <.event_card :for={event <- @events} event={event} />
-          </div>
-
-          <p :if={@events == []} class="text-center text-base leading-7 text-grayink">
-            No upcoming events scheduled yet — check the calendar for updates.
-          </p>
-
-          <div class="mt-10 text-center">
-            <.link
-              navigate={~p"/events"}
-              class="inline-flex items-center justify-center rounded-full bg-blueink px-8 py-3.5 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-white transition duration-300 hover:bg-crimson"
-            >
-              View Full Calendar
-            </.link>
-          </div>
-        </div>
-      </div>
     </section>
     """
   end

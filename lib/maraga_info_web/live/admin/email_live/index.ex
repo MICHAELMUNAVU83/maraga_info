@@ -5,9 +5,13 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   alias MaragaInfo.Campaigns.CampaignEmail
   alias MaragaInfo.Campaigns.EmailCampaign
   alias MaragaInfo.Campaigns.NewsletterBuilder
+  alias MaragaInfoWeb.Uploads
   alias Phoenix.LiveView.JS
 
   @poll_interval 2_000
+
+  @max_image_mb 8
+  defp max_image_mb, do: @max_image_mb
 
   @default_sections [
     %{
@@ -74,6 +78,14 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
      |> assign(:confirm_send, false)
      |> assign(:polling, false)
      |> assign(:section_types, @section_types)
+     |> assign(:target_section, nil)
+     |> allow_upload(:section_image,
+       accept: ~w(.jpg .jpeg .png .webp .gif),
+       max_entries: 1,
+       max_file_size: @max_image_mb * 1_000_000,
+       auto_upload: true,
+       progress: &handle_progress/3
+     )
      |> reset_composer()
      |> load_campaigns()}
   end
@@ -252,6 +264,14 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
     {:noreply, socket |> assign(:sections, sections) |> refresh_preview()}
   end
 
+  def handle_event("target_section", %{"index" => index}, socket) do
+    {:noreply, assign(socket, :target_section, String.to_integer(index))}
+  end
+
+  def handle_event("cancel_upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :section_image, ref)}
+  end
+
   def handle_event("add_highlight_item", %{"index" => index}, socket) do
     idx = String.to_integer(index)
 
@@ -330,6 +350,29 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
 
     {:noreply, socket}
   end
+
+  ## Uploads
+
+  defp handle_progress(:section_image, entry, socket) do
+    if entry.done? and not is_nil(socket.assigns.target_section) do
+      url = consume_uploaded_entry(socket, entry, fn meta -> Uploads.store_entry(meta, entry) end)
+
+      sections =
+        List.update_at(socket.assigns.sections, socket.assigns.target_section, fn section ->
+          Map.put(section, "url", absolute_url(url))
+        end)
+
+      {:noreply, socket |> assign(:sections, sections) |> refresh_preview()}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  # Uploaded files are served from `/uploads/...`; email clients need an absolute
+  # URL, so we prepend the endpoint host (e.g. https://davidmaraga.info/uploads/…).
+  defp absolute_url("http" <> _ = url), do: url
+  defp absolute_url("/" <> _ = path), do: MaragaInfoWeb.Endpoint.url() <> path
+  defp absolute_url(url), do: url
 
   ## Helpers
 
@@ -483,6 +526,20 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
     b = Enum.at(list, j)
     list |> List.replace_at(i, b) |> List.replace_at(j, a)
   end
+
+  defp entries_for(upload, target_section, index) when target_section == index,
+    do: upload.entries
+
+  defp entries_for(_upload, _target, _index), do: []
+
+  defp image_errors(upload) do
+    Enum.flat_map(upload.entries, &upload_errors(upload, &1)) ++ upload_errors(upload)
+  end
+
+  defp upload_error_to_string(:too_large), do: "File is too large (max #{@max_image_mb}MB)"
+  defp upload_error_to_string(:too_many_files), do: "Too many files"
+  defp upload_error_to_string(:not_accepted), do: "Unsupported file type"
+  defp upload_error_to_string(_), do: "Invalid file"
 
   defp default_section("greeting") do
     %{
@@ -872,7 +929,63 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                     <%!-- IMAGE --%>
                     <div :if={section["type"] == "image"} class="space-y-3">
                       <div>
-                        <label class="block text-xs font-medium text-zinc-700 mb-1">Image URL</label>
+                        <label class="block text-xs font-medium text-zinc-700 mb-1">Image</label>
+
+                        <div
+                          :if={Map.get(section, "url", "") != ""}
+                          class="relative mb-2 overflow-hidden rounded-lg border border-zinc-200"
+                        >
+                          <img
+                            src={Map.get(section, "url")}
+                            class="mx-auto max-h-48 w-full object-contain"
+                          />
+                          <button
+                            type="button"
+                            phx-click="update_section_field"
+                            phx-value-index={idx}
+                            phx-value-field="url"
+                            phx-value-value=""
+                            class="absolute right-2 top-2 rounded-md bg-white/90 p-1 text-zinc-700 shadow-sm transition hover:text-red-600"
+                            aria-label="Remove image"
+                          >
+                            <.icon name="hero-x-mark-mini" class="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        <label
+                          phx-click="target_section"
+                          phx-value-index={idx}
+                          class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 px-4 py-5 text-center text-sm text-zinc-600 transition hover:border-blueink hover:text-blueink"
+                        >
+                          <.icon name="hero-arrow-up-tray" class="h-5 w-5" />
+                          <span class="font-medium">
+                            {if Map.get(section, "url", "") != "", do: "Replace image", else: "Upload image"}
+                          </span>
+                          <span class="text-xs text-zinc-400">
+                            JPG, PNG, GIF or WEBP up to {max_image_mb()}MB
+                          </span>
+                          <.live_file_input upload={@uploads.section_image} class="sr-only" />
+                        </label>
+
+                        <p
+                          :for={entry <- entries_for(@uploads.section_image, @target_section, idx)}
+                          class="mt-2 text-xs text-zinc-500"
+                        >
+                          Uploading {entry.client_name} — {entry.progress}%
+                        </p>
+
+                        <p
+                          :for={err <- image_errors(@uploads.section_image)}
+                          :if={@target_section == idx}
+                          class="mt-1 text-xs text-red-600"
+                        >
+                          {upload_error_to_string(err)}
+                        </p>
+                      </div>
+                      <div>
+                        <label class="block text-xs font-medium text-zinc-700 mb-1">
+                          Image URL <span class="font-normal text-zinc-400">(or paste an external link)</span>
+                        </label>
                         <input
                           type="url"
                           value={Map.get(section, "url", "")}

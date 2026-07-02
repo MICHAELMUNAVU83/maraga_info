@@ -136,7 +136,7 @@ defmodule MaragaInfoWeb.SiteComponents do
               Events
             </.link>
             <a
-              href="https://davidmaraga.com/shop"
+              href="https://davidmaraga.shop"
               target="_blank"
               rel="noopener"
               class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
@@ -332,19 +332,13 @@ defmodule MaragaInfoWeb.SiteComponents do
         </.link>
 
         <a
-          href="https://davidmaraga.com/shop"
+          href="https://davidmaraga.shop"
           target="_blank"
           rel="noopener"
           class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
         >
           Shop
         </a>
-        <.link
-          navigate="/admin"
-          class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
-        >
-          Admin
-        </.link>
       </nav>
     </header>
     """
@@ -409,10 +403,10 @@ defmodule MaragaInfoWeb.SiteComponents do
             stroke-linejoin="round"
             aria-hidden="true"
           >
-            <polyline points="9 6 15 12 9 18" />
+            <polyline points="15 6 9 12 15 18" />
           </svg>
         </div>
-        <div class="absolute left-full top-0 z-[60] hidden min-w-[190px] grid-cols-1 gap-y-2 rounded-md bg-white p-4 shadow-2xl group-hover/nav-sub:grid group-focus-within/nav-sub:grid">
+        <div class="absolute right-full top-0 z-[60] hidden min-w-[190px] grid-cols-1 gap-y-2 rounded-md bg-white p-4 shadow-2xl group-hover/nav-sub:grid group-focus-within/nav-sub:grid">
           {render_slot(@inner_block)}
         </div>
       </div>
@@ -477,7 +471,7 @@ defmodule MaragaInfoWeb.SiteComponents do
               Campaign HQ
             </p>
             <p class="mt-3 text-sm leading-6 text-white/78">
-              82 Westlands Rd, Nairobi, Kenya
+              Off Vihiga Rd, Kileleshwa, Nairobi
             </p>
             <a
               href="tel:+254746900027"

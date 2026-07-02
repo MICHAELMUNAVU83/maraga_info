@@ -228,6 +228,11 @@ defmodule MaragaInfoWeb.RichText do
     if Regex.match?(~r/^\d{1,3}(\.\d+)?(px|%|em|rem)$/, val), do: ["width: #{val}"], else: []
   end
 
+  # CKEditor's FontSize feature stores the chosen size as an inline font-size.
+  defp keep_style("font-size", val) do
+    if Regex.match?(~r/^\d{1,3}(\.\d+)?(px|%|em|rem)$/, val), do: ["font-size: #{val}"], else: []
+  end
+
   defp keep_style(_, _), do: []
 
   defp safe_color?(val) do
