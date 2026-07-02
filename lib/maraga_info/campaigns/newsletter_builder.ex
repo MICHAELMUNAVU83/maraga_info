@@ -133,7 +133,10 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     img =
       ~s(<img src="#{url}" width="600" alt="#{alt}" style="display:block;width:100%;max-width:600px;height:auto;" />)
 
-    inner = if link_url != "", do: ~s(<a href="#{escape_attr(link_url)}" target="_blank">#{img}</a>), else: img
+    inner =
+      if link_url != "",
+        do: ~s(<a href="#{escape_attr(link_url)}" target="_blank">#{img}</a>),
+        else: img
 
     """
     <tr>
@@ -185,7 +188,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
 
   # Absolute URL for the Maraga '27 masthead logo. Emails require absolute image
   # URLs, so we prepend the endpoint host to the static asset path.
-  defp logo_url, do: MaragaInfoWeb.Endpoint.url() <> "/images/logo.png"
+  defp logo_url, do: "https://davidmaraga.info" <> "/images/logo.png"
 
   defp escape(nil), do: ""
 
