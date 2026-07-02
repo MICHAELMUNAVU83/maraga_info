@@ -225,9 +225,15 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
 
   ## Events — section builder
 
-  def handle_event("add_section", %{"type" => type}, socket) do
-    sections = socket.assigns.sections ++ [default_section(type)]
-    {:noreply, socket |> assign(:sections, sections) |> refresh_preview()}
+  def handle_event("add_section", params, socket) do
+    type = params["section_type"] || params["type"] || params["value"]
+
+    if type in @section_types do
+      sections = socket.assigns.sections ++ [default_section(type)]
+      {:noreply, socket |> assign(:sections, sections) |> refresh_preview()}
+    else
+      {:noreply, socket}
+    end
   end
 
   def handle_event("remove_section", %{"index" => index}, socket) do
@@ -381,6 +387,19 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   # images sent from a local/dev server still resolve for recipients.
   defp absolute_url(url), do: MaragaInfoWeb.Seo.absolute_url(url)
 
+  defp preview_image_url("https://davidmaraga.info/uploads/" <> path), do: "/uploads/" <> path
+  defp preview_image_url(url), do: url
+
+  defp preview_sections(sections) do
+    Enum.map(sections, fn
+      %{"type" => "image", "url" => url} = section ->
+        Map.put(section, "url", preview_image_url(url))
+
+      section ->
+        section
+    end)
+  end
+
   ## Helpers
 
   defp apply_action(socket, :index, _params) do
@@ -493,7 +512,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
 
     html =
       if socket.assigns.builder_mode == "sections" and sections != [] do
-        NewsletterBuilder.build_html(sections, preheader: preheader)
+        NewsletterBuilder.build_html(preview_sections(sections), preheader: preheader)
         |> CampaignEmail.personalize(%{name: "Jane Mwangi"})
       else
         content = CampaignEmail.variant_content(campaign, variant)
@@ -1023,7 +1042,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                           class="relative mb-2 overflow-hidden rounded-lg border border-zinc-200"
                         >
                           <img
-                            src={Map.get(section, "url")}
+                            src={section |> Map.get("url") |> preview_image_url()}
                             class="mx-auto max-h-48 w-full object-contain"
                           />
                           <button
@@ -1168,7 +1187,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                       :for={type <- @section_types}
                       type="button"
                       phx-click="add_section"
-                      phx-value-type={type}
+                      phx-value-section_type={type}
                       class="inline-flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 hover:border-zinc-300"
                     >
                       <.icon name="hero-plus-mini" class="h-3 w-3" />
