@@ -183,6 +183,10 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
 
   defp text_body_html(_), do: ""
 
+  # Absolute URL for the Maraga '27 masthead logo. Emails require absolute image
+  # URLs, so we prepend the endpoint host to the static asset path.
+  defp logo_url, do: MaragaInfoWeb.Endpoint.url() <> "/images/logo.png"
+
   defp escape(nil), do: ""
 
   defp escape(str) when is_binary(str) do
@@ -257,17 +261,9 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
 
                 <!-- MASTHEAD -->
                 <tr>
-                  <td align="center" style="background-color:#026631;padding:22px 24px">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td align="left" valign="middle">
-                          <span class="calfine-font" style="display:block;font-size:38px;letter-spacing:2px;color:#ffffff;font-weight:400;line-height:1.1;">UKATIBA</span>
-                        </td>
-                        <td align="right" valign="middle">
-                          <span class="head-font" style="display:inline-block;background-color:#ceb04e;color:#026631;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:7px 14px;border-radius:999px;">Newsletter</span>
-                        </td>
-                      </tr>
-                    </table>
+                  <td align="center" style="background-color:#ffffff;padding:28px 24px 22px 24px">
+                    <img src="#{logo_url()}" alt="Maraga '27" width="210"
+                      style="display:block;width:210px;max-width:60%;height:auto;border:0;outline:none;text-decoration:none;" />
                   </td>
                 </tr>
 
