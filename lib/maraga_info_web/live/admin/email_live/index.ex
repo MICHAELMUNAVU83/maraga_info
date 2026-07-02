@@ -62,6 +62,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   }
 
   @section_types ~w(greeting text highlights cta image signature)
+  @color_field_name_regex ~r/^section_(\d+)_(text_color|button_color)$/
 
   @impl true
   def mount(_params, _session, socket) do
@@ -129,9 +130,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   end
 
   def handle_event("save_draft", %{"email_campaign" => params}, socket) do
-    params_with_sections = Map.put(params, "sections", socket.assigns.sections)
-
-    case persist(socket.assigns.campaign, params_with_sections) do
+    case persist(socket.assigns.campaign, params_for_persist(socket, params)) do
       {:ok, campaign} ->
         if socket.assigns.live_action == :new do
           {:noreply,
@@ -174,9 +173,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   end
 
   def handle_event("request_send", _payload, socket) do
-    params_with_sections = Map.put(socket.assigns.draft_params, "sections", socket.assigns.sections)
-
-    case persist(socket.assigns.campaign, params_with_sections) do
+    case persist(socket.assigns.campaign, params_for_persist(socket, socket.assigns.draft_params)) do
       {:ok, campaign} ->
         {:noreply,
          socket
@@ -262,6 +259,17 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
     idx = String.to_integer(index)
     sections = List.update_at(socket.assigns.sections, idx, &Map.put(&1, field, value))
     {:noreply, socket |> assign(:sections, sections) |> refresh_preview()}
+  end
+
+  def handle_event("update_section_field", params, socket) do
+    case color_field_change(params) do
+      {:ok, index, field, value} ->
+        sections = List.update_at(socket.assigns.sections, index, &Map.put(&1, field, value))
+        {:noreply, socket |> assign(:sections, sections) |> refresh_preview()}
+
+      :error ->
+        {:noreply, socket}
+    end
   end
 
   def handle_event("target_section", %{"index" => index}, socket) do
@@ -369,10 +377,9 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   end
 
   # Uploaded files are served from `/uploads/...`; email clients need an absolute
-  # URL, so we prepend the endpoint host (e.g. https://davidmaraga.info/uploads/…).
-  defp absolute_url("http" <> _ = url), do: url
-  defp absolute_url("/" <> _ = path), do: MaragaInfoWeb.Endpoint.url() <> path
-  defp absolute_url(url), do: url
+  # URL. We always anchor to the production domain (not `Endpoint.url()`) so
+  # images sent from a local/dev server still resolve for recipients.
+  defp absolute_url(url), do: MaragaInfoWeb.Seo.absolute_url(url)
 
   ## Helpers
 
@@ -383,6 +390,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
       :page_subtitle,
       "Build a newsletter with the section editor and send it to the whole volunteer database."
     )
+    |> load_campaigns()
   end
 
   defp apply_action(socket, :new, _params) do
@@ -411,6 +419,21 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
 
   defp persist(%EmailCampaign{} = campaign, params),
     do: Campaigns.update_campaign(campaign, params)
+
+  defp params_for_persist(%{assigns: %{builder_mode: "sections", sections: sections}}, params)
+       when is_list(sections) and sections != [] do
+    preheader = Map.get(params, "preheader", "")
+    body = NewsletterBuilder.build_html(sections, preheader: preheader)
+
+    params
+    |> Map.put("sections", sections)
+    |> Map.put("body", body)
+    |> Map.put("body_b", body)
+  end
+
+  defp params_for_persist(socket, params) do
+    Map.put(params, "sections", socket.assigns.sections)
+  end
 
   defp reset_composer(socket) do
     campaign = %EmailCampaign{}
@@ -527,6 +550,19 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
     list |> List.replace_at(i, b) |> List.replace_at(j, a)
   end
 
+  defp color_field_change(params) do
+    Enum.find_value(params, :error, fn
+      {name, value} when is_binary(value) ->
+        case Regex.run(@color_field_name_regex, name) do
+          [_, index, field] -> {:ok, String.to_integer(index), field, value}
+          _ -> nil
+        end
+
+      _ ->
+        nil
+    end)
+  end
+
   defp entries_for(upload, target_section, index) when target_section == index,
     do: upload.entries
 
@@ -561,11 +597,14 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
       "type" => "cta",
       "url" => "https://donations.davidmaraga.com/",
       "label" => "I Would Like to Donate",
-      "subtext" => "Every contribution powers grassroots organizing across Kenya."
+      "subtext" => "Every contribution powers grassroots organizing across Kenya.",
+      "text_color" => "#026631",
+      "button_color" => "#ceb04e"
     }
   end
 
-  defp default_section("image"), do: %{"type" => "image", "url" => "", "alt" => "", "link_url" => ""}
+  defp default_section("image"),
+    do: %{"type" => "image", "url" => "", "alt" => "", "link_url" => ""}
 
   defp default_section("signature") do
     %{
@@ -767,7 +806,8 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                     <div :if={section["type"] == "greeting"} class="space-y-3">
                       <div>
                         <label class="block text-xs font-medium text-zinc-700 mb-1">
-                          Eyebrow text <span class="font-normal text-zinc-400">(italic, optional)</span>
+                          Eyebrow text
+                          <span class="font-normal text-zinc-400">(italic, optional)</span>
                         </label>
                         <input
                           type="text"
@@ -801,7 +841,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                           phx-blur="update_section_field"
                           phx-value-index={idx}
                           phx-value-field="greeting"
-                          placeholder={"Hello {{first_name}},"}
+                          placeholder="Hello {{first_name}},"
                           class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
                         />
                       </div>
@@ -842,9 +882,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                         </label>
                         <div class="space-y-2">
                           <div
-                            :for={
-                              {item, iidx} <- Enum.with_index(Map.get(section, "items", []))
-                            }
+                            :for={{item, iidx} <- Enum.with_index(Map.get(section, "items", []))}
                             class="flex items-center gap-2"
                           >
                             <span class="text-sm text-red-500 font-bold shrink-0">✓</span>
@@ -921,6 +959,58 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                           class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
                         />
                       </div>
+                      <div class="grid grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-medium text-zinc-700 mb-1">
+                            Text color
+                          </label>
+                          <div class="flex items-center gap-2">
+                            <input
+                              type="color"
+                              name={"section_#{idx}_text_color"}
+                              value={Map.get(section, "text_color", "#026631")}
+                              phx-change="update_section_field"
+                              phx-value-index={idx}
+                              phx-value-field="text_color"
+                              class="h-9 w-10 shrink-0 cursor-pointer rounded-lg border border-zinc-300 p-1"
+                            />
+                            <input
+                              type="text"
+                              value={Map.get(section, "text_color", "#026631")}
+                              phx-blur="update_section_field"
+                              phx-value-index={idx}
+                              phx-value-field="text_color"
+                              placeholder="#026631"
+                              class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label class="block text-xs font-medium text-zinc-700 mb-1">
+                            Button color
+                          </label>
+                          <div class="flex items-center gap-2">
+                            <input
+                              type="color"
+                              name={"section_#{idx}_button_color"}
+                              value={Map.get(section, "button_color", "#ceb04e")}
+                              phx-change="update_section_field"
+                              phx-value-index={idx}
+                              phx-value-field="button_color"
+                              class="h-9 w-10 shrink-0 cursor-pointer rounded-lg border border-zinc-300 p-1"
+                            />
+                            <input
+                              type="text"
+                              value={Map.get(section, "button_color", "#ceb04e")}
+                              phx-blur="update_section_field"
+                              phx-value-index={idx}
+                              phx-value-field="button_color"
+                              placeholder="#ceb04e"
+                              class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <%!-- IMAGE --%>
@@ -956,7 +1046,9 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                         >
                           <.icon name="hero-arrow-up-tray" class="h-5 w-5" />
                           <span class="font-medium">
-                            {if Map.get(section, "url", "") != "", do: "Replace image", else: "Upload image"}
+                            {if Map.get(section, "url", "") != "",
+                              do: "Replace image",
+                              else: "Upload image"}
                           </span>
                           <span class="text-xs text-zinc-400">
                             JPG, PNG, GIF or WEBP up to {max_image_mb()}MB
@@ -981,7 +1073,8 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                       </div>
                       <div>
                         <label class="block text-xs font-medium text-zinc-700 mb-1">
-                          Image URL <span class="font-normal text-zinc-400">(or paste an external link)</span>
+                          Image URL
+                          <span class="font-normal text-zinc-400">(or paste an external link)</span>
                         </label>
                         <input
                           type="url"
@@ -1036,7 +1129,9 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                         />
                       </div>
                       <div>
-                        <label class="block text-xs font-medium text-zinc-700 mb-1">Name / Team</label>
+                        <label class="block text-xs font-medium text-zinc-700 mb-1">
+                          Name / Team
+                        </label>
                         <input
                           type="text"
                           value={Map.get(section, "name", "")}
@@ -1088,11 +1183,16 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                 <p class="text-xs text-zinc-500">
                   Paste a complete HTML email. Use
                   <code class="rounded bg-zinc-100 px-1 py-0.5">{"{{name}}"}</code>
-                  or
-                  <code class="rounded bg-zinc-100 px-1 py-0.5">{"{{first_name}}"}</code>
+                  or <code class="rounded bg-zinc-100 px-1 py-0.5">{"{{first_name}}"}</code>
                   to personalise.
                 </p>
-                <.input field={@form[:body]} type="textarea" label="HTML email body" rows="18" required />
+                <.input
+                  field={@form[:body]}
+                  type="textarea"
+                  label="HTML email body"
+                  rows="18"
+                  required
+                />
               </div>
               <%!-- A/B testing --%>
               <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
@@ -1161,7 +1261,10 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
           </.admin_panel>
 
           <%!-- Live preview --%>
-          <.admin_panel title="Live preview" subtitle="Updates when you leave each field. Personalised for Jane Mwangi.">
+          <.admin_panel
+            title="Live preview"
+            subtitle="Updates when you leave each field. Personalised for Jane Mwangi."
+          >
             <:actions>
               <div
                 :if={@form[:ab_test].value in [true, "true"]}
@@ -1213,11 +1316,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                   </.link>
                   <.admin_badge tone={status_tone(campaign.status)} label={campaign.status} />
                   <.admin_badge :if={campaign.ab_test} tone="neutral" label="A/B" />
-                  <.admin_badge
-                    :if={campaign.sections != []}
-                    tone="neutral"
-                    label="sections"
-                  />
+                  <.admin_badge :if={campaign.sections != []} tone="neutral" label="sections" />
                 </div>
                 <p class="mt-0.5 text-sm text-zinc-500">
                   <%= case campaign.status do %>
@@ -1246,8 +1345,8 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                     class="inline-flex items-center gap-1.5 rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-600"
                   >
                     <span class="font-semibold text-zinc-900">{variant}</span>
-                    {vstats.sent}/{vstats.total} sent<%= if vstats.failed > 0,
-                      do: " · #{vstats.failed} failed" %>
+                    {vstats.sent}/{vstats.total} sent{if vstats.failed > 0,
+                      do: " · #{vstats.failed} failed"}
                   </span>
                 </div>
 
@@ -1295,8 +1394,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
               <p class="mt-1 text-sm text-zinc-500">
                 This will queue <span class="font-semibold text-zinc-900">{@recipient_count}</span>
                 emails to every volunteer with an email address.<span :if={@campaign.ab_test}>
-                  The list is split evenly between variant A and variant B.</span>
-                Delivery runs in the background and can't be undone.
+                  The list is split evenly between variant A and variant B.</span> Delivery runs in the background and can't be undone.
               </p>
             </div>
           </div>

@@ -104,6 +104,8 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     url = Map.get(s, "url", "#") |> escape_attr()
     label = Map.get(s, "label", "Learn More")
     subtext = Map.get(s, "subtext", "")
+    button_color = s |> Map.get("button_color", "#ceb04e") |> non_empty("#ceb04e") |> escape_attr()
+    text_color = s |> Map.get("text_color", "#026631") |> non_empty("#026631") |> escape_attr()
 
     subtext_html =
       if subtext != "" do
@@ -116,7 +118,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     <tr>
       <td class="px" align="center" style="padding:30px 44px 6px 44px">
         <a href="#{url}" target="_blank" class="head-font"
-          style="display:inline-block;background-color:#ceb04e;color:#026631;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:16px 38px;border-radius:999px;">
+          style="display:inline-block;background-color:#{button_color};color:#{text_color};font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:16px 38px;border-radius:999px;">
           #{escape(label)}
         </a>
         #{subtext_html}
@@ -189,6 +191,10 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
   # Absolute URL for the Maraga '27 masthead logo. Emails require absolute image
   # URLs, so we prepend the endpoint host to the static asset path.
   defp logo_url, do: "https://davidmaraga.info" <> "/images/logo.png"
+
+  defp non_empty(nil, default), do: default
+  defp non_empty("", default), do: default
+  defp non_empty(value, _default), do: value
 
   defp escape(nil), do: ""
 
@@ -314,7 +320,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
                       </td>
                       <td valign="middle" align="right" style="width:60%">
                         <p class="head-font" style="margin:0 0 2px 0;font-size:11px;font-weight:600;color:#026631;letter-spacing:0.3px;line-height:16px;"><span style="color:#026631;">&#9679;</span> David Maraga Campaign Headquarters</p>
-                        <p class="body-font" style="margin:0 0 5px 12px;font-size:11px;color:#555555;line-height:15px;">4th Flr, Off Vihiga Rd, Kileleshwa, Nairobi</p>
+                        <p class="body-font" style="margin:0 0 5px 12px;font-size:11px;color:#555555;line-height:15px;">Kileleshwa, Nairobi</p>
                         <p class="body-font" style="margin:0 0 1px 0;font-size:11px;color:#555555;line-height:16px;"><span style="color:#026631;">&#9679;</span> +254 746 900 027</p>
                         <p class="body-font" style="margin:0;font-size:11px;line-height:16px;"><a href="https://davidmaraga.com/" target="_blank" style="color:#026631;text-decoration:none;"><span style="color:#026631;">&#9679;</span> DavidMaraga.com</a></p>
                       </td>
