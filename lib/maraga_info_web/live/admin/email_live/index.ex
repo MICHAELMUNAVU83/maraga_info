@@ -815,14 +815,11 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                           (use {"{{first_name}}"} to personalise)
                         </span>
                       </label>
-                      <textarea
-                        rows="5"
-                        phx-blur="update_section_field"
-                        phx-value-index={idx}
-                        phx-value-field="body"
-                        placeholder="Write your paragraph here…"
-                        class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
-                      >{Map.get(section, "body", "")}</textarea>
+                      <.section_rich_text
+                        id={"rt-section-#{idx}"}
+                        index={idx}
+                        value={Map.get(section, "body", "")}
+                      />
                     </div>
 
                     <%!-- HIGHLIGHTS --%>
@@ -1342,5 +1339,33 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
 
   defp progress_pct(%{sent: sent, failed: failed, total: total}) do
     round((sent + failed) / total * 100)
+  end
+
+  # Rich text editor for a section body. Unlike the blog editor (which syncs a
+  # hidden form input), the section builder keeps its content outside the form,
+  # so the CKEditor hook runs in "push mode": each edit is sent to the LiveView
+  # as an `update_section_field` event carrying the section index and field.
+  attr :id, :string, required: true
+  attr :index, :integer, required: true
+  attr :field, :string, default: "body"
+  attr :value, :string, default: ""
+
+  defp section_rich_text(assigns) do
+    assigns = assign(assigns, :html, MaragaInfoWeb.RichText.to_editor_html(assigns.value))
+
+    ~H"""
+    <div
+      id={@id}
+      phx-hook="CKEditor"
+      data-ck-value={@html}
+      data-ck-push-event="update_section_field"
+      data-ck-index={@index}
+      data-ck-field={@field}
+    >
+      <div id={@id <> "-ck"} phx-update="ignore">
+        <div data-ck-editor></div>
+      </div>
+    </div>
+    """
   end
 end

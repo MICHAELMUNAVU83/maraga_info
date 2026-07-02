@@ -72,6 +72,15 @@ defmodule MaragaInfoWeb.RichText do
 
   def to_editor_html(_), do: ""
 
+  @doc """
+  Sanitises editor HTML for embedding inside a campaign email, returning a plain
+  HTML string (not a safe struct). The same strict tag/attribute whitelist as
+  `render/1` is applied; media embeds become iframes.
+  """
+  def sanitize_email(text) when is_binary(text), do: sanitize(text, :iframe)
+
+  def sanitize_email(_), do: ""
+
   defp html?(text), do: Regex.match?(~r|</?[a-zA-Z][^>]*>|, text)
 
   # ----------------------------------------------------------------------------

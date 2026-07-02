@@ -89,6 +89,11 @@ const Hooks = {
   CKEditor: {
     async mounted() {
       this.input = this.el.querySelector("input[type=hidden]");
+      // Section bodies (e.g. the email composer) can't rely on form
+      // serialisation, so they opt into "push mode": each edit is sent to the
+      // LiveView as `data-ck-push-event` with the section index and field.
+      this.pushEventName = this.el.dataset.ckPushEvent || null;
+      this.pushDebounceMs = 500;
       const target = this.el.querySelector("[data-ck-editor]");
 
       let CK;
@@ -228,14 +233,49 @@ const Hooks = {
         return;
       }
 
-      this.editor.setData(this.input.value || "");
+      const seed =
+        this.el.dataset.ckValue || (this.input && this.input.value) || "";
+      this.editor.setData(seed);
       this.currentValue = this.editor.getData();
 
-      // Keep the hidden input (which the LiveView form submits) in sync.
+      // On every edit, push the new value out. In push mode we notify the
+      // LiveView directly; otherwise we keep the hidden input (which the
+      // surrounding form serialises on submit) in sync.
       this.editor.model.document.on("change:data", () => {
         this.currentValue = this.editor.getData();
-        this.input.value = this.currentValue;
-        this.input.dispatchEvent(new Event("input", { bubbles: true }));
+        if (this.input) this.input.value = this.currentValue;
+        if (this.applying) return; // programmatic setData — don't echo back
+        if (this.pushEventName) {
+          this.schedulePush();
+        } else if (this.input) {
+          this.input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      });
+
+      // Flush immediately when focus leaves so a click on Save / Send captures
+      // the latest content before the server reads it.
+      if (this.pushEventName) {
+        this.editor.editing.view.document.on(
+          "change:isFocused",
+          (_evt, _name, isFocused) => {
+            if (!isFocused) this.flushPush();
+          },
+        );
+      }
+    },
+
+    schedulePush() {
+      clearTimeout(this.pushTimer);
+      this.pushTimer = setTimeout(() => this.flushPush(), this.pushDebounceMs);
+    },
+
+    flushPush() {
+      if (!this.pushEventName) return;
+      clearTimeout(this.pushTimer);
+      this.pushEvent(this.pushEventName, {
+        index: this.el.dataset.ckIndex,
+        field: this.el.dataset.ckField,
+        value: this.currentValue,
       });
     },
 
@@ -246,13 +286,16 @@ const Hooks = {
       const incoming = this.el.dataset.ckValue || "";
       const focused = this.editor.editing.view.document.isFocused;
       if (!focused && incoming !== this.currentValue) {
+        this.applying = true;
         this.editor.setData(incoming);
+        this.applying = false;
         this.currentValue = incoming;
         if (this.input) this.input.value = incoming;
       }
     },
 
     destroyed() {
+      clearTimeout(this.pushTimer);
       if (this.editor) {
         this.editor.destroy();
         this.editor = null;

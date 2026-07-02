@@ -58,8 +58,8 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
 
     """
     <tr>
-      <td class="px" style="padding:14px 44px 0 44px">
-        <p class="body-font" style="margin:0;font-size:18px;line-height:31px;color:#444444;">#{escape(body)}</p>
+      <td class="px body-font" style="padding:14px 44px 0 44px;font-size:18px;line-height:31px;color:#444444;">
+        #{text_body_html(body)}
       </td>
     </tr>
     """
@@ -137,7 +137,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
 
     """
     <tr>
-      <td style="padding:0">#{inner}</td>
+      <td style="padding:22px 0">#{inner}</td>
     </tr>
     """
   end
@@ -169,6 +169,19 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
   defp render_section(_unknown), do: ""
 
   # ---------- HTML helpers ----------
+
+  # Body text authored in the rich editor is stored as HTML; sanitise it (same
+  # whitelist as post bodies) and embed it as-is so formatting, links and lists
+  # survive. Legacy/plain-text bodies keep the original single-paragraph output.
+  defp text_body_html(body) when is_binary(body) do
+    if Regex.match?(~r|</?[a-zA-Z][^>]*>|, body) do
+      MaragaInfoWeb.RichText.sanitize_email(body)
+    else
+      ~s(<p style="margin:0;">#{escape(body)}</p>)
+    end
+  end
+
+  defp text_body_html(_), do: ""
 
   defp escape(nil), do: ""
 
