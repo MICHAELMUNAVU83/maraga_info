@@ -3,6 +3,7 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
 
   import Phoenix.LiveViewTest
   import MaragaInfo.VolunteersFixtures
+  import Swoosh.TestAssertions
 
   alias MaragaInfo.Volunteers
 
@@ -21,9 +22,10 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
 
   describe "index" do
     setup [:register_and_log_in_user]
+    setup :set_swoosh_global
 
     test "adds a volunteer manually from the popup", %{conn: conn} do
-      {:ok, live, html} = live(conn, ~p"/admin/volunteers")
+      {:ok, live, html} = open_unlocked_volunteer_live(conn)
 
       assert html =~ "Add or import volunteers"
       refute html =~ ~s(id="volunteer-form")
@@ -91,7 +93,7 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
           ]
         ])
 
-      {:ok, live, _html} = live(conn, ~p"/admin/volunteers")
+      {:ok, live, _html} = open_unlocked_volunteer_live(conn)
 
       live
       |> element("#open-volunteer-modal")
@@ -132,7 +134,7 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
         })
       end)
 
-      {:ok, live, html} = live(conn, ~p"/admin/volunteers")
+      {:ok, live, html} = open_unlocked_volunteer_live(conn)
 
       assert html =~ "Showing 1-25 of 30 volunteers"
       assert html =~ "paged30@example.com"
@@ -146,5 +148,108 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
       assert html =~ "Showing 26-30 of 30 volunteers"
       assert html =~ "paged1@example.com"
     end
+
+    test "requires an emailed access code before showing volunteer data", %{conn: conn} do
+      volunteer_fixture(%{email: "hidden@example.com", first_name: "Hidden"})
+
+      {:ok, live, html} = live(conn, ~p"/admin/volunteers")
+
+      assert html =~ "Volunteer list locked"
+      refute html =~ "hidden@example.com"
+
+      set_swoosh_global()
+
+      html =
+        live
+        |> form("#volunteer-access-request-form", access: %{email: "viewer@example.com"})
+        |> render_submit()
+
+      assert html =~ "Access code sent to viewer@example.com"
+
+      email = assert_access_email_sent("viewer@example.com")
+      code = access_code_from_email(email)
+
+      html =
+        live
+        |> form("#volunteer-access-verify-form",
+          access: %{email: "viewer@example.com", code: code}
+        )
+        |> render_submit()
+
+      assert html =~ "Volunteer list unlocked"
+      assert html =~ "hidden@example.com"
+      assert html =~ "viewer@example.com"
+      assert [%{email: "viewer@example.com"}] = Volunteers.list_volunteer_views()
+    end
+
+    test "rejects expired access codes", %{conn: conn} do
+      {:ok, live, _html} = live(conn, ~p"/admin/volunteers")
+
+      set_swoosh_global()
+
+      live
+      |> form("#volunteer-access-request-form", access: %{email: "expired@example.com"})
+      |> render_submit()
+
+      email = assert_access_email_sent("expired@example.com")
+      code = access_code_from_email(email)
+
+      expire_access_codes_for("expired@example.com")
+
+      html =
+        live
+        |> form("#volunteer-access-verify-form",
+          access: %{email: "expired@example.com", code: code}
+        )
+        |> render_submit()
+
+      assert html =~ "That code is invalid or has expired"
+      assert Volunteers.list_volunteer_views() == []
+    end
+  end
+
+  defp access_code_from_email(email) do
+    [_, code] = Regex.run(~r/access code is (\d{6})/, email.text_body)
+    code
+  end
+
+  defp assert_access_email_sent(recipient) do
+    assert_receive {:email, email}
+
+    assert email.subject == "Your volunteer access code"
+    assert {nil, recipient} in email.to
+
+    email
+  end
+
+  defp expire_access_codes_for(email) do
+    import Ecto.Query
+
+    MaragaInfo.Volunteers.VolunteerAccessCode
+    |> where([access_code], access_code.email == ^email)
+    |> MaragaInfo.Repo.update_all(set: [expires_at: ~U[2026-01-01 00:00:00Z]])
+  end
+
+  defp open_unlocked_volunteer_live(conn) do
+    {:ok, live, _html} = live(conn, ~p"/admin/volunteers")
+
+    set_swoosh_global()
+
+    live
+    |> form("#volunteer-access-request-form", access: %{email: "admin-viewer@example.com"})
+    |> render_submit()
+
+    email = assert_access_email_sent("admin-viewer@example.com")
+
+    code = access_code_from_email(email)
+
+    html =
+      live
+      |> form("#volunteer-access-verify-form",
+        access: %{email: "admin-viewer@example.com", code: code}
+      )
+      |> render_submit()
+
+    {:ok, live, html}
   end
 end

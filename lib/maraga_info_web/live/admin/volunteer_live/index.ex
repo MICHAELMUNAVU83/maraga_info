@@ -17,16 +17,21 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
        "Search the full volunteer database, then add people one by one or import more from Excel when needed."
      )
      |> assign(:show_form, false)
+     |> assign(:access_granted, false)
+     |> assign(:access_email, "")
+     |> assign(:access_requested, false)
+     |> assign(:access_error, nil)
      |> assign(:query, "")
      |> assign(:page, 1)
      |> assign(:per_page, @page_size)
+     |> assign_empty_data()
      |> assign_form(Volunteers.change_volunteer(%Volunteer{}))
      |> allow_upload(:spreadsheet,
        accept: ~w(.xlsx),
        max_entries: 1,
        auto_upload: false
      )
-     |> load_data()}
+     |> load_access_history()}
   end
 
   @impl true
@@ -42,6 +47,52 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
+  end
+
+  def handle_event("request_access_code", %{"access" => %{"email" => email}}, socket) do
+    case Volunteers.request_volunteer_access_code(email) do
+      {:ok, access_code} ->
+        {:noreply,
+         socket
+         |> assign(:access_email, access_code.email)
+         |> assign(:access_requested, true)
+         |> assign(:access_error, nil)
+         |> put_flash(:info, "Access code sent to #{access_code.email}. It expires in 2 minutes.")}
+
+      {:error, :invalid_email} ->
+        {:noreply, assign(socket, :access_error, "Enter a valid email address.")}
+
+      {:error, _reason} ->
+        {:noreply, assign(socket, :access_error, "Could not send the access code. Try again.")}
+    end
+  end
+
+  def handle_event("verify_access_code", %{"access" => params}, socket) do
+    email = Map.get(params, "email", socket.assigns.access_email)
+    code = Map.get(params, "code", "")
+
+    case Volunteers.verify_volunteer_access_code(email, code) do
+      {:ok, _view} ->
+        {:noreply,
+         socket
+         |> assign(:access_granted, true)
+         |> assign(:access_email, email)
+         |> assign(:access_error, nil)
+         |> assign(:access_requested, false)
+         |> load_data()
+         |> load_access_history()
+         |> put_flash(:info, "Volunteer list unlocked.")}
+
+      {:error, _reason} ->
+        {:noreply,
+         socket
+         |> assign(:access_email, email)
+         |> assign(:access_requested, true)
+         |> assign(
+           :access_error,
+           "That code is invalid or has expired. Request a new code if needed."
+         )}
+    end
   end
 
   def handle_event("open_form_modal", _params, socket) do
@@ -152,6 +203,21 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
     )
   end
 
+  defp load_access_history(socket) do
+    assign(socket, :recent_views, Volunteers.list_volunteer_views(limit: 10))
+  end
+
+  defp assign_empty_data(socket) do
+    socket
+    |> assign(:stats, %{total: 0, with_phone: 0, with_location: 0, with_notes: 0})
+    |> assign(:total_entries, 0)
+    |> assign(:total_pages, 1)
+    |> assign(:page_numbers, [1])
+    |> assign(:first_entry, 0)
+    |> assign(:last_entry, 0)
+    |> assign(:volunteers, [])
+  end
+
   defp assign_form(socket, changeset), do: assign(socket, :form, to_form(changeset))
 
   defp import_message(summary) do
@@ -192,6 +258,10 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
 
   defp format_date(nil), do: "Not set"
   defp format_date(%Date{} = date), do: Calendar.strftime(date, "%d %b %Y")
+
+  defp format_datetime(%DateTime{} = datetime) do
+    Calendar.strftime(datetime, "%d %b %Y %H:%M UTC")
+  end
 
   defp upload_error_to_string(:too_large), do: "File is too large"
   defp upload_error_to_string(:too_many_files), do: "Only one file can be uploaded at a time"
@@ -236,125 +306,221 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
       </:actions>
 
       <div class="space-y-6">
-        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <.admin_stat title="Total" value={Integer.to_string(@stats.total)} hint="All volunteers" />
-          <.admin_stat
-            title="With phone"
-            value={Integer.to_string(@stats.with_phone)}
-            hint="Reachable contacts"
-            tone="accent"
-          />
-          <.admin_stat
-            title="With location"
-            value={Integer.to_string(@stats.with_location)}
-            hint="County captured"
-          />
-          <.admin_stat
-            title="With notes"
-            value={Integer.to_string(@stats.with_notes)}
-            hint="Extra context supplied"
-          />
-        </section>
+        <.admin_panel
+          :if={!@access_granted}
+          title="Volunteer list locked"
+          subtitle="Enter your email and the access code sent to you before viewing volunteer records."
+        >
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="max-w-2xl text-sm text-zinc-600">
+              Volunteer details are protected with a short-lived email code. Each successful unlock is tracked below.
+            </div>
+            <button
+              type="button"
+              phx-click={JS.show(to: "#volunteer-access-modal")}
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-blueink px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blueink/90"
+            >
+              <.icon name="hero-lock-open" class="h-4 w-4" /> Unlock list
+            </button>
+          </div>
+        </.admin_panel>
 
         <.admin_panel
-          title="Volunteer list"
-          subtitle={"Showing #{@first_entry}-#{@last_entry} of #{@total_entries} volunteers. Use search to narrow by name, email, phone, county, or constituency."}
+          title="Recent volunteer views"
+          subtitle="Successful unlocks of the volunteer database."
         >
-          <:actions>
-            <.form for={%{}} phx-change="search" class="w-full sm:w-72">
-              <input
-                type="search"
-                name="q"
-                value={@query}
-                placeholder="Search volunteers"
-                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
-              />
-            </.form>
-          </:actions>
-
-          <div :if={@volunteers != []} class="overflow-x-auto">
+          <div :if={@recent_views != []} class="overflow-x-auto">
             <table class="min-w-full divide-y divide-zinc-200 text-sm">
               <thead class="bg-zinc-50 text-left text-xs uppercase tracking-wide text-zinc-500">
                 <tr>
-                  <th class="px-3 py-3 font-medium">Volunteer</th>
-                  <th class="px-3 py-3 font-medium">Location</th>
-                  <th class="px-3 py-3 font-medium">Phone</th>
-                  <th class="px-3 py-3 font-medium">Joined</th>
+                  <th class="px-3 py-3 font-medium">Viewer</th>
+                  <th class="px-3 py-3 font-medium">Viewed</th>
+                  <th class="px-3 py-3 font-medium">Method</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-zinc-100">
-                <tr :for={volunteer <- @volunteers}>
-                  <td class="px-3 py-3 align-top">
-                    <p class="font-medium text-zinc-900">{volunteer_name(volunteer)}</p>
-                    <p class="text-zinc-500">{volunteer.email}</p>
-                  </td>
-                  <td class="px-3 py-3 align-top text-zinc-600">
-                    {location_summary(volunteer)}
-                    <p :if={volunteer.polling_station} class="mt-1 text-xs text-zinc-500">
-                      {volunteer.polling_station}
-                    </p>
-                  </td>
-                  <td class="px-3 py-3 align-top text-zinc-600">{volunteer.phone || "Not set"}</td>
-                  <td class="px-3 py-3 align-top text-zinc-600">
-                    {format_date(volunteer.joined_on)}
-                  </td>
+                <tr :for={view <- @recent_views}>
+                  <td class="px-3 py-3 align-top font-medium text-zinc-900">{view.email}</td>
+                  <td class="px-3 py-3 align-top text-zinc-600">{format_datetime(view.viewed_at)}</td>
+                  <td class="px-3 py-3 align-top text-zinc-600">{view.access_method}</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <div
-            :if={@volunteers != []}
-            class="mt-4 flex flex-col gap-3 border-t border-zinc-100 pt-4 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <p class="text-sm text-zinc-500">
-              Page {@page} of {@total_pages}
-            </p>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                phx-click="prev_page"
-                disabled={@page <= 1}
-                class="rounded-lg border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Previous
-              </button>
-
-              <button
-                :for={page_number <- @page_numbers}
-                type="button"
-                phx-click="go_page"
-                phx-value-page={page_number}
-                class={[
-                  "rounded-lg px-3 py-2 text-sm font-medium transition",
-                  page_number == @page &&
-                    "bg-blueink text-white",
-                  page_number != @page &&
-                    "border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
-                ]}
-              >
-                {page_number}
-              </button>
-
-              <button
-                type="button"
-                phx-click="next_page"
-                disabled={@page >= @total_pages}
-                class="rounded-lg border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-
           <.admin_empty_state
-            :if={@volunteers == []}
-            title="No volunteers found"
-            description="Import the spreadsheet or add the first volunteer manually."
+            :if={@recent_views == []}
+            title="No volunteer views yet"
+            description="Unlocks will appear here after a code is verified."
           />
         </.admin_panel>
+
+        <div :if={@access_granted} class="space-y-6">
+          <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <.admin_stat title="Total" value={Integer.to_string(@stats.total)} hint="All volunteers" />
+            <.admin_stat
+              title="With phone"
+              value={Integer.to_string(@stats.with_phone)}
+              hint="Reachable contacts"
+              tone="accent"
+            />
+            <.admin_stat
+              title="With location"
+              value={Integer.to_string(@stats.with_location)}
+              hint="County captured"
+            />
+            <.admin_stat
+              title="With notes"
+              value={Integer.to_string(@stats.with_notes)}
+              hint="Extra context supplied"
+            />
+          </section>
+
+          <.admin_panel
+            title="Volunteer list"
+            subtitle={"Showing #{@first_entry}-#{@last_entry} of #{@total_entries} volunteers. Use search to narrow by name, email, phone, county, or constituency."}
+          >
+            <:actions>
+              <.form for={%{}} phx-change="search" class="w-full sm:w-72">
+                <input
+                  type="search"
+                  name="q"
+                  value={@query}
+                  placeholder="Search volunteers"
+                  class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
+                />
+              </.form>
+            </:actions>
+
+            <div :if={@volunteers != []} class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-zinc-200 text-sm">
+                <thead class="bg-zinc-50 text-left text-xs uppercase tracking-wide text-zinc-500">
+                  <tr>
+                    <th class="px-3 py-3 font-medium">Volunteer</th>
+                    <th class="px-3 py-3 font-medium">Location</th>
+                    <th class="px-3 py-3 font-medium">Phone</th>
+                    <th class="px-3 py-3 font-medium">Joined</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-100">
+                  <tr :for={volunteer <- @volunteers}>
+                    <td class="px-3 py-3 align-top">
+                      <p class="font-medium text-zinc-900">{volunteer_name(volunteer)}</p>
+                      <p class="text-zinc-500">{volunteer.email}</p>
+                    </td>
+                    <td class="px-3 py-3 align-top text-zinc-600">
+                      {location_summary(volunteer)}
+                      <p :if={volunteer.polling_station} class="mt-1 text-xs text-zinc-500">
+                        {volunteer.polling_station}
+                      </p>
+                    </td>
+                    <td class="px-3 py-3 align-top text-zinc-600">{volunteer.phone || "Not set"}</td>
+                    <td class="px-3 py-3 align-top text-zinc-600">
+                      {format_date(volunteer.joined_on)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              :if={@volunteers != []}
+              class="mt-4 flex flex-col gap-3 border-t border-zinc-100 pt-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <p class="text-sm text-zinc-500">
+                Page {@page} of {@total_pages}
+              </p>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  phx-click="prev_page"
+                  disabled={@page <= 1}
+                  class="rounded-lg border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Previous
+                </button>
+
+                <button
+                  :for={page_number <- @page_numbers}
+                  type="button"
+                  phx-click="go_page"
+                  phx-value-page={page_number}
+                  class={[
+                    "rounded-lg px-3 py-2 text-sm font-medium transition",
+                    page_number == @page &&
+                      "bg-blueink text-white",
+                    page_number != @page &&
+                      "border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+                  ]}
+                >
+                  {page_number}
+                </button>
+
+                <button
+                  type="button"
+                  phx-click="next_page"
+                  disabled={@page >= @total_pages}
+                  class="rounded-lg border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+
+            <.admin_empty_state
+              :if={@volunteers == []}
+              title="No volunteers found"
+              description="Import the spreadsheet or add the first volunteer manually."
+            />
+          </.admin_panel>
+        </div>
       </div>
+
+      <.modal :if={!@access_granted} id="volunteer-access-modal" show>
+        <div class="space-y-6">
+          <div>
+            <h2 class="text-lg font-semibold text-zinc-900">Unlock volunteer list</h2>
+            <p class="mt-1 text-sm text-zinc-500">
+              Enter your email to receive a six-digit code. The code expires after 2 minutes.
+            </p>
+          </div>
+
+          <p :if={@access_error} class="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            {@access_error}
+          </p>
+
+          <.form
+            for={%{}}
+            as={:access}
+            id="volunteer-access-request-form"
+            phx-submit="request_access_code"
+            class="space-y-4"
+          >
+            <.input name="access[email]" value={@access_email} type="email" label="Email" required />
+
+            <.button>
+              <.icon name="hero-envelope" class="h-4 w-4" /> Send code
+            </.button>
+          </.form>
+
+          <.form
+            :if={@access_requested}
+            for={%{}}
+            as={:access}
+            id="volunteer-access-verify-form"
+            phx-submit="verify_access_code"
+            class="space-y-4 border-t border-zinc-100 pt-5"
+          >
+            <input type="hidden" name="access[email]" value={@access_email} />
+            <.input name="access[code]" value="" type="text" label="Access code" required />
+
+            <.button>
+              <.icon name="hero-check" class="h-4 w-4" /> Verify and view
+            </.button>
+          </.form>
+        </div>
+      </.modal>
 
       <.modal :if={@show_form} id="volunteer-form-modal" show on_cancel={JS.push("close_form_modal")}>
         <div class="space-y-6">

@@ -207,10 +207,7 @@ defmodule MaragaInfoWeb.AdminComponents do
       ]}>
         <.icon name={@item.icon} class="h-5 w-5" />
         <span class="flex-1">{@item.label}</span>
-        <.icon
-          name="hero-chevron-right-mini"
-          class="h-4 w-4 transition group-open:rotate-90"
-        />
+        <.icon name="hero-chevron-right-mini" class="h-4 w-4 transition group-open:rotate-90" />
       </summary>
       <div class="mt-0.5 space-y-0.5 pl-7">
         <.link

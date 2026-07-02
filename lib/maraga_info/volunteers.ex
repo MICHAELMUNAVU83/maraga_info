@@ -6,8 +6,13 @@ defmodule MaragaInfo.Volunteers do
   import Ecto.Query, warn: false
 
   alias MaragaInfo.Repo
+  alias MaragaInfo.Volunteers.AccessNotifier
   alias MaragaInfo.Volunteers.Importer
   alias MaragaInfo.Volunteers.Volunteer
+  alias MaragaInfo.Volunteers.VolunteerAccessCode
+  alias MaragaInfo.Volunteers.VolunteerView
+
+  @access_code_ttl_seconds 120
 
   def list_volunteers(opts \\ []) do
     Volunteer
@@ -44,6 +49,66 @@ defmodule MaragaInfo.Volunteers do
         )
     }
   end
+
+  def list_volunteer_views(opts \\ []) do
+    limit = Keyword.get(opts, :limit, 25)
+
+    VolunteerView
+    |> order_by([view], desc: view.viewed_at)
+    |> limit(^limit)
+    |> Repo.all()
+  end
+
+  def request_volunteer_access_code(email) when is_binary(email) do
+    with {:ok, email} <- normalize_access_email(email) do
+      code = generate_access_code()
+      salt = Ecto.UUID.generate()
+      now = utc_now()
+
+      attrs = %{
+        email: email,
+        code_hash: hash_access_code(code, salt),
+        salt: salt,
+        expires_at: DateTime.add(now, @access_code_ttl_seconds, :second)
+      }
+
+      with {:ok, access_code} <-
+             %VolunteerAccessCode{} |> VolunteerAccessCode.changeset(attrs) |> Repo.insert(),
+           {:ok, _email} <- AccessNotifier.deliver_access_code(email, code) do
+        {:ok, access_code}
+      end
+    end
+  end
+
+  def request_volunteer_access_code(_email), do: {:error, :invalid_email}
+
+  def verify_volunteer_access_code(email, code) when is_binary(email) and is_binary(code) do
+    with {:ok, email} <- normalize_access_email(email),
+         {:ok, code} <- normalize_access_code(code),
+         {:ok, access_code} <- find_valid_access_code(email, code) do
+      now = utc_now()
+
+      Repo.transaction(fn ->
+        access_code
+        |> Ecto.Changeset.change(used_at: now)
+        |> Repo.update!()
+
+        %VolunteerView{}
+        |> VolunteerView.changeset(%{
+          email: email,
+          viewed_at: now,
+          access_method: "email_code"
+        })
+        |> Repo.insert!()
+      end)
+    end
+    |> case do
+      {:ok, %VolunteerView{} = view} -> {:ok, view}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def verify_volunteer_access_code(_email, _code), do: {:error, :invalid_or_expired_code}
 
   def get_volunteer!(id), do: Repo.get!(Volunteer, id)
 
@@ -154,6 +219,65 @@ defmodule MaragaInfo.Volunteers do
     |> where(^dynamic_expr)
     |> select([volunteer], count(volunteer.id))
     |> Repo.one()
+  end
+
+  defp find_valid_access_code(email, code) do
+    now = utc_now()
+
+    VolunteerAccessCode
+    |> where([access_code], access_code.email == ^email)
+    |> where([access_code], is_nil(access_code.used_at))
+    |> where([access_code], access_code.expires_at > ^now)
+    |> order_by([access_code], desc: access_code.inserted_at)
+    |> limit(10)
+    |> Repo.all()
+    |> Enum.find(fn access_code ->
+      access_code.code_hash == hash_access_code(code, access_code.salt)
+    end)
+    |> case do
+      nil -> {:error, :invalid_or_expired_code}
+      access_code -> {:ok, access_code}
+    end
+  end
+
+  defp normalize_access_email(email) do
+    email = Volunteer.normalize_email(email)
+
+    if is_binary(email) and Regex.match?(~r/^[^\s]+@[^\s]+$/, email) do
+      {:ok, email}
+    else
+      {:error, :invalid_email}
+    end
+  end
+
+  defp normalize_access_code(code) do
+    code =
+      code
+      |> String.trim()
+      |> String.replace(~r/\D/, "")
+
+    if String.length(code) == 6 do
+      {:ok, code}
+    else
+      {:error, :invalid_or_expired_code}
+    end
+  end
+
+  defp generate_access_code do
+    :crypto.strong_rand_bytes(4)
+    |> :binary.decode_unsigned()
+    |> rem(1_000_000)
+    |> Integer.to_string()
+    |> String.pad_leading(6, "0")
+  end
+
+  defp hash_access_code(code, salt) do
+    :crypto.hash(:sha256, "#{salt}:#{code}")
+    |> Base.encode16(case: :lower)
+  end
+
+  defp utc_now do
+    DateTime.utc_now() |> DateTime.truncate(:second)
   end
 
   defp non_blank_attrs(attrs) do

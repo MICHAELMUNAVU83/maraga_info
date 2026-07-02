@@ -109,7 +109,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
   end
 
   defp render_section(%{"type" => "cta"} = s) do
-    url = Map.get(s, "url", "#") |> escape_attr()
+    url = s |> Map.get("url", "#") |> email_url() |> escape_attr()
     label = Map.get(s, "label", "Learn More")
     subtext = Map.get(s, "subtext", "")
 
@@ -139,9 +139,9 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
   end
 
   defp render_section(%{"type" => "image"} = s) do
-    url = Map.get(s, "url", "") |> escape_attr()
+    url = s |> Map.get("url", "") |> email_url() |> escape_attr()
     alt = Map.get(s, "alt", "") |> escape_attr()
-    link_url = Map.get(s, "link_url", "")
+    link_url = s |> Map.get("link_url", "") |> email_url()
 
     img =
       ~s(<img src="#{url}" width="600" alt="#{alt}" style="display:block;width:100%;max-width:600px;height:auto;" />)
@@ -207,6 +207,16 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
   defp non_empty("", default), do: default
   defp non_empty(value, _default), do: value
 
+  defp email_url(nil), do: ""
+
+  defp email_url(url) when is_binary(url) do
+    url = String.trim(url)
+
+    if String.starts_with?(url, "/"),
+      do: MaragaInfoWeb.Seo.absolute_url(url),
+      else: url
+  end
+
   defp escape(nil), do: ""
 
   defp escape(str) when is_binary(str) do
@@ -232,7 +242,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
         <td align="center" style="padding:0 5px">
           <a href="#{escape_attr(link.href)}" target="_blank" aria-label="#{escape_attr(link.label)}"
             style="display:inline-block;width:40px;height:40px;background-color:#026631;border-radius:50%;text-align:center;color:#ffffff;text-decoration:none;">
-            #{social_icon(link.name)}
+            <span style="display:block;width:40px;height:40px;font-family:Arial,Helvetica,sans-serif;font-size:#{social_mark_size(link.name)}px;line-height:40px;font-weight:700;color:#ffffff;text-align:center;text-decoration:none;">#{social_mark(link.name)}</span>
           </a>
         </td>
         """
@@ -248,47 +258,14 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     """
   end
 
-  defp social_icon("facebook") do
-    """
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:11px auto 0 auto;">
-      <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z" />
-    </svg>
-    """
-  end
+  defp social_mark("facebook"), do: "f"
+  defp social_mark("x"), do: "X"
+  defp social_mark("instagram"), do: "IG"
+  defp social_mark("youtube"), do: "YT"
+  defp social_mark("tiktok"), do: "TT"
 
-  defp social_icon("x") do
-    """
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:12px auto 0 auto;">
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-    </svg>
-    """
-  end
-
-  defp social_icon("instagram") do
-    """
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:11px auto 0 auto;">
-      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-      <path d="M16 11.37a4 4 0 1 1-7.91 1.17 4 4 0 0 1 7.91-1.17z" />
-      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-    </svg>
-    """
-  end
-
-  defp social_icon("youtube") do
-    """
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:11px auto 0 auto;">
-      <path d="M23.5 6.2a3 3 0 0 0-2.1-2.12C19.53 3.5 12 3.5 12 3.5s-7.53 0-9.4.58A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.12c1.87.58 9.4.58 9.4.58s7.53 0 9.4-.58a3 3 0 0 0 2.1-2.12A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8ZM9.6 15.94V8.06L16.4 12 9.6 15.94Z" />
-    </svg>
-    """
-  end
-
-  defp social_icon("tiktok") do
-    """
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:11px auto 0 auto;">
-      <path d="M16.6 5.82a4.28 4.28 0 0 1-1.05-2.82h-3.1v12.42a2.6 2.6 0 1 1-1.84-2.49V9.74a5.7 5.7 0 1 0 4.94 5.65V9.01a7.32 7.32 0 0 0 4.28 1.37V7.28a4.28 4.28 0 0 1-3.18-1.46z" />
-    </svg>
-    """
-  end
+  defp social_mark_size(name) when name in ["instagram", "youtube", "tiktok"], do: 11
+  defp social_mark_size(_name), do: 16
 
   # ---------- static wrapper ----------
 

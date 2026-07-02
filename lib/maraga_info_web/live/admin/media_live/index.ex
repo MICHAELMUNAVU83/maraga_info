@@ -465,7 +465,10 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
 
           <div :if={current_media_type(@form, @scope) == "video"} class="space-y-4">
             <div
-              :if={current_video(@video_url, @form) && VideoEmbed.embed_src(current_video(@video_url, @form))}
+              :if={
+                current_video(@video_url, @form) &&
+                  VideoEmbed.embed_src(current_video(@video_url, @form))
+              }
               class="overflow-hidden rounded-lg border border-zinc-200 bg-black"
             >
               <iframe
@@ -480,7 +483,10 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
               </iframe>
             </div>
             <div
-              :if={current_video(@video_url, @form) && is_nil(VideoEmbed.embed_src(current_video(@video_url, @form)))}
+              :if={
+                current_video(@video_url, @form) &&
+                  is_nil(VideoEmbed.embed_src(current_video(@video_url, @form)))
+              }
               class="relative overflow-hidden rounded-lg border border-zinc-200 bg-black"
             >
               <video src={current_video(@video_url, @form)} controls class="aspect-video w-full">

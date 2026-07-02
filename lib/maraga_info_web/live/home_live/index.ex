@@ -178,7 +178,11 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         value: get_content(content, "home.stats.stat1_value", "1,250"),
         label: get_content(content, "home.stats.stat1_label", "Judgments"),
         description:
-          get_content(content, "home.stats.stat1_description", "Decisions that shaped Kenya's law")
+          get_content(
+            content,
+            "home.stats.stat1_description",
+            "Decisions that shaped Kenya's law"
+          )
       },
       %{
         value: get_content(content, "home.stats.stat2_value", "#1"),
@@ -287,9 +291,9 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     assigns =
       assign(assigns,
         bg_image: get_content(assigns.content, "home.hero.bg_image", "/images/IMG_2075.jpg"),
-        title:
-          get_content(assigns.content, "home.hero.title", "David Kenani Maraga -  2027"),
-        tagline: get_content(assigns.content, "home.hero.tagline", "Reset. Restore. Rebuild Kenya."),
+        title: get_content(assigns.content, "home.hero.title", "David Kenani Maraga -  2027"),
+        tagline:
+          get_content(assigns.content, "home.hero.tagline", "Reset. Restore. Rebuild Kenya."),
         cta1_label: get_content(assigns.content, "home.hero.cta1_label", "Read More"),
         cta1_href: get_content(assigns.content, "home.hero.cta1_href", "#mission"),
         cta2_label:
@@ -354,7 +358,11 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     assigns =
       assign(assigns,
         donate_url:
-          get_content(assigns.content, "home.donate.button_url", "https://donations.davidmaraga.com/"),
+          get_content(
+            assigns.content,
+            "home.donate.button_url",
+            "https://donations.davidmaraga.com/"
+          ),
         volunteer_url:
           get_content(
             assigns.content,
@@ -418,8 +426,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     assigns =
       assign(assigns,
         image: get_content(assigns.content, "home.mission.image", "/images/IMG_2052.jpg"),
-        heading_prefix:
-          get_content(assigns.content, "home.mission.heading_prefix", "A man of"),
+        heading_prefix: get_content(assigns.content, "home.mission.heading_prefix", "A man of"),
         heading_accent1:
           get_content(assigns.content, "home.mission.heading_accent1", "integrity"),
         heading_mid:
@@ -630,10 +637,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
     ~H"""
     <section id="newsletter">
-      <div
-        class="relative bg-cover bg-center"
-        style={"background-image: url('#{@bg_image}');"}
-      >
+      <div class="relative bg-cover bg-center" style={"background-image: url('#{@bg_image}');"}>
         <div class="absolute inset-0 bg-black/60"></div>
 
         <div
@@ -761,10 +765,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   defp events_section(assigns) do
     assigns =
       assign(assigns,
-        events_title_prefix:
-          get_content(assigns.content, "home.events.title_prefix", "Upcoming"),
-        events_title_accent:
-          get_content(assigns.content, "home.events.title_accent", "Events"),
+        events_title_prefix: get_content(assigns.content, "home.events.title_prefix", "Upcoming"),
+        events_title_accent: get_content(assigns.content, "home.events.title_accent", "Events"),
         events_description:
           get_content(
             assigns.content,
@@ -811,8 +813,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       assign(assigns,
         videos_title_prefix:
           get_content(assigns.content, "home.agenda.title_prefix", "Watch the"),
-        videos_title_accent:
-          get_content(assigns.content, "home.agenda.title_accent", "Campaign"),
+        videos_title_accent: get_content(assigns.content, "home.agenda.title_accent", "Campaign"),
         videos_description:
           get_content(
             assigns.content,

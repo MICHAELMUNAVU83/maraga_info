@@ -91,7 +91,9 @@ defmodule MaragaInfoWeb.EventsLive.Index do
           <div class="rounded-[8px] bg-white p-5 shadow-[0_15px_40px_rgba(15,30,80,0.08)] sm:p-7">
             <div class="mb-6 flex items-center justify-between">
               <.link
-                patch={~p"/events?#{%{month: month_param(Date.add(Date.beginning_of_month(@month), -1))}}"}
+                patch={
+                  ~p"/events?#{%{month: month_param(Date.add(Date.beginning_of_month(@month), -1))}}"
+                }
                 class="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 text-blueink transition hover:border-crimson hover:text-crimson"
                 aria-label="Previous month"
               >
@@ -120,11 +122,7 @@ defmodule MaragaInfoWeb.EventsLive.Index do
 
             <div class="mt-2 grid grid-cols-7 gap-1.5">
               <%= for week <- @weeks, day <- week do %>
-                <.calendar_day
-                  day={day}
-                  month={@month}
-                  events={Map.get(@events_by_date, day, [])}
-                />
+                <.calendar_day day={day} month={@month} events={Map.get(@events_by_date, day, [])} />
               <% end %>
             </div>
           </div>
@@ -203,28 +201,31 @@ defmodule MaragaInfoWeb.EventsLive.Index do
         loading="lazy"
       />
       <div class="flex items-stretch gap-4 p-4">
-      <div class="flex shrink-0 flex-col items-center justify-center rounded-[5px] bg-blueink px-4 py-3 text-white">
-        <div class="font-head text-3xl leading-none">
-          {Calendar.strftime(@event.starts_at, "%d")}
+        <div class="flex shrink-0 flex-col items-center justify-center rounded-[5px] bg-blueink px-4 py-3 text-white">
+          <div class="font-head text-3xl leading-none">
+            {Calendar.strftime(@event.starts_at, "%d")}
+          </div>
+          <div class="font-head text-sm uppercase tracking-wide">
+            {Calendar.strftime(@event.starts_at, "%b")}
+          </div>
         </div>
-        <div class="font-head text-sm uppercase tracking-wide">
-          {Calendar.strftime(@event.starts_at, "%b")}
-        </div>
-      </div>
 
-      <div class="min-w-0 flex-1">
-        <h4 class="font-head text-lg uppercase tracking-[.5px] text-blueink">
-          {@event.title}
-        </h4>
-        <p class="mt-1 flex items-center gap-1.5 text-sm text-grayink">
-          <.icon name="hero-clock-mini" class="h-4 w-4 text-crimson" />
-          {format_when(@event)}
-        </p>
-        <p :if={present?(@event.location)} class="mt-0.5 flex items-center gap-1.5 text-sm text-grayink">
-          <.icon name="hero-map-pin-mini" class="h-4 w-4 text-crimson" />
-          {@event.location}
-        </p>
-      </div>
+        <div class="min-w-0 flex-1">
+          <h4 class="font-head text-lg uppercase tracking-[.5px] text-blueink">
+            {@event.title}
+          </h4>
+          <p class="mt-1 flex items-center gap-1.5 text-sm text-grayink">
+            <.icon name="hero-clock-mini" class="h-4 w-4 text-crimson" />
+            {format_when(@event)}
+          </p>
+          <p
+            :if={present?(@event.location)}
+            class="mt-0.5 flex items-center gap-1.5 text-sm text-grayink"
+          >
+            <.icon name="hero-map-pin-mini" class="h-4 w-4 text-crimson" />
+            {@event.location}
+          </p>
+        </div>
       </div>
     </article>
     """

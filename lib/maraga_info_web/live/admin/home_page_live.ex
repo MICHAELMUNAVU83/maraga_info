@@ -141,7 +141,8 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
   # Auto-upload progress callbacks — store the file as soon as it finishes and
   # immediately persist the new URL so it survives a page refresh even if the
   # user never clicks Save.
-  defp handle_progress(slot, entry, socket) when slot in [:hero_bg, :mission_image, :newsletter_bg] do
+  defp handle_progress(slot, entry, socket)
+       when slot in [:hero_bg, :mission_image, :newsletter_bg] do
     if entry.done? do
       url = consume_uploaded_entry(socket, entry, fn meta -> Uploads.store_entry(meta, entry) end)
       {field, key} = Map.fetch!(@image_uploads, slot)
@@ -175,8 +176,7 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
           rel="noopener"
           class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
         >
-          Preview site
-          <.icon name="hero-arrow-top-right-on-square-mini" class="h-4 w-4" />
+          Preview site <.icon name="hero-arrow-top-right-on-square-mini" class="h-4 w-4" />
         </a>
       </:actions>
 
@@ -190,7 +190,11 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
               upload={@uploads.hero_bg}
               upload_name="hero_bg"
             />
-            <.input field={@form[:hero_title]} label="Main Title" placeholder="David Kenani Maraga - 2027" />
+            <.input
+              field={@form[:hero_title]}
+              label="Main Title"
+              placeholder="David Kenani Maraga - 2027"
+            />
             <.input
               field={@form[:hero_tagline]}
               label="Tagline"
@@ -240,7 +244,10 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
         </.admin_panel>
 
         <%!-- Mission --%>
-        <.admin_panel title="Mission" subtitle="Side photo, heading with accent words, quote, and bio link.">
+        <.admin_panel
+          title="Mission"
+          subtitle="Side photo, heading with accent words, quote, and bio link."
+        >
           <div class="space-y-4">
             <.image_field
               label="Side Photo"
@@ -285,7 +292,10 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
         </.admin_panel>
 
         <%!-- Documentary --%>
-        <.admin_panel title="Documentary" subtitle="Section heading, description, and YouTube embed URL.">
+        <.admin_panel
+          title="Documentary"
+          subtitle="Section heading, description, and YouTube embed URL."
+        >
           <div class="space-y-4">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <.input
@@ -313,7 +323,10 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
         </.admin_panel>
 
         <%!-- News --%>
-        <.admin_panel title="News" subtitle="Section heading and description for the latest news grid.">
+        <.admin_panel
+          title="News"
+          subtitle="Section heading and description for the latest news grid."
+        >
           <div class="space-y-4">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <.input
@@ -336,7 +349,10 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
         </.admin_panel>
 
         <%!-- Newsletter --%>
-        <.admin_panel title="Newsletter" subtitle="Background image, heading, description, and subscribe button.">
+        <.admin_panel
+          title="Newsletter"
+          subtitle="Background image, heading, description, and subscribe button."
+        >
           <div class="space-y-4">
             <.image_field
               label="Background Image"
@@ -370,7 +386,10 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
         </.admin_panel>
 
         <%!-- Stats banner --%>
-        <.admin_panel title="Stats Banner" subtitle="Kenya 2027 banner — eyebrow, name, tagline, motto, and four stat cards.">
+        <.admin_panel
+          title="Stats Banner"
+          subtitle="Kenya 2027 banner — eyebrow, name, tagline, motto, and four stat cards."
+        >
           <div class="space-y-4">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <.input field={@form[:stats_eyebrow]} label="Eyebrow" placeholder="Kenya 2027" />
@@ -381,7 +400,11 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
               label="Tagline"
               placeholder="For President · Integrity · Justice · Nation"
             />
-            <.input field={@form[:stats_motto]} label="Motto (bottom)" placeholder="Ukatiba Ndio Tiba" />
+            <.input
+              field={@form[:stats_motto]}
+              label="Motto (bottom)"
+              placeholder="Ukatiba Ndio Tiba"
+            />
           </div>
 
           <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -434,7 +457,10 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
         </.admin_panel>
 
         <%!-- Campaign Videos --%>
-        <.admin_panel title="Campaign Videos" subtitle="Section heading and description for the video carousel.">
+        <.admin_panel
+          title="Campaign Videos"
+          subtitle="Section heading and description for the video carousel."
+        >
           <div class="space-y-4">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <.input
@@ -457,7 +483,10 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
         </.admin_panel>
 
         <%!-- Upcoming Events --%>
-        <.admin_panel title="Upcoming Events" subtitle="Section heading and description for the events grid.">
+        <.admin_panel
+          title="Upcoming Events"
+          subtitle="Section heading and description for the events grid."
+        >
           <div class="space-y-4">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <.input
@@ -509,18 +538,16 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
         :if={@field.value not in [nil, ""]}
         class="mb-3 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50"
       >
-        <img
-          src={@field.value}
-          alt={@label}
-          class="mx-auto max-h-[420px] w-full object-contain"
-        />
+        <img src={@field.value} alt={@label} class="mx-auto max-h-[420px] w-full object-contain" />
       </div>
 
       <%!-- Drop zone / pick button --%>
       <label class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 px-4 py-5 text-center text-sm text-zinc-600 transition hover:border-blueink hover:text-blueink">
         <.icon name="hero-arrow-up-tray" class="h-5 w-5" />
         <span class="font-medium">Upload photo</span>
-        <span class="text-xs text-zinc-400">JPG, PNG or WEBP · max {@upload.max_file_size |> div(1_000_000)}MB</span>
+        <span class="text-xs text-zinc-400">
+          JPG, PNG or WEBP · max {@upload.max_file_size |> div(1_000_000)}MB
+        </span>
         <.live_file_input upload={@upload} class="sr-only" />
       </label>
 

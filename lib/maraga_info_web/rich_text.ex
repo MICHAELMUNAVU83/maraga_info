@@ -77,7 +77,11 @@ defmodule MaragaInfoWeb.RichText do
   HTML string (not a safe struct). The same strict tag/attribute whitelist as
   `render/1` is applied; media embeds become iframes.
   """
-  def sanitize_email(text) when is_binary(text), do: sanitize(text, :iframe)
+  def sanitize_email(text) when is_binary(text) do
+    text
+    |> sanitize(:iframe)
+    |> absolutize_email_urls()
+  end
 
   def sanitize_email(_), do: ""
 
@@ -107,12 +111,21 @@ defmodule MaragaInfoWeb.RichText do
     tag = String.downcase(tag)
 
     cond do
-      tag == "oembed" -> embed_node(attrs, mode)
-      tag == "figure" -> figure_node(attrs, children, mode)
-      tag in @drop_with_content -> []
-      Map.has_key?(@allowed_tags, tag) -> [{tag, scrub_attrs(attrs, @allowed_tags[tag]), scrub_nodes(children, mode)}]
+      tag == "oembed" ->
+        embed_node(attrs, mode)
+
+      tag == "figure" ->
+        figure_node(attrs, children, mode)
+
+      tag in @drop_with_content ->
+        []
+
+      Map.has_key?(@allowed_tags, tag) ->
+        [{tag, scrub_attrs(attrs, @allowed_tags[tag]), scrub_nodes(children, mode)}]
+
       # Unknown but harmless tag: drop the wrapper but keep its scrubbed contents.
-      true -> scrub_nodes(children, mode)
+      true ->
+        scrub_nodes(children, mode)
     end
   end
 
@@ -134,7 +147,12 @@ defmodule MaragaInfoWeb.RichText do
 
       # Unknown provider: keep a safe link rather than an unresolved embed.
       {_mode, nil} ->
-        if safe_href?(url), do: [{"p", [], [{"a", [{"href", url}, {"target", "_blank"}, {"rel", "noopener noreferrer"}], [url]}]}], else: []
+        if safe_href?(url),
+          do: [
+            {"p", [],
+             [{"a", [{"href", url}, {"target", "_blank"}, {"rel", "noopener noreferrer"}], [url]}]}
+          ],
+          else: []
     end
   end
 
@@ -194,6 +212,7 @@ defmodule MaragaInfoWeb.RichText do
   defp clean_attr("rel", _), do: "noopener noreferrer"
   defp clean_attr("src", value), do: if(safe_src?(value), do: String.trim(value))
   defp clean_attr("class", value), do: clean_image_class(value)
+
   defp clean_attr(name, value) when name in ["width", "height"],
     do: if(Regex.match?(~r/^\d{1,4}$/, String.trim(value)), do: String.trim(value))
 
@@ -267,6 +286,32 @@ defmodule MaragaInfoWeb.RichText do
       String.starts_with?(v, "/")
   end
 
+  defp absolutize_email_urls(html) do
+    case Floki.parse_fragment(html) do
+      {:ok, tree} -> tree |> absolutize_email_nodes() |> Floki.raw_html()
+      _ -> html
+    end
+  end
+
+  defp absolutize_email_nodes(nodes) when is_list(nodes),
+    do: Enum.map(nodes, &absolutize_email_node/1)
+
+  defp absolutize_email_node({tag, attrs, children}) do
+    {tag, Enum.map(attrs, &absolutize_email_attr/1), absolutize_email_nodes(children)}
+  end
+
+  defp absolutize_email_node(node), do: node
+
+  defp absolutize_email_attr({name, value}) when name in ["href", "src"] do
+    value = String.trim(value)
+
+    if String.starts_with?(value, "/"),
+      do: {name, MaragaInfoWeb.Seo.absolute_url(value)},
+      else: {name, value}
+  end
+
+  defp absolutize_email_attr(attr), do: attr
+
   # ----------------------------------------------------------------------------
   # Legacy marker rendering (pre-CKEditor content)
   # ----------------------------------------------------------------------------
@@ -298,7 +343,9 @@ defmodule MaragaInfoWeb.RichText do
   defp legacy_html(text) do
     text
     |> paragraphs()
-    |> Enum.map_join("", fn p -> "<p>" <> Phoenix.HTML.safe_to_string(format_inline(p)) <> "</p>" end)
+    |> Enum.map_join("", fn p ->
+      "<p>" <> Phoenix.HTML.safe_to_string(format_inline(p)) <> "</p>"
+    end)
   end
 
   defp apply_marks(escaped) do

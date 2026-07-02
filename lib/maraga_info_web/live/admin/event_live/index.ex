@@ -258,7 +258,13 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
           {if @editing && @editing.id, do: "Edit event", else: "New event"}
         </h2>
 
-        <.form for={@form} id="event-form" phx-change="validate" phx-submit="save" class="mt-6 space-y-5">
+        <.form
+          for={@form}
+          id="event-form"
+          phx-change="validate"
+          phx-submit="save"
+          class="mt-6 space-y-5"
+        >
           <.input field={@form[:title]} type="text" label="Title" />
           <.input field={@form[:location]} type="text" label="Location (optional)" />
 
@@ -272,7 +278,10 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
           <div>
             <label class="mb-1 block text-sm font-medium text-zinc-700">Photo (optional)</label>
 
-            <div :if={@image_url} class="relative mb-3 overflow-hidden rounded-lg border border-zinc-200">
+            <div
+              :if={@image_url}
+              class="relative mb-3 overflow-hidden rounded-lg border border-zinc-200"
+            >
               <img src={@image_url} class="mx-auto max-h-64 w-full object-contain" />
               <button
                 type="button"
@@ -286,7 +295,9 @@ defmodule MaragaInfoWeb.Admin.EventLive.Index do
 
             <label class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-600 transition hover:border-blueink hover:text-blueink">
               <.icon name="hero-arrow-up-tray" class="h-5 w-5" />
-              <span class="font-medium">{if @image_url, do: "Replace photo", else: "Upload photo"}</span>
+              <span class="font-medium">
+                {if @image_url, do: "Replace photo", else: "Upload photo"}
+              </span>
               <span class="text-xs text-zinc-400">JPG, PNG or WEBP up to {max_image_mb()}MB</span>
               <.live_file_input upload={@uploads.image} class="sr-only" />
             </label>
