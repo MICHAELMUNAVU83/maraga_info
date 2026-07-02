@@ -3,6 +3,18 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilderTest do
 
   alias MaragaInfo.Campaigns.NewsletterBuilder
 
+  test "greeting headline preserves authored casing" do
+    html =
+      NewsletterBuilder.build_html([
+        %{"type" => "greeting", "title" => "Justice Begins with Us"}
+      ])
+
+    assert html =~ "Justice Begins with Us"
+
+    refute html =~
+             "text-transform:uppercase;font-weight:700;color:#222222;\">Justice Begins with Us"
+  end
+
   test "body text images uploaded through CKEditor are emitted with absolute urls" do
     html =
       NewsletterBuilder.build_html([

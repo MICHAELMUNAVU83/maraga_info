@@ -54,7 +54,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     <tr>
       <td class="px" style="padding:34px 44px 0 44px">
         #{eyebrow_html}
-        <h1 class="head-font title" style="margin:0;font-size:34px;line-height:40px;letter-spacing:0.5px;text-transform:uppercase;font-weight:700;color:#222222;">#{escape(title)}</h1>
+        <h1 class="head-font title" style="margin:0;font-size:34px;line-height:40px;letter-spacing:0.5px;font-weight:700;color:#222222;">#{escape(title)}</h1>
         <p class="body-font" style="margin:22px 0 0 0;font-size:16px;line-height:26px;color:#333333;">#{greeting}</p>
       </td>
     </tr>
