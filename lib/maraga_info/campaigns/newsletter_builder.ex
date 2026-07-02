@@ -15,6 +15,14 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     - "signature"  — closing signature block with name and tagline
   """
 
+  @social_links [
+    %{name: "x", href: "https://x.com/dkmaraga", label: "X"},
+    %{name: "instagram", href: "https://www.instagram.com/maraga2027", label: "Instagram"},
+    %{name: "youtube", href: "https://www.youtube.com/@dkmaraga", label: "YouTube"},
+    %{name: "facebook", href: "https://www.facebook.com/Maraga2027", label: "Facebook"},
+    %{name: "tiktok", href: "https://www.tiktok.com/@maraga2027", label: "TikTok"}
+  ]
+
   @doc """
   Builds the complete HTML string from a list of section maps.
 
@@ -104,7 +112,10 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     url = Map.get(s, "url", "#") |> escape_attr()
     label = Map.get(s, "label", "Learn More")
     subtext = Map.get(s, "subtext", "")
-    button_color = s |> Map.get("button_color", "#ceb04e") |> non_empty("#ceb04e") |> escape_attr()
+
+    button_color =
+      s |> Map.get("button_color", "#ceb04e") |> non_empty("#ceb04e") |> escape_attr()
+
     text_color = s |> Map.get("text_color", "#026631") |> non_empty("#026631") |> escape_attr()
 
     subtext_html =
@@ -213,6 +224,72 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     |> String.replace("\"", "&quot;")
   end
 
+  defp social_links_html do
+    icons =
+      @social_links
+      |> Enum.map(fn link ->
+        """
+        <td align="center" style="padding:0 5px">
+          <a href="#{escape_attr(link.href)}" target="_blank" aria-label="#{escape_attr(link.label)}"
+            style="display:inline-block;width:40px;height:40px;background-color:#026631;border-radius:50%;text-align:center;color:#ffffff;text-decoration:none;">
+            #{social_icon(link.name)}
+          </a>
+        </td>
+        """
+      end)
+      |> Enum.join("\n")
+
+    """
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        #{icons}
+      </tr>
+    </table>
+    """
+  end
+
+  defp social_icon("facebook") do
+    """
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:11px auto 0 auto;">
+      <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z" />
+    </svg>
+    """
+  end
+
+  defp social_icon("x") do
+    """
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:12px auto 0 auto;">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+    """
+  end
+
+  defp social_icon("instagram") do
+    """
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:11px auto 0 auto;">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37a4 4 0 1 1-7.91 1.17 4 4 0 0 1 7.91-1.17z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+    """
+  end
+
+  defp social_icon("youtube") do
+    """
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:11px auto 0 auto;">
+      <path d="M23.5 6.2a3 3 0 0 0-2.1-2.12C19.53 3.5 12 3.5 12 3.5s-7.53 0-9.4.58A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.12c1.87.58 9.4.58 9.4.58s7.53 0 9.4-.58a3 3 0 0 0 2.1-2.12A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8ZM9.6 15.94V8.06L16.4 12 9.6 15.94Z" />
+    </svg>
+    """
+  end
+
+  defp social_icon("tiktok") do
+    """
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:11px auto 0 auto;">
+      <path d="M16.6 5.82a4.28 4.28 0 0 1-1.05-2.82h-3.1v12.42a2.6 2.6 0 1 1-1.84-2.49V9.74a5.7 5.7 0 1 0 4.94 5.65V9.01a7.32 7.32 0 0 0 4.28 1.37V7.28a4.28 4.28 0 0 1-3.18-1.46z" />
+    </svg>
+    """
+  end
+
   # ---------- static wrapper ----------
 
   defp wrap(sections_html, preheader, date) do
@@ -284,70 +361,44 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
                 <!-- DYNAMIC SECTIONS -->
                 #{sections_html}
 
-                <!-- SOCIAL ICONS -->
+                #{date_row}
                 <tr>
-                  <td align="center" style="padding:28px 44px 30px 44px">
-                    <p class="head-font" style="margin:0 0 16px 0;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#026631;font-weight:600;">Connect with us to get the latest updates</p>
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <td class="px" style="padding:24px 44px 0 44px">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td align="center" style="padding:0 6px">
-                          <a href="https://www.facebook.com/Maraga2027" target="_blank" style="display:inline-block;width:42px;height:42px;background-color:#026631;border-radius:50%;text-align:center;line-height:42px;color:#ffffff;font-family:Arial,sans-serif;font-weight:700;font-size:18px;">f</a>
+                        <td valign="middle" align="left" style="width:44%">
+                          <p class="head-font" style="margin:0 0 12px 0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#026631;font-weight:700;">Connect with us</p>
+                          #{social_links_html()}
                         </td>
-                        <td align="center" style="padding:0 6px">
-                          <a href="https://www.instagram.com/maraga2027" target="_blank" style="display:inline-block;width:42px;height:42px;background-color:#026631;border-radius:50%;text-align:center;line-height:42px;color:#ffffff;font-family:Arial,sans-serif;font-weight:700;font-size:13px;">IG</a>
-                        </td>
-                        <td align="center" style="padding:0 6px">
-                          <a href="https://www.youtube.com/@dkmaraga" target="_blank" style="display:inline-block;width:42px;height:42px;background-color:#026631;border-radius:50%;text-align:center;line-height:42px;color:#ffffff;font-family:Arial,sans-serif;font-weight:700;font-size:18px;">&#9658;</a>
-                        </td>
-                        <td align="center" style="padding:0 6px">
-                          <a href="https://www.tiktok.com/@maraga2027" target="_blank" style="display:inline-block;width:42px;height:42px;background-color:#026631;border-radius:50%;text-align:center;line-height:42px;color:#ffffff;font-family:Arial,sans-serif;font-weight:700;font-size:14px;">TT</a>
+                        <td valign="middle" align="right" style="width:56%">
+                          <p class="head-font" style="margin:0 0 2px 0;font-size:11px;font-weight:600;color:#026631;letter-spacing:0.3px;line-height:16px;"><span style="color:#026631;">&#9679;</span> David Maraga Campaign Headquarters</p>
+                          <p class="body-font" style="margin:0 0 5px 12px;font-size:11px;color:#555555;line-height:15px;">Kileleshwa, Nairobi</p>
+                          <p class="body-font" style="margin:0 0 1px 0;font-size:11px;color:#555555;line-height:16px;"><span style="color:#026631;">&#9679;</span> +254 746 900 027</p>
+                          <p class="body-font" style="margin:0;font-size:11px;line-height:16px;"><a href="https://davidmaraga.com/" target="_blank" style="color:#026631;text-decoration:none;"><span style="color:#026631;">&#9679;</span> DavidMaraga.com</a></p>
                         </td>
                       </tr>
                     </table>
                   </td>
                 </tr>
-
-              </table>
-              <!-- /SOCIAL ICONS -->
-
-              <!-- FOOTER (inside main card so border-radius wraps it) -->
-              <tr>
-                <td class="px" style="padding:18px 44px 0 44px">
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                    <tr>
-                      <td valign="middle" style="width:40%">
-                        <span class="head-font" style="font-size:36px;font-weight:700;color:#026631;letter-spacing:1px;line-height:1;">MARAGA</span><span class="head-font" style="font-size:15px;font-weight:700;color:#026631;vertical-align:super;line-height:1;">'27</span>
-                      </td>
-                      <td valign="middle" align="right" style="width:60%">
-                        <p class="head-font" style="margin:0 0 2px 0;font-size:11px;font-weight:600;color:#026631;letter-spacing:0.3px;line-height:16px;"><span style="color:#026631;">&#9679;</span> David Maraga Campaign Headquarters</p>
-                        <p class="body-font" style="margin:0 0 5px 12px;font-size:11px;color:#555555;line-height:15px;">Kileleshwa, Nairobi</p>
-                        <p class="body-font" style="margin:0 0 1px 0;font-size:11px;color:#555555;line-height:16px;"><span style="color:#026631;">&#9679;</span> +254 746 900 027</p>
-                        <p class="body-font" style="margin:0;font-size:11px;line-height:16px;"><a href="https://davidmaraga.com/" target="_blank" style="color:#026631;text-decoration:none;"><span style="color:#026631;">&#9679;</span> DavidMaraga.com</a></p>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              <tr>
-                <td class="px" style="padding:10px 44px 0 44px">
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                    <tr><td style="height:2px;background-color:#026631;font-size:0;line-height:0;">&nbsp;</td></tr>
-                  </table>
-                </td>
-              </tr>
-              #{date_row}
-              <tr>
-                <td align="center" class="px" style="padding:16px 44px 30px 44px">
-                  <p class="body-font" style="margin:0;font-size:11px;line-height:18px;color:#9ca4ab;">
-                    You are receiving this email because you subscribed to updates from David Maraga Campaign. &copy; 2026 David Maraga Campaign. Integrity, justice and service for Kenya. All rights reserved.<br />
-                    <a href="#" style="color:#9ca4ab;text-decoration:underline;">Unsubscribe</a>
-                    &nbsp;|&nbsp;
-                    <a href="#" style="color:#9ca4ab;text-decoration:underline;">Update preferences</a>
-                    &nbsp;|&nbsp;
-                    <a href="#" style="color:#9ca4ab;text-decoration:underline;">View in browser</a>
-                  </p>
-                </td>
-              </tr>
+                <tr>
+                  <td class="px" style="padding:16px 44px 0 44px">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr><td style="height:2px;background-color:#026631;font-size:0;line-height:0;">&nbsp;</td></tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" class="px" style="padding:22px 44px 22px 44px;border-top:1px solid #edf0ed;">
+                    <p class="body-font" style="margin:0;font-size:11px;line-height:18px;color:#7b8388;">
+                      You are receiving this email because you subscribed to updates from David Maraga Campaign. &copy; 2026 David Maraga Campaign. Integrity, justice and service for Kenya. All rights reserved.<br />
+                      <a href="#" style="color:#7b8388;text-decoration:underline;">Unsubscribe</a>
+                      &nbsp;|&nbsp;
+                      <a href="#" style="color:#7b8388;text-decoration:underline;">Update preferences</a>
+                      &nbsp;|&nbsp;
+                      <a href="#" style="color:#7b8388;text-decoration:underline;">View in browser</a>
+                    </p>
+                  </td>
+                </tr>
 
             </table>
             <!-- /MAIN CARD -->
