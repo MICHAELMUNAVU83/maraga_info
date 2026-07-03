@@ -349,7 +349,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
                         </td>
                         <td valign="middle" align="right" style="width:56%">
                           <p class="head-font" style="margin:0 0 2px 0;font-size:11px;font-weight:600;color:#026631;letter-spacing:0.3px;line-height:16px;"><span style="color:#026631;">&#9679;</span> David Maraga Campaign Headquarters</p>
-                          <p class="body-font" style="margin:0 0 5px 12px;font-size:11px;color:#555555;line-height:15px;">Kileleshwa, Nairobi</p>
+                          <p class="body-font" style="margin:0 0 5px 12px;font-size:11px;color:#555555;line-height:15px;"> Off Vihiga Rd, Kileleshwa, Nairobi</p>
                           <p class="body-font" style="margin:0 0 1px 0;font-size:11px;color:#555555;line-height:16px;"><span style="color:#026631;">&#9679;</span> +254 746 900 027</p>
                           <p class="body-font" style="margin:0;font-size:11px;line-height:16px;"><a href="https://davidmaraga.com/" target="_blank" style="color:#026631;text-decoration:none;"><span style="color:#026631;">&#9679;</span> DavidMaraga.com</a></p>
                         </td>
