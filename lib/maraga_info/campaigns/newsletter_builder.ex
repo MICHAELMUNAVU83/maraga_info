@@ -241,8 +241,8 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
         """
         <td align="center" style="padding:0 5px">
           <a href="#{escape_attr(link.href)}" target="_blank" aria-label="#{escape_attr(link.label)}"
-            style="display:inline-block;width:40px;height:40px;background-color:#026631;border-radius:50%;text-align:center;color:#ffffff;text-decoration:none;">
-            <span style="display:block;width:40px;height:40px;font-family:Arial,Helvetica,sans-serif;font-size:#{social_mark_size(link.name)}px;line-height:40px;font-weight:700;color:#ffffff;text-align:center;text-decoration:none;">#{social_mark(link.name)}</span>
+            style="display:inline-block;width:40px;height:40px;background-color:#026631;border-radius:50%;text-align:center;color:#ffffff;text-decoration:none;line-height:40px;">
+            <img src="#{social_icon_url(link.name)}" width="#{social_icon_size(link.name)}" height="#{social_icon_size(link.name)}" alt="#{escape_attr(link.label)}" style="display:inline-block;width:#{social_icon_size(link.name)}px;height:#{social_icon_size(link.name)}px;margin-top:#{social_icon_margin(link.name)}px;border:0;outline:none;text-decoration:none;vertical-align:top;" />
           </a>
         </td>
         """
@@ -258,14 +258,14 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     """
   end
 
-  defp social_mark("facebook"), do: "f"
-  defp social_mark("x"), do: "X"
-  defp social_mark("instagram"), do: "IG"
-  defp social_mark("youtube"), do: "YT"
-  defp social_mark("tiktok"), do: "TT"
+  defp social_icon_url(name), do: "https://davidmaraga.info/images/social/#{name}.png"
 
-  defp social_mark_size(name) when name in ["instagram", "youtube", "tiktok"], do: 11
-  defp social_mark_size(_name), do: 16
+  defp social_icon_size("x"), do: 17
+  defp social_icon_size("youtube"), do: 19
+  defp social_icon_size(_name), do: 18
+
+  defp social_icon_margin("youtube"), do: 10
+  defp social_icon_margin(_name), do: 11
 
   # ---------- static wrapper ----------
 

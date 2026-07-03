@@ -37,11 +37,16 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilderTest do
     assert html =~ ~s(href="https://davidmaraga.info/donate")
   end
 
-  test "social links use email-safe text marks instead of inline svg" do
+  test "social links use email-safe png icons instead of text marks" do
     html = NewsletterBuilder.build_html([])
 
     refute html =~ "<svg"
-    assert html =~ ">IG</span>"
-    assert html =~ ">YT</span>"
+    assert html =~ ~s(src="https://davidmaraga.info/images/social/instagram.png")
+    assert html =~ ~s(src="https://davidmaraga.info/images/social/youtube.png")
+    assert html =~ ~s(alt="Instagram")
+    assert html =~ ~s(alt="YouTube")
+    refute html =~ ">IG</span>"
+    refute html =~ ">YT</span>"
+    refute html =~ ">TT</span>"
   end
 end
