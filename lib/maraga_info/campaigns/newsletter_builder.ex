@@ -306,6 +306,9 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
           .px{padding-left:22px!important;padding-right:22px!important;}
           .title{font-size:28px!important;line-height:34px!important;}
           .stack{display:block!important;width:100%!important;}
+          .footer-col{display:block!important;width:100%!important;text-align:center!important;}
+          .footer-contact{padding-top:18px!important;}
+          .footer-social table{margin:0 auto!important;}
         }
       </style>
     </head>
@@ -343,15 +346,15 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
                   <td class="px" style="padding:24px 44px 0 44px">
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td valign="middle" align="left" style="width:44%">
+                        <td class="footer-col footer-social" valign="middle" align="left" style="width:44%">
                           <p class="head-font" style="margin:0 0 12px 0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#026631;font-weight:700;">Connect with us</p>
                           #{social_links_html()}
                         </td>
-                        <td valign="middle" align="right" style="width:56%">
+                        <td class="footer-col footer-contact" valign="middle" align="right" style="width:56%">
                           <p class="head-font" style="margin:0 0 2px 0;font-size:11px;font-weight:600;color:#026631;letter-spacing:0.3px;line-height:16px;"><span style="color:#026631;">&#9679;</span> David Maraga Campaign Headquarters</p>
                           <p class="body-font" style="margin:0 0 5px 12px;font-size:11px;color:#555555;line-height:15px;"> Off Vihiga Rd, Kileleshwa, Nairobi</p>
                           <p class="body-font" style="margin:0 0 1px 0;font-size:11px;color:#555555;line-height:16px;"><span style="color:#026631;">&#9679;</span> +254 746 900 027</p>
-                          <p class="body-font" style="margin:0;font-size:11px;line-height:16px;"><a href="https://davidmaraga.com/" target="_blank" style="color:#026631;text-decoration:none;"><span style="color:#026631;">&#9679;</span> DavidMaraga.com</a></p>
+                          <p class="body-font" style="margin:0;font-size:11px;line-height:16px;"><a href="https://davidmaraga.info/" target="_blank" style="color:#026631;text-decoration:none;"><span style="color:#026631;">&#9679;</span> davidMaraga.info</a></p>
                         </td>
                       </tr>
                     </table>
