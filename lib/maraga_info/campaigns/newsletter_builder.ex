@@ -112,6 +112,8 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     url = s |> Map.get("url", "#") |> email_url() |> escape_attr()
     label = Map.get(s, "label", "Learn More")
     subtext = Map.get(s, "subtext", "")
+    align = s |> Map.get("align", "center") |> non_empty("center") |> escape_attr()
+    radius = cta_border_radius(Map.get(s, "shape", "pill"))
 
     button_color =
       s |> Map.get("button_color", "#ceb04e") |> non_empty("#ceb04e") |> escape_attr()
@@ -127,9 +129,9 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
 
     """
     <tr>
-      <td class="px" align="center" style="padding:30px 44px 6px 44px">
+      <td class="px" align="#{align}" style="padding:30px 44px 6px 44px">
         <a href="#{url}" target="_blank" class="head-font"
-          style="display:inline-block;background-color:#{button_color};color:#{text_color};font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:16px 38px;border-radius:999px;">
+          style="display:inline-block;background-color:#{button_color};color:#{text_color};font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:16px 38px;border-radius:#{radius};">
           #{escape(label)}
         </a>
         #{subtext_html}
@@ -203,6 +205,10 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
   # URLs, so we prepend the endpoint host to the static asset path.
   defp logo_url, do: "https://davidmaraga.info" <> "/images/logo.png"
 
+  defp cta_border_radius("square"), do: "4px"
+  defp cta_border_radius("rounded"), do: "10px"
+  defp cta_border_radius(_pill), do: "999px"
+
   defp non_empty(nil, default), do: default
   defp non_empty("", default), do: default
   defp non_empty(value, _default), do: value
@@ -241,7 +247,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
         """
         <td align="center" style="padding:0 5px">
           <a href="#{escape_attr(link.href)}" target="_blank" aria-label="#{escape_attr(link.label)}"
-            style="display:inline-block;width:40px;height:40px;background-color:#026631;border-radius:50%;text-align:center;color:#ffffff;text-decoration:none;line-height:40px;">
+            style="display:inline-block;width:32px;height:32px;background-color:#026631;border-radius:50%;text-align:center;color:#ffffff;text-decoration:none;line-height:32px;">
             <img src="#{social_icon_url(link.name)}" width="#{social_icon_size(link.name)}" height="#{social_icon_size(link.name)}" alt="#{escape_attr(link.label)}" style="display:inline-block;width:#{social_icon_size(link.name)}px;height:#{social_icon_size(link.name)}px;margin-top:#{social_icon_margin(link.name)}px;border:0;outline:none;text-decoration:none;vertical-align:top;" />
           </a>
         </td>
@@ -260,12 +266,12 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
 
   defp social_icon_url(name), do: "https://davidmaraga.info/images/social/#{name}.png"
 
-  defp social_icon_size("x"), do: 17
-  defp social_icon_size("youtube"), do: 19
-  defp social_icon_size(_name), do: 18
+  defp social_icon_size("x"), do: 14
+  defp social_icon_size("youtube"), do: 15
+  defp social_icon_size(_name), do: 14
 
-  defp social_icon_margin("youtube"), do: 10
-  defp social_icon_margin(_name), do: 11
+  defp social_icon_margin("youtube"), do: 8
+  defp social_icon_margin(_name), do: 9
 
   # ---------- static wrapper ----------
 
@@ -354,7 +360,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
                           <p class="head-font" style="margin:0 0 2px 0;font-size:11px;font-weight:600;color:#026631;letter-spacing:0.3px;line-height:16px;"><span style="color:#026631;">&#9679;</span> David Maraga Campaign Headquarters</p>
                           <p class="body-font" style="margin:0 0 5px 12px;font-size:11px;color:#555555;line-height:15px;"> Off Vihiga Rd, Kileleshwa, Nairobi</p>
                           <p class="body-font" style="margin:0 0 1px 0;font-size:11px;color:#555555;line-height:16px;"><span style="color:#026631;">&#9679;</span> +254 746 900 027</p>
-                          <p class="body-font" style="margin:0;font-size:11px;line-height:16px;"><a href="https://davidmaraga.info/" target="_blank" style="color:#026631;text-decoration:none;"><span style="color:#026631;">&#9679;</span> davidMaraga.info</a></p>
+                          <p class="body-font" style="margin:0;font-size:11px;line-height:16px;"><a href="https://davidmaraga.info/" target="_blank" style="color:#026631;text-decoration:none;"><span style="color:#026631;">&#9679;</span> DavidMaraga.info</a></p>
                         </td>
                       </tr>
                     </table>

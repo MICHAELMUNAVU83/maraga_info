@@ -62,7 +62,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   }
 
   @section_types ~w(greeting text highlights cta image signature)
-  @color_field_name_regex ~r/^section_(\d+)_(text_color|button_color)$/
+  @section_field_name_regex ~r/^section_(\d+)_(text_color|button_color|shape|align)$/
 
   @impl true
   def mount(_params, _session, socket) do
@@ -268,7 +268,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   end
 
   def handle_event("update_section_field", params, socket) do
-    case color_field_change(params) do
+    case named_section_field_change(params) do
       {:ok, index, field, value} ->
         sections = List.update_at(socket.assigns.sections, index, &Map.put(&1, field, value))
         {:noreply, socket |> assign(:sections, sections) |> refresh_preview()}
@@ -569,10 +569,10 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
     list |> List.replace_at(i, b) |> List.replace_at(j, a)
   end
 
-  defp color_field_change(params) do
+  defp named_section_field_change(params) do
     Enum.find_value(params, :error, fn
       {name, value} when is_binary(value) ->
-        case Regex.run(@color_field_name_regex, name) do
+        case Regex.run(@section_field_name_regex, name) do
           [_, index, field] -> {:ok, String.to_integer(index), field, value}
           _ -> nil
         end
@@ -618,7 +618,9 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
       "label" => "I Would Like to Donate",
       "subtext" => "Every contribution powers grassroots organizing across Kenya.",
       "text_color" => "#026631",
-      "button_color" => "#ceb04e"
+      "button_color" => "#ceb04e",
+      "shape" => "pill",
+      "align" => "center"
     }
   end
 
@@ -1028,6 +1030,64 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                               class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
                             />
                           </div>
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-2 gap-3">
+                        <div>
+                          <label class="block text-xs font-medium text-zinc-700 mb-1">
+                            Button shape
+                          </label>
+                          <select
+                            phx-change="update_section_field"
+                            phx-value-index={idx}
+                            phx-value-field="shape"
+                            name={"section_#{idx}_shape"}
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
+                          >
+                            <option value="pill" selected={Map.get(section, "shape", "pill") == "pill"}>
+                              Pill
+                            </option>
+                            <option
+                              value="rounded"
+                              selected={Map.get(section, "shape", "pill") == "rounded"}
+                            >
+                              Rounded
+                            </option>
+                            <option
+                              value="square"
+                              selected={Map.get(section, "shape", "pill") == "square"}
+                            >
+                              Square
+                            </option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="block text-xs font-medium text-zinc-700 mb-1">
+                            Position
+                          </label>
+                          <select
+                            phx-change="update_section_field"
+                            phx-value-index={idx}
+                            phx-value-field="align"
+                            name={"section_#{idx}_align"}
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
+                          >
+                            <option value="left" selected={Map.get(section, "align", "center") == "left"}>
+                              Left
+                            </option>
+                            <option
+                              value="center"
+                              selected={Map.get(section, "align", "center") == "center"}
+                            >
+                              Center
+                            </option>
+                            <option
+                              value="right"
+                              selected={Map.get(section, "align", "center") == "right"}
+                            >
+                              Right
+                            </option>
+                          </select>
                         </div>
                       </div>
                     </div>

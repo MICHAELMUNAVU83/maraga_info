@@ -149,7 +149,7 @@ defmodule MaragaInfoWeb.SiteComponents do
             navigate="/admin"
             aria-label="Admin"
             title="Admin"
-            class="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:text-crimson"
+            class="hidden h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:text-crimson lg:flex"
           >
             <svg
               class="h-5 w-5"

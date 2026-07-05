@@ -4,6 +4,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   alias MaragaInfo.Content
   alias MaragaInfo.Content.Post
   alias MaragaInfo.Volunteers
+  alias MaragaInfo.Volunteers.WelcomeNotifier
   alias MaragaInfoWeb.Seo
 
   @social_links [
@@ -113,7 +114,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
            email: email,
            additional_info: "Newsletter subscriber (website)"
          }) do
-      {:ok, _volunteer} ->
+      {:ok, volunteer} ->
+        WelcomeNotifier.deliver_welcome_email(volunteer.email)
         {:noreply, assign(socket, subscribed: true, subscribe_error: nil)}
 
       {:error, changeset} ->
