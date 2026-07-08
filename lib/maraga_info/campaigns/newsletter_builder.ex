@@ -195,6 +195,9 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     salutation = Map.get(s, "salutation", "With gratitude,")
     name = Map.get(s, "name", "The Maraga 2027 Team")
     tagline = Map.get(s, "tagline", "Integrity · Justice · Service")
+    salutation_size = section_font_size(s, "salutation_size", 16)
+    name_size = section_font_size(s, "name_size", 22)
+    tagline_size = section_font_size(s, "tagline_size", 20)
 
     """
     <tr>
@@ -203,10 +206,10 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
           style="border-top:1px solid #ececec">
           <tr><td style="height:22px;font-size:0">&nbsp;</td></tr>
           <tr>
-            <td class="body-font" style="font-size:16px;line-height:24px;color:#444444;">
+            <td class="body-font" style="font-size:#{salutation_size}px;line-height:#{salutation_size + 8}px;color:#444444;">
               #{escape(salutation)}<br />
-              <span class="serif-font" style="font-size:22px;font-style:italic;color:#026631;">#{escape(name)}</span><br />
-              <span class="head-font" style="font-size:16px;letter-spacing:2px;text-transform:uppercase;color:#ceb04e;line-height:22px;">#{escape(tagline)}</span>
+              <span class="serif-font" style="font-size:#{name_size}px;font-style:italic;color:#026631;line-height:#{name_size + 6}px;">#{escape(name)}</span><br />
+              <span class="head-font" style="font-size:#{tagline_size}px;letter-spacing:2px;text-transform:uppercase;color:#ceb04e;line-height:#{tagline_size + 6}px;">#{escape(tagline)}</span>
             </td>
           </tr>
         </table>
@@ -252,6 +255,27 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
   defp non_empty(nil, default), do: default
   defp non_empty("", default), do: default
   defp non_empty(value, _default), do: value
+
+  defp section_font_size(section, key, default) do
+    section
+    |> Map.get(key, default)
+    |> parse_font_size(default)
+  end
+
+  defp parse_font_size(value, default) when is_integer(value), do: clamp_font_size(value, default)
+
+  defp parse_font_size(value, default) when is_binary(value) do
+    case Integer.parse(String.trim(value)) do
+      {size, ""} -> clamp_font_size(size, default)
+      _ -> default
+    end
+  end
+
+  defp parse_font_size(_, default), do: default
+
+  defp clamp_font_size(size, _default) when size < 10, do: 10
+  defp clamp_font_size(size, _default) when size > 48, do: 48
+  defp clamp_font_size(size, _default), do: size
 
   defp email_url(nil), do: ""
 

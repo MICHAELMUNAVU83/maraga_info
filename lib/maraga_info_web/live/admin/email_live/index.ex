@@ -734,7 +734,10 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
       "type" => "signature",
       "salutation" => "With gratitude,",
       "name" => "The Maraga 2027 Team",
-      "tagline" => "Integrity · Justice · Service"
+      "tagline" => "Integrity · Justice · Service",
+      "salutation_size" => "16",
+      "name_size" => "22",
+      "tagline_size" => "20"
     }
   end
 
@@ -1432,6 +1435,21 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                             </div>
                             <div>
                               <label class="block text-xs font-medium text-zinc-700 mb-1">
+                                Salutation size (px)
+                              </label>
+                              <input
+                                type="number"
+                                min="10"
+                                max="48"
+                                value={Map.get(section, "salutation_size", "16")}
+                                phx-blur="update_section_field"
+                                phx-value-index={idx}
+                                phx-value-field="salutation_size"
+                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
+                              />
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-zinc-700 mb-1">
                                 Name / Team
                               </label>
                               <input
@@ -1446,6 +1464,21 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                             </div>
                             <div>
                               <label class="block text-xs font-medium text-zinc-700 mb-1">
+                                Name size (px)
+                              </label>
+                              <input
+                                type="number"
+                                min="10"
+                                max="48"
+                                value={Map.get(section, "name_size", "22")}
+                                phx-blur="update_section_field"
+                                phx-value-index={idx}
+                                phx-value-field="name_size"
+                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
+                              />
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-zinc-700 mb-1">
                                 Tagline
                               </label>
                               <input
@@ -1456,6 +1489,21 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                                 phx-value-field="tagline"
                                 placeholder="Integrity · Justice · Service"
                                 class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
+                              />
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-zinc-700 mb-1">
+                                Tagline size (px)
+                              </label>
+                              <input
+                                type="number"
+                                min="10"
+                                max="48"
+                                value={Map.get(section, "tagline_size", "20")}
+                                phx-blur="update_section_field"
+                                phx-value-index={idx}
+                                phx-value-field="tagline_size"
+                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-blueink focus:outline-none focus:ring-2 focus:ring-blueink/20"
                               />
                             </div>
                           </div>

@@ -255,7 +255,7 @@ defmodule MaragaInfoWeb.SiteComponents do
           Newsletters
         </.link>
         <details class="group pl-3">
-          <summary class="flex cursor-pointer list-none items-center gap-2 py-1 text-[14px] text-white/85 transition hover:text-crimson">
+          <summary class="flex w-full cursor-pointer list-none items-center justify-between py-1 text-[14px] text-white/85 transition hover:text-crimson">
             News
             <svg
               class="h-4 w-4 transition group-open:rotate-180"
@@ -509,10 +509,10 @@ defmodule MaragaInfoWeb.SiteComponents do
             stroke-linejoin="round"
             aria-hidden="true"
           >
-            <polyline points="15 6 9 12 15 18" />
+            <polyline points="9 6 15 12 9 18" />
           </svg>
         </div>
-        <div class="absolute right-full top-0 z-[60] hidden min-w-[190px] grid-cols-1 gap-y-2 rounded-md bg-white p-4 shadow-2xl group-hover/nav-sub:grid group-focus-within/nav-sub:grid">
+        <div class="absolute left-full top-0 z-[60] ml-2 hidden min-w-[190px] grid-cols-1 gap-y-2 rounded-md bg-white p-4 shadow-2xl group-hover/nav-sub:grid group-focus-within/nav-sub:grid">
           {render_slot(@inner_block)}
         </div>
       </div>
