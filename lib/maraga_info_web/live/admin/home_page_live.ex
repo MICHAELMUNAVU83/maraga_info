@@ -19,6 +19,10 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
     # Donate
     {"donate_button_url", "home.donate.button_url"},
     {"donate_volunteer_url", "home.donate.volunteer_url"},
+    # Upcoming events
+    {"events_title_prefix", "home.events.title_prefix"},
+    {"events_title_accent", "home.events.title_accent"},
+    {"events_description", "home.events.description"},
     # Mission
     {"mission_image", "home.mission.image"},
     {"mission_heading_prefix", "home.mission.heading_prefix"},
@@ -63,11 +67,7 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
     # Campaign videos
     {"agenda_title_prefix", "home.agenda.title_prefix"},
     {"agenda_title_accent", "home.agenda.title_accent"},
-    {"agenda_description", "home.agenda.description"},
-    # Upcoming events
-    {"events_title_prefix", "home.events.title_prefix"},
-    {"events_title_accent", "home.events.title_accent"},
-    {"events_description", "home.events.description"}
+    {"agenda_description", "home.agenda.description"}
   ]
 
   # Upload slot → {form_field, settings_key}
@@ -243,6 +243,32 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
           </div>
         </.admin_panel>
 
+        <%!-- Upcoming Events --%>
+        <.admin_panel
+          title="Upcoming Events"
+          subtitle="Section heading and description for the events grid."
+        >
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <.input
+                field={@form[:events_title_prefix]}
+                label="Section Title — prefix"
+                placeholder="Upcoming"
+              />
+              <.input
+                field={@form[:events_title_accent]}
+                label="Section Title — accent word"
+                placeholder="Events"
+              />
+            </div>
+            <.input
+              field={@form[:events_description]}
+              label="Description"
+              placeholder="Follow the latest news and updates from the campaign trail."
+            />
+          </div>
+        </.admin_panel>
+
         <%!-- Mission --%>
         <.admin_panel
           title="Mission"
@@ -398,7 +424,7 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
             <.input
               field={@form[:stats_tagline]}
               label="Tagline"
-              placeholder="For President · Integrity · Justice · Nation"
+              placeholder="For President · Integrity · Justice"
             />
             <.input
               field={@form[:stats_motto]}
@@ -478,32 +504,6 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
               field={@form[:agenda_description]}
               label="Description"
               placeholder="Catch the latest moments from the trail..."
-            />
-          </div>
-        </.admin_panel>
-
-        <%!-- Upcoming Events --%>
-        <.admin_panel
-          title="Upcoming Events"
-          subtitle="Section heading and description for the events grid."
-        >
-          <div class="space-y-4">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <.input
-                field={@form[:events_title_prefix]}
-                label="Section Title — prefix"
-                placeholder="Upcoming"
-              />
-              <.input
-                field={@form[:events_title_accent]}
-                label="Section Title — accent word"
-                placeholder="Events"
-              />
-            </div>
-            <.input
-              field={@form[:events_description]}
-              label="Description"
-              placeholder="Follow the latest news and updates from the campaign trail."
             />
           </div>
         </.admin_panel>

@@ -5,7 +5,12 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
   import MaragaInfo.VolunteersFixtures
   import Swoosh.TestAssertions
 
+  alias MaragaInfo.Repo
   alias MaragaInfo.Volunteers
+  alias MaragaInfo.Volunteers.VolunteerAccessCode
+
+  @allowed_access_email "infodesk@davidmaraga.com"
+  @allowed_access_code "123456"
 
   @create_attrs %{
     first_name: "Grace",
@@ -161,25 +166,36 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
 
       html =
         live
-        |> form("#volunteer-access-request-form", access: %{email: "viewer@example.com"})
+        |> form("#volunteer-access-request-form", access: %{email: @allowed_access_email})
         |> render_submit()
 
-      assert html =~ "Access code sent to viewer@example.com"
-
-      email = assert_access_email_sent("viewer@example.com")
-      code = access_code_from_email(email)
+      assert html =~ "Access code sent to #{@allowed_access_email}"
+      code = insert_access_code!(@allowed_access_email)
 
       html =
         live
         |> form("#volunteer-access-verify-form",
-          access: %{email: "viewer@example.com", code: code}
+          access: %{email: @allowed_access_email, code: code}
         )
         |> render_submit()
 
       assert html =~ "Volunteer list unlocked"
       assert html =~ "hidden@example.com"
-      assert html =~ "viewer@example.com"
-      assert [%{email: "viewer@example.com"}] = Volunteers.list_volunteer_views()
+      assert html =~ @allowed_access_email
+      assert [%{email: @allowed_access_email}] = Volunteers.list_volunteer_views()
+    end
+
+    test "rejects access code requests from non-whitelisted emails", %{conn: conn} do
+      {:ok, live, _html} = live(conn, ~p"/admin/volunteers")
+
+      html =
+        live
+        |> form("#volunteer-access-request-form", access: %{email: "viewer@example.com"})
+        |> render_submit()
+
+      assert html =~ "Email is invalid."
+      refute html =~ "Access code sent to"
+      assert_no_email_sent()
     end
 
     test "rejects expired access codes", %{conn: conn} do
@@ -188,18 +204,17 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
       set_swoosh_global()
 
       live
-      |> form("#volunteer-access-request-form", access: %{email: "expired@example.com"})
+      |> form("#volunteer-access-request-form", access: %{email: @allowed_access_email})
       |> render_submit()
 
-      email = assert_access_email_sent("expired@example.com")
-      code = access_code_from_email(email)
+      code = insert_access_code!(@allowed_access_email)
 
-      expire_access_codes_for("expired@example.com")
+      expire_access_codes_for(@allowed_access_email)
 
       html =
         live
         |> form("#volunteer-access-verify-form",
-          access: %{email: "expired@example.com", code: code}
+          access: %{email: @allowed_access_email, code: code}
         )
         |> render_submit()
 
@@ -208,48 +223,50 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
     end
   end
 
-  defp access_code_from_email(email) do
-    [_, code] = Regex.run(~r/access code is (\d{6})/, email.text_body)
-    code
-  end
-
-  defp assert_access_email_sent(recipient) do
-    assert_receive {:email, email}
-
-    assert email.subject == "Your volunteer access code"
-    assert {nil, recipient} in email.to
-
-    email
-  end
-
   defp expire_access_codes_for(email) do
     import Ecto.Query
 
-    MaragaInfo.Volunteers.VolunteerAccessCode
+    VolunteerAccessCode
     |> where([access_code], access_code.email == ^email)
-    |> MaragaInfo.Repo.update_all(set: [expires_at: ~U[2026-01-01 00:00:00Z]])
+    |> Repo.update_all(set: [expires_at: ~U[2026-01-01 00:00:00Z]])
   end
 
   defp open_unlocked_volunteer_live(conn) do
     {:ok, live, _html} = live(conn, ~p"/admin/volunteers")
 
-    set_swoosh_global()
-
     live
-    |> form("#volunteer-access-request-form", access: %{email: "admin-viewer@example.com"})
+    |> form("#volunteer-access-request-form", access: %{email: @allowed_access_email})
     |> render_submit()
 
-    email = assert_access_email_sent("admin-viewer@example.com")
-
-    code = access_code_from_email(email)
+    code = insert_access_code!(@allowed_access_email)
 
     html =
       live
       |> form("#volunteer-access-verify-form",
-        access: %{email: "admin-viewer@example.com", code: code}
+        access: %{email: @allowed_access_email, code: code}
       )
       |> render_submit()
 
     {:ok, live, html}
+  end
+
+  defp insert_access_code!(email) do
+    salt = Ecto.UUID.generate()
+
+    %VolunteerAccessCode{}
+    |> VolunteerAccessCode.changeset(%{
+      email: email,
+      code_hash: hash_access_code(@allowed_access_code, salt),
+      salt: salt,
+      expires_at: DateTime.add(DateTime.utc_now() |> DateTime.truncate(:second), 120, :second)
+    })
+    |> Repo.insert!()
+
+    @allowed_access_code
+  end
+
+  defp hash_access_code(code, salt) do
+    :crypto.hash(:sha256, "#{salt}:#{code}")
+    |> Base.encode16(case: :lower)
   end
 end

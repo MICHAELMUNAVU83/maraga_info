@@ -13,6 +13,10 @@ defmodule MaragaInfo.Volunteers do
   alias MaragaInfo.Volunteers.VolunteerView
 
   @access_code_ttl_seconds 120
+  @allowed_access_emails MapSet.new([
+                           "infodesk@davidmaraga.com",
+                           "michaelmunavu83@gmail.com"
+                         ])
 
   def list_volunteers(opts \\ []) do
     Volunteer
@@ -243,7 +247,8 @@ defmodule MaragaInfo.Volunteers do
   defp normalize_access_email(email) do
     email = Volunteer.normalize_email(email)
 
-    if is_binary(email) and Regex.match?(~r/^[^\s]+@[^\s]+$/, email) do
+    if is_binary(email) and Regex.match?(~r/^[^\s]+@[^\s]+$/, email) and
+         MapSet.member?(@allowed_access_emails, email) do
       {:ok, email}
     else
       {:error, :invalid_email}

@@ -41,6 +41,26 @@ defmodule MaragaInfo.Content do
   end
 
   @doc """
+  Searches published site content for a user query.
+
+  Returns matching posts and events. Blank queries return empty lists.
+  """
+  def search_site(query, opts \\ []) when is_binary(query) do
+    trimmed = String.trim(query)
+    limit = Keyword.get(opts, :limit, 8)
+
+    if trimmed == "" do
+      %{posts: [], events: [], query: trimmed}
+    else
+      %{
+        posts: search_published_posts(trimmed, limit),
+        events: search_published_events(trimmed, limit),
+        query: trimmed
+      }
+    end
+  end
+
+  @doc """
   Returns the list of posts.
 
   ## Examples
@@ -250,7 +270,8 @@ defmodule MaragaInfo.Content do
         query,
         [post],
         ilike(post.title, ^pattern) or ilike(post.slug, ^pattern) or
-          ilike(post.category, ^pattern)
+          ilike(post.category, ^pattern) or ilike(post.body, ^pattern) or
+          ilike(post.seo_description, ^pattern)
       )
     end
   end
@@ -425,6 +446,25 @@ defmodule MaragaInfo.Content do
 
   defp maybe_filter_event_from(query, %DateTime{} = from) do
     where(query, [event], event.starts_at >= ^from)
+  end
+
+  defp search_published_posts(query, limit) do
+    list_published_posts(search: query, limit: limit)
+  end
+
+  defp search_published_events(query, limit) do
+    pattern = "%#{query}%"
+
+    Event
+    |> maybe_filter_event_published(:published)
+    |> where(
+      [event],
+      ilike(event.title, ^pattern) or ilike(event.description, ^pattern) or
+        ilike(event.location, ^pattern)
+    )
+    |> order_by([event], asc: event.starts_at)
+    |> maybe_limit(limit)
+    |> Repo.all()
   end
 
   ## Site settings

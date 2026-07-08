@@ -234,10 +234,10 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <.site_header />
       <.hero_section content={@content} />
       <.donate_section content={@content} />
+      <.events_section events={@events} content={@content} />
       <.mission_section content={@content} />
       <.documentary_section content={@content} />
       <.news_section news_items={@news_items} content={@content} />
-      <.events_section events={@events} content={@content} />
       <.newsletter_section
         stats={@stats}
         content={@content}
@@ -405,15 +405,6 @@ defmodule MaragaInfoWeb.HomeLive.Index do
               class="rounded-[5px] border-2 border-red-500 bg-red-500 px-[44px] py-5 text-lg font-semibold text-white transition hover:bg-transparent hover:text-red-500"
             >
               Donate Now
-            </a>
-            <a
-              type="button"
-              href={@volunteer_url}
-              rel="noopener"
-              target="_blank"
-              class="rounded-[5px] border-2 border-crimson bg-crimson px-[44px] py-5 text-lg font-semibold text-white transition hover:bg-transparent hover:text-crimson"
-            >
-              Join The Movement
             </a>
           </div>
         </div>

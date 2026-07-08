@@ -2,6 +2,9 @@ defmodule MaragaInfoWeb.SiteComponents do
   use Phoenix.Component
 
   alias MaragaInfo.Content
+  alias MaragaInfo.Content.Post
+  alias Phoenix.LiveView.JS
+  import MaragaInfoWeb.CoreComponents
 
   @social_links [
     %{name: "x", href: "https://x.com/dkmaraga", label: "X"},
@@ -20,6 +23,13 @@ defmodule MaragaInfoWeb.SiteComponents do
       |> assign_new(:news_categories, fn ->
         Content.post_categories(:posts)
       end)
+
+    assigns =
+      assign(
+        assigns,
+        :search_items,
+        build_search_items(assigns.base_path, assigns.news_categories)
+      )
 
     ~H"""
     <header class="relative z-30 w-full bg-blueink">
@@ -143,6 +153,15 @@ defmodule MaragaInfoWeb.SiteComponents do
             >
               Shop
             </a>
+            <button
+              type="button"
+              phx-click={open_search_modal()}
+              aria-label="Search the site"
+              title="Search the site"
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:text-crimson"
+            >
+              <.icon name="hero-magnifying-glass-mini" class="h-5 w-5" />
+            </button>
           </nav>
 
           <.link
@@ -339,7 +358,94 @@ defmodule MaragaInfoWeb.SiteComponents do
         >
           Shop
         </a>
+        <button
+          type="button"
+          onclick="document.getElementById('nav-toggle').checked = false"
+          phx-click={open_search_modal()}
+          class="flex items-center gap-2 py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+        >
+          <.icon name="hero-magnifying-glass-mini" class="h-4 w-4" /> Search
+        </button>
       </nav>
+
+      <.modal
+        id="site-search-modal"
+        on_cancel={JS.dispatch("site-search:close", to: "#site-search-panel")}
+      >
+        <div id="site-search-panel" phx-hook="SiteSearchModal">
+          <div class="border-b border-zinc-100 pb-5">
+            <p class="font-head text-[11px] uppercase tracking-[0.24em] text-crimson">Search</p>
+            <h2 class="mt-2 font-head text-3xl uppercase tracking-[0.06em] text-blueink">
+              Find Your Way Around
+            </h2>
+            <p class="mt-3 text-sm leading-6 text-grayink">
+              Start typing and jump straight to a page, story, event, or homepage section.
+            </p>
+          </div>
+
+          <div class="mt-6">
+            <label for="site-search-input" class="sr-only">Search the site</label>
+            <div class="relative">
+              <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-grayink">
+                <.icon name="hero-magnifying-glass-mini" class="h-5 w-5" />
+              </span>
+              <input
+                id="site-search-input"
+                type="search"
+                placeholder="Search pages, content, and sections"
+                autocomplete="off"
+                data-search-input
+                class="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-3 pl-12 pr-4 text-base text-blueink outline-none transition focus:border-crimson focus:bg-white"
+              />
+            </div>
+
+            <div class="mt-4 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.16em] text-grayink">
+              <span data-search-count>{length(@search_items)} results</span>
+              <span>Press esc to close</span>
+            </div>
+          </div>
+
+          <div class="mt-6 max-h-[55vh] overflow-y-auto pr-1">
+            <p
+              data-search-empty
+              class="hidden rounded-xl bg-ghost px-4 py-6 text-center text-sm text-grayink"
+            >
+              No matching pages yet. Try another keyword.
+            </p>
+
+            <div class="grid gap-3">
+              <div
+                :for={item <- @search_items}
+                data-search-item
+                data-search-text={item.search_text}
+                class="rounded-xl border border-zinc-100 bg-white transition hover:border-crimson/40 hover:bg-ghost"
+              >
+                <a
+                  href={item.href}
+                  target={if item.external?, do: "_blank", else: nil}
+                  rel={if item.external?, do: "noopener", else: nil}
+                  class="block px-4 py-4"
+                >
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <p class="font-head text-[11px] uppercase tracking-[0.18em] text-crimson">
+                        {item.group}
+                      </p>
+                      <h3 class="mt-1 font-head text-lg uppercase tracking-[0.04em] text-blueink">
+                        {item.title}
+                      </h3>
+                    </div>
+                    <.icon name="hero-arrow-right-mini" class="h-5 w-5 shrink-0 text-grayink" />
+                  </div>
+                  <p :if={item.description} class="mt-2 text-sm leading-6 text-grayink">
+                    {item.description}
+                  </p>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </.modal>
     </header>
     """
   end
@@ -526,6 +632,241 @@ defmodule MaragaInfoWeb.SiteComponents do
 
   defp news_category_href(category),
     do: "/news?category=" <> URI.encode_www_form(category)
+
+  defp open_search_modal(js \\ %JS{}) do
+    js
+    |> show_modal("site-search-modal")
+    |> JS.dispatch("site-search:open", to: "#site-search-panel")
+  end
+
+  defp build_search_items(base_path, news_categories) do
+    static_search_items(base_path, news_categories) ++
+      post_search_items() ++ event_search_items()
+  end
+
+  defp static_search_items(base_path, news_categories) do
+    [
+      %{
+        group: "Section",
+        title: "Top of Homepage",
+        href: section_href(base_path, "top"),
+        description: "Return to the top banner and hero.",
+        external?: false,
+        search_text: "top homepage hero home"
+      },
+      %{
+        group: "Section",
+        title: "Mission",
+        href: section_href(base_path, "mission"),
+        description: "Jump to the mission and about section.",
+        external?: false,
+        search_text: "mission about values"
+      },
+      %{
+        group: "Section",
+        title: "Documentary",
+        href: section_href(base_path, "documentary"),
+        description: "Open the documentary feature block.",
+        external?: false,
+        search_text: "documentary feature story"
+      },
+      %{
+        group: "Section",
+        title: "News Section",
+        href: section_href(base_path, "news"),
+        description: "Go to the homepage news highlights.",
+        external?: false,
+        search_text: "news latest updates headlines"
+      },
+      %{
+        group: "Section",
+        title: "Newsletter Section",
+        href: section_href(base_path, "newsletter"),
+        description: "Open the newsletter and subscriber area.",
+        external?: false,
+        search_text: "newsletter subscribe email"
+      },
+      %{
+        group: "Section",
+        title: "Events Section",
+        href: section_href(base_path, "events"),
+        description: "Jump to featured campaign events.",
+        external?: false,
+        search_text: "events rallies calendar"
+      },
+      %{
+        group: "Section",
+        title: "Agenda Section",
+        href: section_href(base_path, "agenda"),
+        description: "Go to the agenda and video section.",
+        external?: false,
+        search_text: "agenda priorities videos"
+      },
+      %{
+        group: "Section",
+        title: "Gallery Section",
+        href: section_href(base_path, "gallery"),
+        description: "Open the homepage photo gallery.",
+        external?: false,
+        search_text: "gallery photos media"
+      },
+      %{
+        group: "Page",
+        title: "David Maraga",
+        href: "/david-maraga",
+        description: "Biography and background.",
+        external?: false,
+        search_text: "david maraga biography profile"
+      },
+      %{
+        group: "Page",
+        title: "UGM Party",
+        href: "/ugm-party",
+        description: "Read about the party.",
+        external?: false,
+        search_text: "ugm party about"
+      },
+      %{
+        group: "Page",
+        title: "Campaign Pillars",
+        href: "/campaign-pillars",
+        description: "Policy themes and agenda.",
+        external?: false,
+        search_text: "campaign pillars manifesto agenda policy"
+      },
+      %{
+        group: "Page",
+        title: "Latest News",
+        href: "/news",
+        description: "Browse all published news.",
+        external?: false,
+        search_text: "news latest updates headlines"
+      },
+      %{
+        group: "Page",
+        title: "Blogs",
+        href: "/blog",
+        description: "Opinion and long-form writing.",
+        external?: false,
+        search_text: "blog blogs opinion analysis"
+      },
+      %{
+        group: "Page",
+        title: "Newsletters",
+        href: "/newsletters",
+        description: "Campaign newsletters and bulletins.",
+        external?: false,
+        search_text: "newsletters newsletter bulletins"
+      },
+      %{
+        group: "Page",
+        title: "Press Releases",
+        href: "/press-releases",
+        description: "Official statements and releases.",
+        external?: false,
+        search_text: "press releases statements media"
+      },
+      %{
+        group: "Page",
+        title: "Media Invitations",
+        href: "/media-invitations",
+        description: "Invitations and press notices.",
+        external?: false,
+        search_text: "media invitations press notices"
+      },
+      %{
+        group: "Page",
+        title: "Events Calendar",
+        href: "/events",
+        description: "Upcoming rallies, town halls, and appearances.",
+        external?: false,
+        search_text: "events calendar rallies town halls"
+      },
+      %{
+        group: "Page",
+        title: "Photo Gallery",
+        href: "/media/photos",
+        description: "Campaign photos and highlights.",
+        external?: false,
+        search_text: "photos gallery media images"
+      },
+      %{
+        group: "Page",
+        title: "Video Gallery",
+        href: "/media/videos",
+        description: "Campaign videos and clips.",
+        external?: false,
+        search_text: "videos media clips interviews"
+      },
+      %{
+        group: "Page",
+        title: "Shop",
+        href: "https://davidmaraga.shop",
+        description: "Official merchandise store.",
+        external?: true,
+        search_text: "shop merchandise store"
+      }
+    ] ++
+      Enum.map(news_categories, fn category ->
+        %{
+          group: "Category",
+          title: category,
+          href: news_category_href(category),
+          description: "Open news filtered to this category.",
+          external?: false,
+          search_text: "#{category} news category"
+        }
+      end)
+  end
+
+  defp post_search_items do
+    Content.list_published_posts(limit: 12)
+    |> Enum.map(fn post ->
+      %{
+        group: post.category,
+        title: post.title,
+        href: "/blog/#{post.slug}",
+        description: Post.summary(post, 120),
+        external?: false,
+        search_text:
+          Enum.join(
+            [
+              post.title,
+              post.category,
+              post.slug,
+              post.seo_description,
+              Post.summary(post, 160)
+            ],
+            " "
+          )
+      }
+    end)
+  end
+
+  defp event_search_items do
+    Content.list_upcoming_events(limit: 8)
+    |> Enum.map(fn event ->
+      %{
+        group: "Event",
+        title: event.title,
+        href: "/events",
+        description:
+          [format_event_date(event.starts_at), event.location]
+          |> Enum.reject(&blank?/1)
+          |> Enum.join(" · "),
+        external?: false,
+        search_text:
+          Enum.join([event.title, event.location, event.description, "event calendar"], " ")
+      }
+    end)
+  end
+
+  defp format_event_date(%DateTime{} = starts_at),
+    do: Calendar.strftime(starts_at, "%b %-d, %Y")
+
+  defp blank?(value) when is_binary(value), do: String.trim(value) == ""
+  defp blank?(nil), do: true
+  defp blank?(_), do: false
 
   attr :link, :map, required: true
   attr :class, :string, default: ""

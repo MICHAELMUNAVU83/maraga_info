@@ -34,6 +34,9 @@
   color: #1d4ed8;
   text-decoration: underline;
 }
+.rich-content a:visited {
+  color: #1d4ed8;
+}
 .rich-content blockquote {
   border-left: 3px solid #d0b216;
   padding-left: 1em;
@@ -86,6 +89,13 @@
   padding-left: 1em;
   font-style: italic;
   color: #4b5563;
+}
+.ck-content a {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+.ck-content a:visited {
+  color: #1d4ed8;
 }
 .ck-editor__editable_inline {
   min-height: 260px;

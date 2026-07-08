@@ -60,7 +60,7 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
          |> put_flash(:info, "Access code sent to #{access_code.email}. It expires in 2 minutes.")}
 
       {:error, :invalid_email} ->
-        {:noreply, assign(socket, :access_error, "Enter a valid email address.")}
+        {:noreply, assign(socket, :access_error, "Email is invalid.")}
 
       {:error, _reason} ->
         {:noreply, assign(socket, :access_error, "Could not send the access code. Try again.")}

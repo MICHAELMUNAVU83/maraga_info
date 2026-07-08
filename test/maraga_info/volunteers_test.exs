@@ -5,6 +5,11 @@ defmodule MaragaInfo.VolunteersTest do
 
   import MaragaInfo.VolunteersFixtures
 
+  @allowed_access_emails [
+    "infodesk@davidmaraga.com",
+    "michaelmunavu83@gmail.com"
+  ]
+
   describe "create_volunteer/1" do
     test "normalizes email and keeps it unique" do
       volunteer = volunteer_fixture(%{email: "FirstVolunteer@Example.com "})
@@ -118,6 +123,20 @@ defmodule MaragaInfo.VolunteersTest do
 
       volunteer = Volunteers.get_volunteer_by_email("naomi@example.com")
       assert volunteer.additional_info == "For such a time as this. Esther 4:14.”"
+    end
+  end
+
+  describe "request_volunteer_access_code/1" do
+    test "creates codes only for whitelisted emails" do
+      for email <- @allowed_access_emails do
+        assert {:ok, access_code} = Volunteers.request_volunteer_access_code(String.upcase(email))
+        assert access_code.email == email
+      end
+    end
+
+    test "rejects non-whitelisted emails" do
+      assert {:error, :invalid_email} =
+               Volunteers.request_volunteer_access_code("viewer@example.com")
     end
   end
 end

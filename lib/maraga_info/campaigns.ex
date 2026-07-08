@@ -122,10 +122,14 @@ defmodule MaragaInfo.Campaigns do
   Sends a single preview/test email immediately (bypasses Oban). `variant`
   selects which version (`"A"` or `"B"`) to send; defaults to `"A"`.
   """
-  def send_test_email(%EmailCampaign{} = campaign, email, variant \\ "A")
-      when is_binary(email) do
+  def send_test_email(%EmailCampaign{} = campaign, email, variant \\ "A", first_name \\ "Friend")
+      when is_binary(email) and is_binary(first_name) do
     campaign
-    |> CampaignEmail.build(variant, %{email: email, name: "Friend"}, from_address())
+    |> CampaignEmail.build(
+      variant,
+      %{email: email, name: test_recipient_name(first_name)},
+      from_address()
+    )
     |> Mailer.deliver()
   end
 
@@ -248,4 +252,11 @@ defmodule MaragaInfo.Campaigns do
 
   defp inspect_reason(reason) when is_binary(reason), do: String.slice(reason, 0, 250)
   defp inspect_reason(reason), do: reason |> inspect() |> String.slice(0, 250)
+
+  defp test_recipient_name(first_name) do
+    case String.trim(first_name) do
+      "" -> "Friend"
+      trimmed -> trimmed
+    end
+  end
 end

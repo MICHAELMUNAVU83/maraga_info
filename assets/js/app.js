@@ -86,6 +86,67 @@ const Hooks = {
     },
   },
 
+  SiteSearchModal: {
+    mounted() {
+      this.input = this.el.querySelector("[data-search-input]");
+      this.items = Array.from(this.el.querySelectorAll("[data-search-item]"));
+      this.emptyState = this.el.querySelector("[data-search-empty]");
+      this.count = this.el.querySelector("[data-search-count]");
+
+      this.filterItems = () => {
+        const query = (this.input?.value || "").trim().toLowerCase();
+        let visibleCount = 0;
+
+        this.items.forEach((item) => {
+          const searchText = (item.dataset.searchText || "").toLowerCase();
+          const matches = query === "" || searchText.includes(query);
+
+          item.classList.toggle("hidden", !matches);
+
+          if (matches) visibleCount += 1;
+        });
+
+        if (this.count) {
+          this.count.textContent = `${visibleCount} result${visibleCount === 1 ? "" : "s"}`;
+        }
+
+        if (this.emptyState) {
+          this.emptyState.classList.toggle("hidden", visibleCount !== 0);
+        }
+      };
+
+      this.handleInput = () => this.filterItems();
+      this.handleOpen = () => {
+        window.requestAnimationFrame(() => {
+          if (this.input) {
+            this.input.focus();
+            this.input.select();
+          }
+
+          this.filterItems();
+        });
+      };
+      this.handleClose = () => {
+        if (this.input) {
+          this.input.value = "";
+        }
+
+        this.filterItems();
+      };
+
+      this.input?.addEventListener("input", this.handleInput);
+      this.el.addEventListener("site-search:open", this.handleOpen);
+      this.el.addEventListener("site-search:close", this.handleClose);
+      this.filterItems();
+    },
+
+    destroyed() {
+      this.input?.removeEventListener("input", this.handleInput);
+      this.el.removeEventListener("site-search:open", this.handleOpen);
+      this.el.removeEventListener("site-search:close", this.handleClose);
+    },
+  },
+
   CKEditor: {
     async mounted() {
       this.input = this.el.querySelector("input[type=hidden]");
