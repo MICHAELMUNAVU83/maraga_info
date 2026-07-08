@@ -138,6 +138,10 @@ defmodule MaragaInfoWeb.Router do
       live "/emails/new", EmailLive.Index, :new
       live "/emails/:id/analytics", EmailLive.Analytics, :show
       live "/emails/:id", EmailLive.Index, :show
+      live "/sms", SmsLive.Index, :index
+      live "/sms/new", SmsLive.Index, :new
+      live "/sms/:id/analytics", SmsLive.Analytics, :show
+      live "/sms/:id", SmsLive.Index, :show
       live "/media/photos", MediaLive.Index, :index
       live "/media/videos", MediaLive.Index, :index
       live "/media", MediaLive.Index, :index

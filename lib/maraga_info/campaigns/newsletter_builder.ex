@@ -33,6 +33,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     "email.footer.contact_name" => "David Maraga Campaign Headquarters",
     "email.footer.contact_address" => "Off Vihiga Rd, Kileleshwa, Nairobi",
     "email.footer.phone" => "+254 746 900 027",
+    "email.footer.email" => "infodesk@davidmaraga.com",
     "email.footer.website_url" => "https://davidmaraga.info/",
     "email.footer.website_label" => "DavidMaraga.info",
     "email.footer.legal_text" =>
@@ -246,7 +247,8 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
   end
 
   # Absolute URL for the masthead logo. Emails require absolute image URLs.
-  defp logo_url(branding), do: absolute_email_url(Map.get(branding, "email.masthead.logo_url", ""))
+  defp logo_url(branding),
+    do: absolute_email_url(Map.get(branding, "email.masthead.logo_url", ""))
 
   defp cta_border_radius("square"), do: "4px"
   defp cta_border_radius("rounded"), do: "10px"
@@ -372,12 +374,19 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
     contact_name = Map.get(branding, "email.footer.contact_name", "")
     contact_address = Map.get(branding, "email.footer.contact_address", "")
     phone = Map.get(branding, "email.footer.phone", "")
+    email = Map.get(branding, "email.footer.email", "")
     website_url = branding |> Map.get("email.footer.website_url", "") |> absolute_email_url()
     website_label = Map.get(branding, "email.footer.website_label", "")
     legal_text = Map.get(branding, "email.footer.legal_text", "")
-    unsubscribe_url = branding |> Map.get("email.footer.unsubscribe_url", "#") |> absolute_email_url()
+
+    unsubscribe_url =
+      branding |> Map.get("email.footer.unsubscribe_url", "#") |> absolute_email_url()
+
     unsubscribe_label = Map.get(branding, "email.footer.unsubscribe_label", "")
-    preferences_url = branding |> Map.get("email.footer.preferences_url", "#") |> absolute_email_url()
+
+    preferences_url =
+      branding |> Map.get("email.footer.preferences_url", "#") |> absolute_email_url()
+
     preferences_label = Map.get(branding, "email.footer.preferences_label", "")
     browser_url = branding |> Map.get("email.footer.browser_url", "#") |> absolute_email_url()
     browser_label = Map.get(branding, "email.footer.browser_label", "")
@@ -459,6 +468,7 @@ defmodule MaragaInfo.Campaigns.NewsletterBuilder do
                           <p class="head-font" style="margin:0 0 2px 0;font-size:11px;font-weight:600;color:#026631;letter-spacing:0.3px;line-height:16px;"><span style="color:#026631;">&#9679;</span> #{escape(contact_name)}</p>
                           <p class="body-font" style="margin:0 0 5px 12px;font-size:11px;color:#555555;line-height:15px;">#{escape(contact_address)}</p>
                           <p class="body-font" style="margin:0 0 1px 0;font-size:11px;color:#555555;line-height:16px;"><span style="color:#026631;">&#9679;</span> #{escape(phone)}</p>
+                          <p class="body-font" style="margin:0 0 1px 0;font-size:11px;color:#555555;line-height:16px;"><a href="mailto:#{escape_attr(email)}" style="color:#555555;text-decoration:none;"><span style="color:#026631;">&#9679;</span> #{escape(email)}</a></p>
                           <p class="body-font" style="margin:0;font-size:11px;line-height:16px;"><a href="#{escape_attr(website_url)}" target="_blank" style="color:#026631;text-decoration:none;"><span style="color:#026631;">&#9679;</span> #{escape(website_label)}</a></p>
                         </td>
                       </tr>

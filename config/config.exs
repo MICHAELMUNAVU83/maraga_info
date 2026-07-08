@@ -18,7 +18,7 @@ config :maraga_info, :mail_from, {"David Maraga Campaign", "no-reply@davidmaraga
 config :maraga_info, Oban,
   repo: MaragaInfo.Repo,
   engine: Oban.Engines.Basic,
-  queues: [mailers: 10, default: 10],
+  queues: [mailers: 10, sms: 3, default: 10],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7},
     {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(30)}

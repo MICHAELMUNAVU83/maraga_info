@@ -585,6 +585,12 @@ defmodule MaragaInfoWeb.SiteComponents do
             >
               +254 746 900 027
             </a>
+            <a
+              href="mailto:infodesk@davidmaraga.com"
+              class="mt-1 inline-flex text-sm text-white/78 transition hover:text-crimson"
+            >
+              infodesk@davidmaraga.com
+            </a>
           </div>
 
           <div class="flex flex-col gap-4 lg:items-end">

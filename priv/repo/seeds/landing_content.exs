@@ -56,14 +56,14 @@ landing_settings = %{
     "Catch the latest moments from the trail — tap any clip to watch on YouTube and social media.",
   "home.events.title_prefix" => "Upcoming",
   "home.events.title_accent" => "Events",
-  "home.events.description" =>
-    "Follow the latest news and updates from the campaign trail .",
+  "home.events.description" => "Follow the latest news and updates from the campaign trail .",
   "email.masthead.logo_url" => "/images/logo.png",
   "email.masthead.logo_alt" => "Maraga '27",
   "email.footer.social_heading" => "Connect with us",
   "email.footer.contact_name" => "David Maraga Campaign Headquarters",
   "email.footer.contact_address" => "Off Vihiga Rd, Kileleshwa, Nairobi",
   "email.footer.phone" => "+254 746 900 027",
+  "email.footer.email" => "infodesk@davidmaraga.com",
   "email.footer.website_url" => "https://davidmaraga.info/",
   "email.footer.website_label" => "DavidMaraga.info",
   "email.footer.legal_text" =>

@@ -74,6 +74,8 @@ defmodule MaragaInfo.MixProject do
     [
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.drop": [&prevent_destructive_ecto_task/1],
+      "ecto.reset": [&prevent_destructive_ecto_task/1],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind maraga_info", "esbuild maraga_info"],
@@ -83,5 +85,9 @@ defmodule MaragaInfo.MixProject do
         "phx.digest"
       ]
     ]
+  end
+
+  defp prevent_destructive_ecto_task(_args) do
+    Mix.raise("This project disables destructive Ecto tasks like `mix ecto.drop` and `mix ecto.reset`.")
   end
 end

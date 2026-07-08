@@ -71,6 +71,7 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
     {"footer_contact_name", "email.footer.contact_name"},
     {"footer_contact_address", "email.footer.contact_address"},
     {"footer_phone", "email.footer.phone"},
+    {"footer_email", "email.footer.email"},
     {"footer_website_url", "email.footer.website_url"},
     {"footer_website_label", "email.footer.website_label"},
     {"footer_legal_text", "email.footer.legal_text"},
@@ -1655,6 +1656,15 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
                       label="Footer phone"
                       placeholder="+254 746 900 027"
                     />
+                    <.input
+                      field={@email_branding_form[:footer_email]}
+                      type="email"
+                      label="Footer email"
+                      placeholder="infodesk@davidmaraga.com"
+                    />
+                  </div>
+
+                  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <.input
                       field={@email_branding_form[:footer_website_label]}
                       type="text"
