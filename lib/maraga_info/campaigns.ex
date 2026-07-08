@@ -189,6 +189,42 @@ defmodule MaragaInfo.Campaigns do
   end
 
   @doc """
+  Lists delivery rows for a campaign with optional search and filters.
+  """
+  def list_deliveries(campaign_id, opts \\ []) do
+    campaign_id
+    |> deliveries_query(opts)
+    |> limit(^Keyword.get(opts, :limit, 25))
+    |> offset(^Keyword.get(opts, :offset, 0))
+    |> Repo.all()
+  end
+
+  @doc """
+  Counts delivery rows for a campaign after optional search and filters.
+  """
+  def count_deliveries(campaign_id, opts \\ []) do
+    campaign_id
+    |> deliveries_query(opts)
+    |> exclude(:order_by)
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  High-level delivery timing summary for a campaign.
+  """
+  def delivery_overview(campaign_id) do
+    Repo.one(
+      from d in EmailDelivery,
+        where: d.campaign_id == ^campaign_id,
+        select: %{
+          first_sent_at: min(d.sent_at),
+          last_sent_at: max(d.sent_at),
+          last_updated_at: max(d.updated_at)
+        }
+    )
+  end
+
+  @doc """
   Per-variant delivery counts for an A/B campaign, as `%{"A" => stats, "B" =>
   stats}`. Variants with no deliveries are omitted.
   """
@@ -259,4 +295,40 @@ defmodule MaragaInfo.Campaigns do
       trimmed -> trimmed
     end
   end
+
+  defp deliveries_query(campaign_id, opts) do
+    EmailDelivery
+    |> where([d], d.campaign_id == ^campaign_id)
+    |> maybe_filter_delivery_query(Keyword.get(opts, :query, ""))
+    |> maybe_filter_delivery_status(Keyword.get(opts, :status, "all"))
+    |> maybe_filter_delivery_variant(Keyword.get(opts, :variant, "all"))
+    |> order_by([d], desc: d.updated_at, desc: d.id)
+  end
+
+  defp maybe_filter_delivery_query(query, value) do
+    trimmed = value |> to_string() |> String.trim()
+
+    if trimmed == "" do
+      query
+    else
+      pattern = "%#{trimmed}%"
+
+      where(
+        query,
+        [d],
+        ilike(d.email, ^pattern) or ilike(coalesce(d.name, ""), ^pattern) or
+          ilike(coalesce(d.error, ""), ^pattern)
+      )
+    end
+  end
+
+  defp maybe_filter_delivery_status(query, status) when status in ~w(pending sent failed),
+    do: where(query, [d], d.status == ^status)
+
+  defp maybe_filter_delivery_status(query, _status), do: query
+
+  defp maybe_filter_delivery_variant(query, variant) when variant in ~w(A B),
+    do: where(query, [d], d.variant == ^variant)
+
+  defp maybe_filter_delivery_variant(query, _variant), do: query
 end

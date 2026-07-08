@@ -255,7 +255,7 @@ defmodule MaragaInfoWeb.SiteComponents do
           Newsletters
         </.link>
         <details class="group pl-3">
-          <summary class="flex w-full cursor-pointer list-none items-center justify-between py-1 text-[14px] text-white/85 transition hover:text-crimson">
+          <summary class="flex w-full cursor-pointer list-none items-center gap-2 py-1 text-[14px] text-white/85 transition hover:text-crimson">
             News
             <svg
               class="h-4 w-4 transition group-open:rotate-180"
@@ -296,7 +296,7 @@ defmodule MaragaInfoWeb.SiteComponents do
           Blogs
         </.link>
         <details class="group pl-3">
-          <summary class="flex cursor-pointer list-none items-center justify-between py-1 text-[14px] text-white/85 transition hover:text-crimson">
+          <summary class="flex w-full cursor-pointer list-none items-center gap-2 py-1 text-[14px] text-white/85 transition hover:text-crimson">
             Media
             <svg
               class="h-4 w-4 transition group-open:rotate-180"

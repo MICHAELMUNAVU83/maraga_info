@@ -798,6 +798,13 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
     >
       <:actions>
         <.link
+          :if={@live_action == :show and @campaign.id}
+          navigate={~p"/admin/emails/#{@campaign.id}/analytics"}
+          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+        >
+          <.icon name="hero-chart-bar-square-mini" class="h-4 w-4" /> Analytics
+        </.link>
+        <.link
           :if={@live_action in [:new, :show]}
           navigate={~p"/admin/emails"}
           class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
@@ -1856,6 +1863,13 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
               </div>
 
               <div class="flex shrink-0 items-center gap-3">
+                <.link
+                  :if={campaign.status != "draft"}
+                  navigate={~p"/admin/emails/#{campaign.id}/analytics"}
+                  class="text-sm font-medium text-zinc-600 hover:text-blueink hover:underline"
+                >
+                  Analytics
+                </.link>
                 <.link
                   :if={campaign.status == "draft"}
                   navigate={~p"/admin/emails/#{campaign.id}"}
