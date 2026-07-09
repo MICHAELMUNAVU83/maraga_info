@@ -37,7 +37,7 @@ defmodule MaragaInfo.Volunteers.WelcomeNotifier do
       "type" => "signature",
       "salutation" => "Warmly,",
       "name" => "David Maraga",
-      "tagline" => "Integrity · Justice · Service"
+      "tagline" => "Reset.Restore.Rebuild Kenya"
     }
   ]
 
