@@ -1,8 +1,11 @@
 defmodule MaragaInfo.CampaignsTest do
-  use ExUnit.Case, async: true
+  use MaragaInfo.DataCase, async: true
 
+  alias MaragaInfo.Campaigns
   alias MaragaInfo.Campaigns.CampaignEmail
   alias MaragaInfo.Campaigns.EmailCampaign
+
+  import MaragaInfo.VolunteersFixtures
 
   test "build personalizes the first name when provided" do
     campaign = %EmailCampaign{
@@ -43,5 +46,34 @@ defmodule MaragaInfo.CampaignsTest do
     assert email.subject == "Hello Friend"
     assert email.html_body =~ "Hello Friend, welcome aboard."
     assert email.text_body =~ "Hello Friend, welcome aboard."
+  end
+
+  test "sms recipients are deduplicated by phone number" do
+    volunteer_fixture(%{
+      full_name: "Alpha Tester",
+      email: "alpha@example.com",
+      phone: "0707077707"
+    })
+
+    volunteer_fixture(%{
+      full_name: "Beta Tester",
+      email: "beta@example.com",
+      phone: "0707077707"
+    })
+
+    volunteer_fixture(%{
+      full_name: "Gamma Tester",
+      email: "gamma@example.com",
+      phone: "0711111111"
+    })
+
+    recipients = Campaigns.sms_recipient_pool()
+
+    assert Enum.sort_by(recipients, & &1.phone) == [
+             %{phone: "0707077707", name: "Alpha Tester"},
+             %{phone: "0711111111", name: "Gamma Tester"}
+           ]
+
+    assert Campaigns.sms_recipient_count() == 2
   end
 end

@@ -99,6 +99,8 @@ defmodule MaragaInfo.Campaigns do
   def sms_recipient_pool do
     Volunteer
     |> where([v], not is_nil(v.phone) and v.phone != "")
+    |> order_by([v], asc: v.phone, asc: v.inserted_at)
+    |> distinct([v], v.phone)
     |> select([v], %{phone: v.phone, name: v.full_name})
     |> Repo.all()
   end
@@ -106,7 +108,8 @@ defmodule MaragaInfo.Campaigns do
   def sms_recipient_count do
     Volunteer
     |> where([v], not is_nil(v.phone) and v.phone != "")
-    |> Repo.aggregate(:count, :id)
+    |> distinct([v], v.phone)
+    |> Repo.aggregate(:count, :phone)
   end
 
   ## Sending
