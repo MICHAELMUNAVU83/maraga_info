@@ -124,6 +124,36 @@ defmodule MaragaInfo.VolunteersTest do
       volunteer = Volunteers.get_volunteer_by_email("naomi@example.com")
       assert volunteer.additional_info == "For such a time as this. Esther 4:14.”"
     end
+
+    test "imports spreadsheets that use shared strings like Excel exports" do
+      path =
+        volunteer_import_shared_strings_file!([
+          [
+            "300",
+            "Mercy",
+            "Atieno",
+            "Mercy Atieno",
+            "mercy@example.com",
+            "0733333333",
+            "Kisumu",
+            "Kisumu Central",
+            "Market Milimani",
+            "Town Hall",
+            "Shared strings workbook",
+            "13/05/2026",
+            "13/05/2026"
+          ]
+        ])
+
+      assert {:ok, summary} = Volunteers.import_volunteers_from_file(path)
+      assert summary.inserted == 1
+      assert summary.updated == 0
+      assert summary.failed == 0
+
+      volunteer = Volunteers.get_volunteer_by_email("mercy@example.com")
+      assert volunteer.full_name == "Mercy Atieno"
+      assert volunteer.polling_station == "Town Hall"
+    end
   end
 
   describe "request_volunteer_access_code/1" do

@@ -28,6 +28,7 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
   describe "index" do
     setup [:register_and_log_in_user]
     setup :set_swoosh_global
+    setup :require_volunteer_code
 
     test "adds a volunteer manually from the popup", %{conn: conn} do
       {:ok, live, html} = open_unlocked_volunteer_live(conn)
@@ -102,6 +103,10 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
 
       live
       |> element("#open-volunteer-modal")
+      |> render_click()
+
+      live
+      |> element("button[phx-click=\"switch_form_tab\"][phx-value-tab=\"import\"]")
       |> render_click()
 
       live
@@ -185,6 +190,20 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
       assert [%{email: @allowed_access_email}] = Volunteers.list_volunteer_views()
     end
 
+    test "shows volunteers immediately when otp gate is disabled in config", %{conn: conn} do
+      previous = Application.get_env(:maraga_info, :require_volunteer_code, true)
+      Application.put_env(:maraga_info, :require_volunteer_code, false)
+      on_exit(fn -> Application.put_env(:maraga_info, :require_volunteer_code, previous) end)
+
+      volunteer_fixture(%{email: "visible@example.com", first_name: "Visible"})
+
+      {:ok, _live, html} = live(conn, ~p"/admin/volunteers")
+
+      refute html =~ "Volunteer list locked"
+      refute html =~ "Unlock volunteer list"
+      assert html =~ "visible@example.com"
+    end
+
     test "rejects access code requests from non-whitelisted emails", %{conn: conn} do
       {:ok, live, _html} = live(conn, ~p"/admin/volunteers")
 
@@ -229,6 +248,13 @@ defmodule MaragaInfoWeb.Admin.VolunteerLiveTest do
     VolunteerAccessCode
     |> where([access_code], access_code.email == ^email)
     |> Repo.update_all(set: [expires_at: ~U[2026-01-01 00:00:00Z]])
+  end
+
+  defp require_volunteer_code(_context) do
+    previous = Application.get_env(:maraga_info, :require_volunteer_code, true)
+    Application.put_env(:maraga_info, :require_volunteer_code, true)
+    on_exit(fn -> Application.put_env(:maraga_info, :require_volunteer_code, previous) end)
+    :ok
   end
 
   defp open_unlocked_volunteer_live(conn) do

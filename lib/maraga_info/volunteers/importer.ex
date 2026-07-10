@@ -26,9 +26,10 @@ defmodule MaragaInfo.Volunteers.Importer do
     with {:ok, entries} <- zip_entries(path),
          {:ok, workbook_xml} <- fetch_entry(entries, "xl/workbook.xml"),
          {:ok, rels_xml} <- fetch_entry(entries, "xl/_rels/workbook.xml.rels"),
+         {:ok, shared_strings} <- parse_shared_strings(entries),
          {:ok, sheet_path} <- first_sheet_path(workbook_xml, rels_xml),
          {:ok, worksheet_xml} <- fetch_entry(entries, sheet_path),
-         {:ok, rows} <- parse_rows(worksheet_xml) do
+         {:ok, rows} <- parse_rows(worksheet_xml, shared_strings) do
       {:ok, rows_to_attrs(rows)}
     else
       {:error, _reason} = error -> error
@@ -74,20 +75,42 @@ defmodule MaragaInfo.Volunteers.Importer do
     end
   end
 
-  defp parse_rows(worksheet_xml) do
+  defp parse_shared_strings(entries) do
+    case Map.fetch(entries, "xl/sharedStrings.xml") do
+      {:ok, shared_strings_xml} -> parse_shared_strings_xml(shared_strings_xml)
+      :error -> {:ok, []}
+    end
+  end
+
+  defp parse_shared_strings_xml(shared_strings_xml) do
+    with {:ok, document} <- parse_xml(shared_strings_xml) do
+      strings =
+        document
+        |> xpath_nodes("/*[local-name()='sst']/*[local-name()='si']")
+        |> Enum.map(fn item ->
+          item
+          |> xpath_nodes(".//*[local-name()='t']")
+          |> Enum.map_join("", &xpath_string(&1, "string(.)"))
+        end)
+
+      {:ok, strings}
+    end
+  end
+
+  defp parse_rows(worksheet_xml, shared_strings) do
     with {:ok, worksheet} <- parse_xml(worksheet_xml) do
       rows =
         worksheet
         |> xpath_nodes(
           "/*[local-name()='worksheet']/*[local-name()='sheetData']/*[local-name()='row']"
         )
-        |> Enum.map(&parse_row/1)
+        |> Enum.map(&parse_row(&1, shared_strings))
 
       {:ok, rows}
     end
   end
 
-  defp parse_row(row) do
+  defp parse_row(row, shared_strings) do
     row
     |> xpath_nodes("*[local-name()='c']")
     |> Enum.reduce(%{}, fn cell, acc ->
@@ -96,14 +119,26 @@ defmodule MaragaInfo.Volunteers.Importer do
         |> xpath_string("string(@r)")
         |> column_reference()
 
-      Map.put(acc, column, parse_cell_value(cell))
+      Map.put(acc, column, parse_cell_value(cell, shared_strings))
     end)
   end
 
-  defp parse_cell_value(cell) do
+  defp parse_cell_value(cell, shared_strings) do
     case xpath_string(cell, "string(@t)") do
       "inlineStr" ->
         xpath_string(cell, "string(.//*[local-name()='t'])")
+
+      "str" ->
+        xpath_string(cell, "string(*[local-name()='v'])")
+
+      "s" ->
+        cell
+        |> xpath_string("string(*[local-name()='v'])")
+        |> Integer.parse()
+        |> case do
+          {index, _rest} -> Enum.at(shared_strings, index, "")
+          :error -> ""
+        end
 
       _other ->
         xpath_string(cell, "string(*[local-name()='v'])")

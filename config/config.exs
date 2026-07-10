@@ -14,6 +14,8 @@ config :maraga_info,
 # The address campaign emails are sent from. Override in runtime.exs for prod.
 config :maraga_info, :mail_from, {"David Maraga Campaign", "no-reply@davidmaraga.info"}
 
+config :maraga_info, :require_volunteer_code, true
+
 # Oban powers reliable, retryable bulk email delivery.
 config :maraga_info, Oban,
   repo: MaragaInfo.Repo,

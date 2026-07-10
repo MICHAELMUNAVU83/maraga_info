@@ -65,6 +65,8 @@ config :maraga_info, MaragaInfoWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :maraga_info, dev_routes: true
 
+config :maraga_info, :require_volunteer_code, true
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 

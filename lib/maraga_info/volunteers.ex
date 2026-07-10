@@ -18,6 +18,10 @@ defmodule MaragaInfo.Volunteers do
                            "michaelmunavu83@gmail.com"
                          ])
 
+  def require_volunteer_code? do
+    Application.get_env(:maraga_info, :require_volunteer_code, true)
+  end
+
   def list_volunteers(opts \\ []) do
     Volunteer
     |> maybe_search(Keyword.get(opts, :query))

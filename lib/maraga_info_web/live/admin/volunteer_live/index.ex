@@ -9,6 +9,8 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    require_volunteer_code = Volunteers.require_volunteer_code?()
+
     {:ok,
      socket
      |> assign(:page_title, "Volunteers")
@@ -17,10 +19,13 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
        "Search the full volunteer database, then add people one by one or import more from Excel when needed."
      )
      |> assign(:show_form, false)
-     |> assign(:access_granted, false)
+     |> assign(:form_tab, :manual)
+     |> assign(:require_volunteer_code, require_volunteer_code)
+     |> assign(:access_granted, !require_volunteer_code)
      |> assign(:access_email, "")
      |> assign(:access_requested, false)
      |> assign(:access_error, nil)
+     |> assign(:import_error, nil)
      |> assign(:query, "")
      |> assign(:page, 1)
      |> assign(:per_page, @page_size)
@@ -31,6 +36,7 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
        max_entries: 1,
        auto_upload: false
      )
+     |> maybe_load_data()
      |> load_access_history()}
   end
 
@@ -96,11 +102,35 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
   end
 
   def handle_event("open_form_modal", _params, socket) do
-    {:noreply, assign(socket, :show_form, true)}
+    {:noreply,
+     socket
+     |> assign(:show_form, true)
+     |> assign(:form_tab, :manual)
+     |> assign(:import_error, nil)}
   end
 
   def handle_event("close_form_modal", _params, socket) do
-    {:noreply, assign(socket, :show_form, false)}
+    {:noreply,
+     socket
+     |> clear_spreadsheet_upload()
+     |> assign(:show_form, false)
+     |> assign(:form_tab, :manual)
+     |> assign(:import_error, nil)}
+  end
+
+  def handle_event("switch_form_tab", %{"tab" => tab}, socket) when tab in ["manual", "import"] do
+    {:noreply,
+     socket
+     |> assign(:form_tab, if(tab == "manual", do: :manual, else: :import))
+     |> assign(:import_error, nil)}
+  end
+
+  def handle_event("cancel_upload", %{"ref" => ref}, socket) do
+    {:noreply, socket |> cancel_upload(:spreadsheet, ref) |> assign(:import_error, nil)}
+  end
+
+  def handle_event("queue_import_upload", _params, socket) do
+    {:noreply, assign(socket, :import_error, nil)}
   end
 
   def handle_event("save_manual", %{"volunteer" => params}, socket) do
@@ -149,7 +179,7 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
            {:ok, Volunteers.import_volunteers_from_file(path)}
          end) do
       [] ->
-        {:noreply, put_flash(socket, :error, "Choose an .xlsx file before importing.")}
+        {:noreply, assign(socket, :import_error, "Choose an .xlsx file before importing.")}
 
       [result] ->
         handle_import_result(socket, result)
@@ -161,6 +191,7 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
       socket
       |> assign(:page, 1)
       |> assign(:show_form, false)
+      |> assign(:import_error, nil)
       |> load_data()
       |> put_flash(:info, import_message(summary))
 
@@ -176,7 +207,17 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
 
   defp handle_import_result(socket, {:error, :invalid_spreadsheet}) do
     {:noreply,
-     put_flash(socket, :error, "The uploaded file could not be read as an Excel sheet.")}
+     assign(
+       socket,
+       :import_error,
+       "That spreadsheet could not be read. Please upload a standard .xlsx file exported from Excel."
+     )}
+  end
+
+  defp clear_spreadsheet_upload(socket) do
+    Enum.reduce(socket.assigns.uploads.spreadsheet.entries, socket, fn entry, acc ->
+      cancel_upload(acc, :spreadsheet, entry.ref)
+    end)
   end
 
   defp load_data(socket) do
@@ -202,6 +243,9 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
       )
     )
   end
+
+  defp maybe_load_data(%{assigns: %{access_granted: true}} = socket), do: load_data(socket)
+  defp maybe_load_data(socket), do: socket
 
   defp load_access_history(socket) do
     assign(socket, :recent_views, Volunteers.list_volunteer_views(limit: 10))
@@ -307,7 +351,7 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
 
       <div class="space-y-6">
         <.admin_panel
-          :if={!@access_granted}
+          :if={@require_volunteer_code and !@access_granted}
           title="Volunteer list locked"
           subtitle="Enter your email and the access code sent to you before viewing volunteer records."
         >
@@ -326,6 +370,7 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
         </.admin_panel>
 
         <.admin_panel
+          :if={@require_volunteer_code}
           title="Recent volunteer views"
           subtitle="Successful unlocks of the volunteer database."
         >
@@ -477,7 +522,7 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
         </div>
       </div>
 
-      <.modal :if={!@access_granted} id="volunteer-access-modal" show>
+      <.modal :if={@require_volunteer_code and !@access_granted} id="volunteer-access-modal" show>
         <div class="space-y-6">
           <div>
             <h2 class="text-lg font-semibold text-zinc-900">Unlock volunteer list</h2>
@@ -523,111 +568,230 @@ defmodule MaragaInfoWeb.Admin.VolunteerLive.Index do
       </.modal>
 
       <.modal :if={@show_form} id="volunteer-form-modal" show on_cancel={JS.push("close_form_modal")}>
-        <div class="space-y-6">
-          <div>
-            <h2 class="text-lg font-semibold text-zinc-900">Add or import volunteers</h2>
-            <p class="mt-1 text-sm text-zinc-500">
-              Add one volunteer manually or upload an .xlsx spreadsheet. Matching emails update existing records instead of creating duplicates.
-            </p>
+        <div class="max-h-[82vh] space-y-6 overflow-y-auto pr-1">
+          <div class="space-y-3">
+            <div class="flex flex-col gap-3 border-b border-zinc-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 class="text-xl font-semibold text-zinc-900">Add or import volunteers</h2>
+                <p class="mt-1 text-sm text-zinc-500">
+                  Add one volunteer manually or upload an .xlsx spreadsheet. Matching emails update existing records instead of creating duplicates.
+                </p>
+              </div>
+              <div class="inline-flex w-fit items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
+                <.icon name="hero-users" class="h-4 w-4 text-blueink" /> One person or one sheet
+              </div>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-3">
+              <div class="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+                <p class="font-semibold text-zinc-900">Manual entry</p>
+                <p class="mt-1">Best for quick one-off additions from the admin team.</p>
+              </div>
+              <div class="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+                <p class="font-semibold text-zinc-900">Excel import</p>
+                <p class="mt-1">Upload one `.xlsx` file and import the sheet in one step.</p>
+              </div>
+              <div class="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+                <p class="font-semibold text-zinc-900">Duplicate-safe</p>
+                <p class="mt-1">Existing email matches are updated instead of duplicated.</p>
+              </div>
+            </div>
           </div>
 
-          <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-            <section class="rounded-2xl border border-zinc-200 bg-white p-5">
+          <div class="flex flex-wrap gap-2 rounded-2xl bg-zinc-100 p-1">
+            <button
+              type="button"
+              phx-click="switch_form_tab"
+              phx-value-tab="manual"
+              class={[
+                "inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition",
+                @form_tab == :manual && "bg-white text-zinc-900 shadow-sm",
+                @form_tab != :manual && "text-zinc-600 hover:text-zinc-900"
+              ]}
+            >
+              <.icon name="hero-user-plus" class="h-4 w-4" /> Add individual
+            </button>
+            <button
+              type="button"
+              phx-click="switch_form_tab"
+              phx-value-tab="import"
+              class={[
+                "inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition",
+                @form_tab == :import && "bg-white text-zinc-900 shadow-sm",
+                @form_tab != :import && "text-zinc-600 hover:text-zinc-900"
+              ]}
+            >
+              <.icon name="hero-arrow-up-tray" class="h-4 w-4" /> Import spreadsheet
+            </button>
+          </div>
+
+          <section
+            :if={@form_tab == :manual}
+            class="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6"
+          >
+            <div class="mb-5">
               <h3 class="text-base font-semibold text-zinc-900">Add one volunteer</h3>
               <p class="mt-1 text-sm text-zinc-500">
                 Use this for direct admin entry. Email is stored uniquely.
               </p>
+            </div>
 
-              <.simple_form
-                for={@form}
-                id="volunteer-form"
-                phx-change="validate_manual"
-                phx-submit="save_manual"
-              >
-                <div class="grid gap-4 md:grid-cols-2">
-                  <.input field={@form[:first_name]} type="text" label="First name" />
-                  <.input field={@form[:last_name]} type="text" label="Last name" />
-                  <.input field={@form[:email]} type="email" label="Email" required />
-                  <.input field={@form[:phone]} type="text" label="Phone" />
-                  <.input field={@form[:county]} type="text" label="County" />
-                  <.input field={@form[:constituency]} type="text" label="Constituency" />
-                  <.input field={@form[:ward]} type="text" label="Ward" />
-                  <.input field={@form[:polling_station]} type="text" label="Polling station" />
-                  <.input field={@form[:joined_on]} type="date" label="Joined date" />
-                </div>
+            <.simple_form
+              for={@form}
+              id="volunteer-form"
+              phx-change="validate_manual"
+              phx-submit="save_manual"
+            >
+              <div class="grid gap-4 md:grid-cols-2">
+                <.input field={@form[:first_name]} type="text" label="First name" />
+                <.input field={@form[:last_name]} type="text" label="Last name" />
+                <.input field={@form[:email]} type="email" label="Email" required />
+                <.input field={@form[:phone]} type="text" label="Phone" />
+                <.input field={@form[:county]} type="text" label="County" />
+                <.input field={@form[:constituency]} type="text" label="Constituency" />
+                <.input field={@form[:ward]} type="text" label="Ward" />
+                <.input field={@form[:polling_station]} type="text" label="Polling station" />
+                <.input field={@form[:joined_on]} type="date" label="Joined date" />
+              </div>
 
-                <.input
-                  field={@form[:additional_info]}
-                  type="textarea"
-                  label="Additional info"
-                  rows="4"
-                />
+              <.input
+                field={@form[:additional_info]}
+                type="textarea"
+                label="Additional info"
+                rows="4"
+              />
 
-                <:actions>
-                  <.button>Add volunteer</.button>
-                </:actions>
-              </.simple_form>
-            </section>
+              <:actions>
+                <.button>Add volunteer</.button>
+              </:actions>
+            </.simple_form>
+          </section>
 
-            <section class="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-5">
+          <section
+            :if={@form_tab == :import}
+            class="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-5 sm:p-6"
+          >
+            <div class="mb-5">
               <h3 class="text-base font-semibold text-zinc-900">Import from Excel</h3>
               <p class="mt-1 text-sm text-zinc-500">
-                Upload another volunteer sheet in .xlsx format.
+                Upload a volunteer sheet in `.xlsx` format. Imports update existing records when the email already exists.
               </p>
+            </div>
 
-              <.form id="volunteer-import-form" for={%{}} phx-submit="import" class="mt-5 space-y-4">
-                <label class="block">
-                  <span class="mb-2 block text-sm font-medium text-zinc-900">
-                    Volunteer spreadsheet
-                  </span>
-                  <div class="rounded-xl border border-dashed border-zinc-300 bg-white p-4">
-                    <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg px-4 py-6 text-center text-sm text-zinc-600 transition hover:text-blueink">
-                      <.icon name="hero-arrow-up-tray" class="h-5 w-5" />
-                      <span class="font-medium">Choose .xlsx file</span>
-                      <span class="text-xs text-zinc-400">
-                        Existing emails will be updated during import.
-                      </span>
-                      <.live_file_input upload={@uploads.spreadsheet} class="sr-only" />
-                    </label>
+            <.form
+              id="volunteer-import-form"
+              for={%{}}
+              phx-change="queue_import_upload"
+              phx-submit="import"
+              class="space-y-4"
+            >
+              <div
+                phx-drop-target={@uploads.spreadsheet.ref}
+                class={[
+                  "rounded-2xl border border-dashed bg-white p-4 transition",
+                  @uploads.spreadsheet.entries == [] &&
+                    "border-zinc-300 hover:border-blueink/50 hover:bg-blueink/5",
+                  @uploads.spreadsheet.entries != [] &&
+                    "border-emerald-300 bg-emerald-50/60"
+                ]}
+              >
+                <label class="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl px-4 py-8 text-center">
+                  <div class="rounded-full bg-zinc-100 p-3 text-zinc-600">
+                    <.icon name="hero-arrow-up-tray" class="h-6 w-6" />
                   </div>
+                  <div class="space-y-1">
+                    <p class="text-sm font-semibold text-zinc-900">
+                      {if @uploads.spreadsheet.entries == [],
+                        do: "Choose or drop an .xlsx file",
+                        else: "Spreadsheet selected"}
+                    </p>
+                    <p class="text-xs text-zinc-500">
+                      One spreadsheet only. Existing emails will be updated during import.
+                    </p>
+                  </div>
+                  <.live_file_input upload={@uploads.spreadsheet} class="sr-only" />
                 </label>
+              </div>
 
-                <div
-                  :for={entry <- @uploads.spreadsheet.entries}
-                  class="rounded-lg bg-white px-3 py-2 text-sm text-zinc-700"
-                >
-                  <div class="flex items-center justify-between gap-4">
-                    <span class="truncate">{entry.client_name}</span>
-                    <span>{entry.progress}%</span>
+              <div
+                :for={entry <- @uploads.spreadsheet.entries}
+                class="rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm"
+              >
+                <div class="flex items-start justify-between gap-4">
+                  <div class="min-w-0">
+                    <p class="truncate font-medium text-zinc-900">{entry.client_name}</p>
+                    <p class="mt-1 text-xs text-zinc-500">
+                      Ready to import when progress reaches 100%.
+                    </p>
                   </div>
-                </div>
-
-                <p :for={error <- upload_errors(@uploads.spreadsheet)} class="text-sm text-rose-600">
-                  {upload_error_to_string(error)}
-                </p>
-
-                <div :for={entry <- @uploads.spreadsheet.entries}>
-                  <p
-                    :for={error <- upload_errors(@uploads.spreadsheet, entry)}
-                    class="text-sm text-rose-600"
-                  >
-                    {upload_error_to_string(error)}
-                  </p>
-                </div>
-
-                <div class="flex items-center justify-between gap-3 pt-2">
                   <button
                     type="button"
-                    phx-click="close_form_modal"
-                    class="rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-600 transition hover:text-zinc-900"
+                    phx-click="cancel_upload"
+                    phx-value-ref={entry.ref}
+                    class="shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900"
                   >
-                    Cancel
+                    Remove
                   </button>
-                  <.button>Import volunteers</.button>
                 </div>
-              </.form>
-            </section>
-          </div>
+                <div class="mt-3 h-2 rounded-full bg-zinc-100">
+                  <div
+                    class="h-2 rounded-full bg-blueink transition-all"
+                    style={"width: #{entry.progress}%"}
+                  >
+                  </div>
+                </div>
+              </div>
+
+              <p
+                :if={@import_error}
+                class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"
+              >
+                {@import_error}
+              </p>
+
+              <p :for={error <- upload_errors(@uploads.spreadsheet)} class="text-sm text-rose-600">
+                {upload_error_to_string(error)}
+              </p>
+
+              <div :for={entry <- @uploads.spreadsheet.entries}>
+                <p
+                  :for={error <- upload_errors(@uploads.spreadsheet, entry)}
+                  class="text-sm text-rose-600"
+                >
+                  {upload_error_to_string(error)}
+                </p>
+              </div>
+
+              <div class="rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
+                <p class="font-medium text-zinc-900">Import checklist</p>
+                <ul class="mt-2 space-y-2 text-sm text-zinc-600">
+                  <li>Use a standard Excel `.xlsx` file.</li>
+                  <li>Keep the volunteer headers unchanged.</li>
+                  <li>Emails are the unique identifier for updates.</li>
+                </ul>
+                <p class="mt-3 text-xs text-zinc-500">
+                  Large spreadsheets can take a few seconds after you click import.
+                </p>
+              </div>
+
+              <div class="flex items-center justify-between gap-3 pt-2">
+                <button
+                  type="button"
+                  phx-click="close_form_modal"
+                  class="rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-600 transition hover:text-zinc-900"
+                >
+                  Cancel
+                </button>
+                <.button
+                  type="submit"
+                  disabled={@uploads.spreadsheet.entries == []}
+                  phx-disable-with="Importing volunteers..."
+                >
+                  Import volunteers
+                </.button>
+              </div>
+            </.form>
+          </section>
         </div>
       </.modal>
     </.admin_shell>
