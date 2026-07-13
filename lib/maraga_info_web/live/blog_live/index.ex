@@ -73,12 +73,13 @@ defmodule MaragaInfoWeb.BlogLive.Index do
   defp blog_card(assigns) do
     ~H"""
     <article class="group flex flex-col overflow-hidden rounded-[5px] bg-white shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
-      <.link :if={@item.image_url} navigate={~p"/blog/#{@item.slug}"} class="block">
+      <.link :if={@item.image_url} navigate={~p"/blog/#{@item.slug}"} class="block overflow-hidden">
         <img
           src={@item.image_url}
           alt={@item.title}
           loading="lazy"
-          class="max-h-[420px] w-full bg-ghost object-contain"
+          class="aspect-[3/2] w-full bg-white object-cover"
+          style={Post.image_position_style(@item)}
         />
       </.link>
 

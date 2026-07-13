@@ -57,6 +57,94 @@ function loadCKEditor() {
 }
 
 const Hooks = {
+  CoverPosition: {
+    mounted() {
+      this.frame = this.el.querySelector("[data-cover-frame]");
+      this.image = this.el.querySelector("[data-cover-image]");
+      this.xInput = this.el.querySelector("[data-position-x-input]");
+      this.yInput = this.el.querySelector("[data-position-y-input]");
+      this.resetButton = this.el.querySelector("[data-reset-position]");
+      this.drag = null;
+
+      this.clamp = (value) => Math.max(0, Math.min(100, Math.round(value)));
+      this.readPosition = () => ({
+        x: this.clamp(Number.parseFloat(this.xInput?.value || this.el.dataset.positionX || 50)),
+        y: this.clamp(Number.parseFloat(this.yInput?.value || this.el.dataset.positionY || 50)),
+      });
+      this.setPosition = (x, y) => {
+        this.x = this.clamp(x);
+        this.y = this.clamp(y);
+
+        if (this.image) this.image.style.objectPosition = `${this.x}% ${this.y}%`;
+        if (this.xInput) this.xInput.value = this.x;
+        if (this.yInput) this.yInput.value = this.y;
+      };
+      this.commit = () => {
+        this.xInput?.dispatchEvent(new Event("input", { bubbles: true }));
+      };
+
+      this.handlePointerDown = (event) => {
+        if (event.button !== 0 || event.target.closest("button")) return;
+
+        event.preventDefault();
+        this.frame.setPointerCapture(event.pointerId);
+        this.drag = {
+          pointerId: event.pointerId,
+          clientX: event.clientX,
+          clientY: event.clientY,
+          x: this.x,
+          y: this.y,
+        };
+      };
+      this.handlePointerMove = (event) => {
+        if (!this.drag || event.pointerId !== this.drag.pointerId) return;
+
+        event.preventDefault();
+        const bounds = this.frame.getBoundingClientRect();
+        const deltaX = ((event.clientX - this.drag.clientX) / bounds.width) * 100;
+        const deltaY = ((event.clientY - this.drag.clientY) / bounds.height) * 100;
+
+        // Increasing object-position moves an oversized image in the opposite
+        // direction, hence subtraction makes the image follow the pointer.
+        this.setPosition(this.drag.x - deltaX, this.drag.y - deltaY);
+      };
+      this.handlePointerUp = (event) => {
+        if (!this.drag || event.pointerId !== this.drag.pointerId) return;
+
+        this.frame.releasePointerCapture(event.pointerId);
+        this.drag = null;
+        this.commit();
+      };
+      this.handleReset = () => {
+        this.setPosition(50, 50);
+        this.commit();
+      };
+
+      this.frame?.addEventListener("pointerdown", this.handlePointerDown);
+      this.frame?.addEventListener("pointermove", this.handlePointerMove);
+      this.frame?.addEventListener("pointerup", this.handlePointerUp);
+      this.frame?.addEventListener("pointercancel", this.handlePointerUp);
+      this.resetButton?.addEventListener("click", this.handleReset);
+
+      const { x, y } = this.readPosition();
+      this.setPosition(x, y);
+    },
+
+    updated() {
+      if (this.drag) return;
+      const { x, y } = this.readPosition();
+      this.setPosition(x, y);
+    },
+
+    destroyed() {
+      this.frame?.removeEventListener("pointerdown", this.handlePointerDown);
+      this.frame?.removeEventListener("pointermove", this.handlePointerMove);
+      this.frame?.removeEventListener("pointerup", this.handlePointerUp);
+      this.frame?.removeEventListener("pointercancel", this.handlePointerUp);
+      this.resetButton?.removeEventListener("click", this.handleReset);
+    },
+  },
+
   RevealOnScroll: {
     mounted() {
       if (prefersReducedMotion.matches) {

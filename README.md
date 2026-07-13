@@ -23,6 +23,7 @@ A Phoenix LiveView website covering David Kenani Maraga — Kenya's former Chief
 
 - Elixir `~> 1.14` and a compatible Erlang/OTP
 - PostgreSQL (running and reachable; default config expects `postgres`/`postgres` on `localhost`)
+- ImageMagick (used to optimise post and blog cover images during upload)
 - Node is **not** required — assets are built with the `esbuild` and `tailwind` Mix tasks
 
 ## Getting started
@@ -73,6 +74,8 @@ The seed script ([`priv/repo/seeds.exs`](priv/repo/seeds.exs)) creates:
 - `/admin/pages/*`, `/admin/settings` — additional admin sections
 
 Uploaded images and videos are stored under `priv/static/uploads/` and served from `/uploads`.
+Post and blog covers are auto-oriented and resized to fit within 1600×1200 pixels; a 3:2
+landscape image is recommended because public listing cards use that aspect ratio.
 
 ## Routes overview
 

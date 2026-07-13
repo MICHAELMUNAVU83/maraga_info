@@ -6,6 +6,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
   alias MaragaInfoWeb.Uploads
 
   @max_image_mb 8
+  @cover_max_size {1600, 1200}
   defp max_image_mb, do: @max_image_mb
 
   @impl true
@@ -149,7 +150,11 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
 
   defp handle_progress(:cover, entry, socket) do
     if entry.done? do
-      url = consume_uploaded_entry(socket, entry, fn meta -> Uploads.store_entry(meta, entry) end)
+      url =
+        consume_uploaded_entry(socket, entry, fn meta ->
+          Uploads.store_entry(meta, entry, resize: @cover_max_size)
+        end)
+
       {:noreply, socket |> assign(:cover_url, url) |> assign(:cover_removed, false)}
     else
       {:noreply, socket}
@@ -582,27 +587,75 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
               <div class="space-y-4">
                 <div
                   :if={current_cover(@cover_url, @cover_removed, @form)}
-                  class="group relative overflow-hidden rounded-lg border border-zinc-200"
+                  id="cover-position-editor"
+                  phx-hook="CoverPosition"
+                  data-position-x={@form[:image_position_x].value || 50}
+                  data-position-y={@form[:image_position_y].value || 50}
+                  class="space-y-2"
                 >
-                  <img
-                    src={current_cover(@cover_url, @cover_removed, @form)}
-                    class="mx-auto max-h-[420px] w-full object-contain"
-                  />
-                  <button
-                    type="button"
-                    phx-click="remove_cover"
-                    data-confirm="Remove this cover image?"
-                    class="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-white/90 px-2.5 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition hover:bg-white hover:text-red-600"
-                    aria-label="Remove cover image"
+                  <div
+                    data-cover-frame
+                    class="group relative touch-none select-none overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100 cursor-grab active:cursor-grabbing"
                   >
-                    <.icon name="hero-trash-mini" class="h-4 w-4" /> Remove
-                  </button>
+                    <img
+                      data-cover-image
+                      src={current_cover(@cover_url, @cover_removed, @form)}
+                      draggable="false"
+                      class="pointer-events-none aspect-[3/2] w-full object-cover"
+                      style={
+                        "object-position: #{@form[:image_position_x].value || 50}% #{@form[:image_position_y].value || 50}%"
+                      }
+                    />
+                    <div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition group-hover:opacity-100">
+                      <span class="rounded-md bg-black/65 px-2.5 py-1.5 text-xs font-medium text-white shadow">
+                        Drag to reposition
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      phx-click="remove_cover"
+                      data-confirm="Remove this cover image?"
+                      class="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-white/90 px-2.5 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition hover:bg-white hover:text-red-600"
+                      aria-label="Remove cover image"
+                    >
+                      <.icon name="hero-trash-mini" class="h-4 w-4" /> Remove
+                    </button>
+                  </div>
+
+                  <input
+                    data-position-x-input
+                    type="hidden"
+                    name="post[image_position_x]"
+                    value={@form[:image_position_x].value || 50}
+                  />
+                  <input
+                    data-position-y-input
+                    type="hidden"
+                    name="post[image_position_y]"
+                    value={@form[:image_position_y].value || 50}
+                  />
+
+                  <div class="flex items-center justify-between gap-3 text-xs text-zinc-500">
+                    <span>Drag the image to choose the visible area on cards.</span>
+                    <button
+                      data-reset-position
+                      type="button"
+                      class="shrink-0 font-medium text-blueink hover:text-crimson"
+                    >
+                      Center
+                    </button>
+                  </div>
                 </div>
 
                 <label class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-600 transition hover:border-blueink hover:text-blueink">
                   <.icon name="hero-arrow-up-tray" class="h-5 w-5" />
                   <span class="font-medium">Upload cover</span>
-                  <span class="text-xs text-zinc-400">JPG, PNG or WEBP up to {max_image_mb()}MB</span>
+                  <span class="text-xs text-zinc-400">
+                    JPG, PNG or WEBP up to {max_image_mb()}MB · 3:2 landscape recommended
+                  </span>
+                  <span class="text-xs text-zinc-400">
+                    Large images are automatically resized for the website
+                  </span>
                   <.live_file_input upload={@uploads.cover} class="sr-only" />
                 </label>
 

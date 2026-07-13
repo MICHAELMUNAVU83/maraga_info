@@ -75,14 +75,25 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
 
       upload_cover(new_live)
 
+      positioned_attrs =
+        Map.merge(@create_attrs, %{image_position_x: 32, image_position_y: 18})
+
+      # The browser hook updates these hidden values after a drag, which causes
+      # the form's normal validation event before submission.
+      render_change(new_live, "validate", %{"post" => positioned_attrs})
+
       result =
         new_live
-        |> form("#post-form", post: @create_attrs)
+        |> form("#post-form", post: positioned_attrs)
         |> render_submit()
 
       assert {:ok, _show_live, html} = follow_redirect(result, conn)
       assert html =~ "Blog post created"
       assert html =~ "some title"
+
+      post = Enum.find(MaragaInfo.Content.list_posts(), &(&1.title == "some title"))
+      assert post.image_position_x == 32
+      assert post.image_position_y == 18
     end
 
     test "updates post from the listing", %{conn: conn, post: post} do

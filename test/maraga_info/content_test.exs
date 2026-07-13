@@ -37,6 +37,8 @@ defmodule MaragaInfo.ContentTest do
         slug: "some slug",
         seo_description: "some seo_description",
         image_url: "/images/maxresdefault.jpg",
+        image_position_x: 28,
+        image_position_y: 14,
         published_at: ~U[2026-06-12 13:48:00Z],
         status: :published,
         is_featured: true
@@ -49,6 +51,8 @@ defmodule MaragaInfo.ContentTest do
       assert post.slug == "some-slug"
       assert post.seo_description == "some seo_description"
       assert post.image_url == "/images/maxresdefault.jpg"
+      assert post.image_position_x == 28
+      assert post.image_position_y == 14
       assert post.published_at == ~U[2026-06-12 13:48:00Z]
       assert post.status == :published
       assert post.is_featured == true
@@ -56,6 +60,19 @@ defmodule MaragaInfo.ContentTest do
 
     test "create_post/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Content.create_post(@invalid_attrs)
+    end
+
+    test "cover focal positions must be percentages" do
+      assert {:error, changeset} =
+               Content.create_post(%{
+                 title: "Positioned cover",
+                 category: "Blog",
+                 image_position_x: -1,
+                 image_position_y: 101
+               })
+
+      assert "must be greater than or equal to 0" in errors_on(changeset).image_position_x
+      assert "must be less than or equal to 100" in errors_on(changeset).image_position_y
     end
 
     test "update_post/2 with valid data updates the post" do

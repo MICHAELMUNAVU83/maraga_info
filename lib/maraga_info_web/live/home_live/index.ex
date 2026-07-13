@@ -875,7 +875,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           src={@item.image_url}
           alt={@item.title}
           loading="lazy"
-          class="h-[300px] w-full object-cover object-[center_30%] transition duration-500 group-hover:scale-105"
+          class="aspect-[3/2] w-full bg-white object-cover"
+          style={Post.image_position_style(@item)}
         />
       </.link>
 

@@ -35,6 +35,8 @@ defmodule MaragaInfo.Content.Post do
     field :slug, :string
     field :seo_description, :string
     field :image_url, :string
+    field :image_position_x, :integer, default: 50
+    field :image_position_y, :integer, default: 50
     field :canva_embed_url, :string
     field :newsletter_volume, :string
     field :status, Ecto.Enum, values: [:draft, :published], default: :draft
@@ -56,6 +58,8 @@ defmodule MaragaInfo.Content.Post do
       :category,
       :seo_description,
       :image_url,
+      :image_position_x,
+      :image_position_y,
       :canva_embed_url,
       :newsletter_volume,
       :body,
@@ -76,6 +80,14 @@ defmodule MaragaInfo.Content.Post do
     |> validate_format(:image_url, ~r/^(\/|https?:\/\/)/,
       message: "must start with /, http://, or https://"
     )
+    |> validate_number(:image_position_x,
+      greater_than_or_equal_to: 0,
+      less_than_or_equal_to: 100
+    )
+    |> validate_number(:image_position_y,
+      greater_than_or_equal_to: 0,
+      less_than_or_equal_to: 100
+    )
     |> validate_canva_embed()
     |> validate_newsletter_volume()
     |> put_slug()
@@ -85,6 +97,13 @@ defmodule MaragaInfo.Content.Post do
     |> maybe_put_published_at()
     |> unique_constraint(:slug)
     |> foreign_key_constraint(:user_id)
+  end
+
+  @doc "Returns the saved focal position as an inline CSS declaration."
+  def image_position_style(%__MODULE__{} = post) do
+    x = post.image_position_x || 50
+    y = post.image_position_y || 50
+    "object-position: #{x}% #{y}%"
   end
 
   # Newsletter posts must carry a valid Canva embed link; other categories
