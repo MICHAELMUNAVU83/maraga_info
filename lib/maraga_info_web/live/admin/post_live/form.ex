@@ -6,7 +6,6 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
   alias MaragaInfoWeb.Uploads
 
   @max_image_mb 8
-  @cover_max_size {1600, 1200}
   defp max_image_mb, do: @max_image_mb
 
   @impl true
@@ -24,7 +23,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
        progress: &handle_progress/3
      )
      |> allow_upload(:section_images,
-       accept: ~w(.jpg .jpeg .png .webp),
+       accept: ~w(.jpg .jpeg .png .webp .pdf),
        max_entries: 12,
        max_file_size: @max_image_mb * 1_000_000,
        auto_upload: true,
@@ -152,7 +151,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     if entry.done? do
       url =
         consume_uploaded_entry(socket, entry, fn meta ->
-          Uploads.store_entry(meta, entry, resize: @cover_max_size)
+          Uploads.store_entry(meta, entry)
         end)
 
       {:noreply, socket |> assign(:cover_url, url) |> assign(:cover_removed, false)}
@@ -322,7 +321,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
           base_path: "/admin/blogs",
           fixed_category: Post.blog_category(),
           categories_scope: :blogs,
-          subtitle: "Write a long-form blog article, arrange sections, and upload images."
+          subtitle: "Write a long-form blog article, arrange sections, and upload attachments."
         }
 
       true ->
@@ -332,7 +331,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
           fixed_category: nil,
           categories_scope: :posts,
           subtitle:
-            "Write the story, arrange sections, and upload images. Drafts stay private until published."
+            "Write the story, arrange sections, and upload attachments. Drafts stay private until published."
         }
     end
   end
@@ -435,7 +434,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
 
             <.editor_card
               title="Sections"
-              description="Build the article as a series of blocks. Each section can have a heading, text, and images."
+              description="Build the article as a series of blocks. Each section can have a heading, text, images, and PDF documents."
             >
               <div
                 :if={@sections == []}
@@ -511,7 +510,20 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                         :for={url <- section.image_urls}
                         class="group relative overflow-hidden rounded-lg border border-zinc-200"
                       >
-                        <img src={url} class="aspect-square w-full object-cover" />
+                        <a
+                          :if={Uploads.pdf?(url)}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="flex aspect-square w-full flex-col items-center justify-center gap-2 bg-zinc-50 p-3 text-center text-xs font-medium text-blueink"
+                        >
+                          <.icon name="hero-document-text" class="h-8 w-8" /> Open PDF
+                        </a>
+                        <img
+                          :if={!Uploads.pdf?(url)}
+                          src={url}
+                          class="aspect-square w-full object-cover"
+                        />
                         <button
                           type="button"
                           phx-click="remove_section_image"
@@ -530,7 +542,8 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                       phx-value-index={index}
                       class="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-300 px-4 py-3 text-sm font-medium text-zinc-600 transition hover:border-blueink hover:text-blueink"
                     >
-                      <.icon name="hero-photo" class="h-5 w-5" /> Add images to this section
+                      <.icon name="hero-paper-clip" class="h-5 w-5" />
+                      Add images or PDFs to this section
                       <.live_file_input upload={@uploads.section_images} class="sr-only" />
                     </label>
 
@@ -652,9 +665,6 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                   <span class="font-medium">Upload cover</span>
                   <span class="text-xs text-zinc-400">
                     JPG, PNG or WEBP up to {max_image_mb()}MB · 3:2 landscape recommended
-                  </span>
-                  <span class="text-xs text-zinc-400">
-                    Large images are automatically resized for the website
                   </span>
                   <.live_file_input upload={@uploads.cover} class="sr-only" />
                 </label>

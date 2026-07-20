@@ -5,6 +5,7 @@ defmodule MaragaInfoWeb.BlogLive.Show do
   alias MaragaInfo.Content.Post
   alias MaragaInfoWeb.RichText
   alias MaragaInfoWeb.Seo
+  alias MaragaInfoWeb.Uploads
 
   @impl true
   def mount(_params, _session, socket) do
@@ -109,12 +110,36 @@ defmodule MaragaInfoWeb.BlogLive.Show do
                   "grid gap-4",
                   length(section.image_urls) > 1 && "sm:grid-cols-2"
                 ]}>
-                  <img
-                    :for={url <- section.image_urls}
-                    src={url}
-                    alt={section.heading || @post.title}
-                    class="w-full rounded-[8px] object-cover object-[center_30%] shadow-[0_12px_40px_rgba(15,30,80,0.1)]"
-                  />
+                  <div :for={url <- section.image_urls} class={Uploads.pdf?(url) && "sm:col-span-2"}>
+                    <div
+                      :if={Uploads.pdf?(url)}
+                      class="overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-[#f8f9fb] shadow-[0_12px_40px_rgba(15,30,80,0.08)]"
+                    >
+                      <iframe
+                        src={url}
+                        title={"PDF document for #{section.heading || @post.title}"}
+                        class="h-[80vh] min-h-[640px] w-full bg-white"
+                      >
+                      </iframe>
+                      <div class="flex justify-end border-t border-[#dfe4ec] px-4 py-3">
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="inline-flex items-center gap-2 text-sm font-semibold text-blueink transition hover:text-crimson"
+                        >
+                          Open PDF in a new tab
+                          <.icon name="hero-arrow-top-right-on-square-mini" class="h-4 w-4" />
+                        </a>
+                      </div>
+                    </div>
+                    <img
+                      :if={!Uploads.pdf?(url)}
+                      src={url}
+                      alt={section.heading || @post.title}
+                      class="w-full rounded-[8px] object-cover object-[center_30%] shadow-[0_12px_40px_rgba(15,30,80,0.1)]"
+                    />
+                  </div>
                 </div>
               </div>
             </section>

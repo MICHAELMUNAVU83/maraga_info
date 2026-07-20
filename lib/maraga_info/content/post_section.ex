@@ -1,7 +1,7 @@
 defmodule MaragaInfo.Content.PostSection do
   @moduledoc """
   A single content block within a blog post. A post can have many sections,
-  each with an optional heading, body copy, and any number of images.
+  each with an optional heading, body copy, and any number of attachments.
   """
   use Ecto.Schema
   import Ecto.Changeset
@@ -31,10 +31,10 @@ defmodule MaragaInfo.Content.PostSection do
   defp validate_section_not_empty(changeset) do
     heading = get_field(changeset, :heading)
     body = get_field(changeset, :body)
-    images = get_field(changeset, :image_urls) || []
+    attachments = get_field(changeset, :image_urls) || []
 
-    if blank?(heading) and blank?(body) and images == [] do
-      add_error(changeset, :body, "section needs a heading, text, or at least one image")
+    if blank?(heading) and blank?(body) and attachments == [] do
+      add_error(changeset, :body, "section needs a heading, text, or at least one attachment")
     else
       changeset
     end

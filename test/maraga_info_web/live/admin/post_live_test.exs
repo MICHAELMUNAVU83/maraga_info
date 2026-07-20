@@ -127,6 +127,72 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
     end
   end
 
+  describe "Press releases" do
+    setup [:register_and_log_in_user]
+
+    test "stores cover uploads without image processing", %{conn: conn} do
+      {:ok, new_live, _html} = live(conn, ~p"/admin/press-releases/new")
+
+      new_live
+      |> file_input("#post-form", :cover, [
+        %{
+          name: "press-cover.png",
+          content: "copied without image processing",
+          type: "image/png"
+        }
+      ])
+      |> render_upload("press-cover.png")
+
+      attrs = Map.put(@create_attrs, :title, "Press release with original cover")
+
+      result =
+        new_live
+        |> form("#post-form", post: attrs)
+        |> render_submit()
+
+      assert {:ok, _show_live, html} = follow_redirect(result, conn)
+      assert html =~ "press release created"
+
+      post =
+        Enum.find(
+          MaragaInfo.Content.list_posts(),
+          &(&1.title == "Press release with original cover")
+        )
+
+      upload_path = Path.join("priv/static", post.image_url)
+      on_exit(fn -> File.rm(upload_path) end)
+
+      assert File.read!(upload_path) == "copied without image processing"
+    end
+  end
+
+  describe "Section attachments" do
+    setup [:register_and_log_in_user]
+
+    test "accepts PDF uploads for blog sections", %{conn: conn} do
+      {:ok, new_live, _html} = live(conn, ~p"/admin/blogs/new")
+
+      render_click(new_live, "add_section")
+      render_click(new_live, "target_section", %{"index" => "0"})
+
+      new_live
+      |> file_input("#post-form", :section_images, [
+        %{
+          name: "campaign-brief.pdf",
+          content: "%PDF-1.7 test document",
+          type: "application/pdf"
+        }
+      ])
+      |> render_upload("campaign-brief.pdf")
+
+      html = render(new_live)
+      assert html =~ "Open PDF"
+      assert [_, upload_url] = Regex.run(~r/href="(\/uploads\/[^"]+\.pdf)"/, html)
+
+      on_exit(fn -> File.rm(Path.join("priv/static", upload_url)) end)
+    end
+  end
+
   describe "Show" do
     setup [:register_and_log_in_user, :create_post]
 

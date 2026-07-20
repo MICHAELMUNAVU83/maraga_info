@@ -3,6 +3,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Show do
 
   alias MaragaInfo.Content
   alias MaragaInfoWeb.RichText
+  alias MaragaInfoWeb.Uploads
 
   @impl true
   def mount(_params, _session, socket) do

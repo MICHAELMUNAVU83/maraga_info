@@ -64,6 +64,28 @@ defmodule MaragaInfoWeb.BlogLive.ShowTest do
     assert html =~ ~s("image":["https://davidmaraga.info/images/IMG_2052.jpg"])
   end
 
+  test "renders section PDFs as document links", %{conn: conn} do
+    post =
+      post_fixture(%{
+        title: "Campaign policy brief",
+        slug: "campaign-policy-brief",
+        sections: [
+          %{
+            heading: "Read the brief",
+            image_urls: ["/uploads/campaign-policy.pdf"],
+            position: 0
+          }
+        ]
+      })
+
+    {:ok, _view, html} = live(conn, ~p"/blog/#{post.slug}")
+
+    assert html =~ "Open PDF in a new tab"
+    assert html =~ ~s(<iframe src="/uploads/campaign-policy.pdf")
+    assert html =~ ~s(href="/uploads/campaign-policy.pdf")
+    refute html =~ ~s(<img src="/uploads/campaign-policy.pdf")
+  end
+
   test "renders sharing controls for a title-less press release", %{conn: conn} do
     post =
       post_fixture(%{
