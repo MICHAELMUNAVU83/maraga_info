@@ -30,4 +30,20 @@ defmodule MaragaInfoWeb.UploadsTest do
     refute Uploads.pdf?("/uploads/campaign-photo.png")
     refute Uploads.pdf?(nil)
   end
+
+  test "normalizes and truncates extracted PDF text" do
+    assert Uploads.normalize_pdf_text("  A PDF\n\npreview with   spacing.  ", 100) ==
+             "A PDF preview with spacing."
+
+    assert Uploads.normalize_pdf_text("First useful words followed by more content", 24) ==
+             "First useful words…"
+
+    assert Uploads.normalize_pdf_text(" \n\t ", 100) == nil
+  end
+
+  test "only extracts previously stored PDFs from local upload URLs" do
+    assert Uploads.extract_stored_pdf_preview("https://example.com/document.pdf") == nil
+    assert Uploads.extract_stored_pdf_preview("/uploads/nested/document.pdf") == nil
+    assert Uploads.extract_stored_pdf_preview("/images/document.pdf") == nil
+  end
 end

@@ -34,6 +34,7 @@ defmodule MaragaInfo.ContentTest do
         title: "some title",
         category: "some category",
         body: "some body",
+        preview_text: "A custom card preview",
         slug: "some slug",
         seo_description: "some seo_description",
         image_url: "/images/maxresdefault.jpg",
@@ -48,6 +49,7 @@ defmodule MaragaInfo.ContentTest do
       assert post.title == "some title"
       assert post.category == "some category"
       assert post.body == "some body"
+      assert post.preview_text == "A custom card preview"
       assert post.slug == "some-slug"
       assert post.seo_description == "some seo_description"
       assert post.image_url == "/images/maxresdefault.jpg"
@@ -117,6 +119,21 @@ defmodule MaragaInfo.ContentTest do
     test "change_post/1 returns a post changeset" do
       post = post_fixture()
       assert %Ecto.Changeset{} = Content.change_post(post)
+    end
+
+    test "summary falls back to SEO text and then a section heading" do
+      assert Post.summary(%Post{seo_description: "A short PDF overview."}) ==
+               "A short PDF overview."
+
+      assert Post.summary(%Post{
+               sections: [%MaragaInfo.Content.PostSection{heading: "Policy brief"}]
+             }) ==
+               "Policy brief"
+    end
+
+    test "summary prefers the editable card preview" do
+      assert Post.summary(%Post{preview_text: "Editor-approved preview", body: "Body copy"}) ==
+               "Editor-approved preview"
     end
 
     test "adjacent_published_posts/1 does not wrap the newest post to the oldest" do

@@ -32,6 +32,7 @@ defmodule MaragaInfo.Content.Post do
     field :title, :string
     field :category, :string
     field :body, :string
+    field :preview_text, :string
     field :slug, :string
     field :seo_description, :string
     field :image_url, :string
@@ -63,6 +64,7 @@ defmodule MaragaInfo.Content.Post do
       :canva_embed_url,
       :newsletter_volume,
       :body,
+      :preview_text,
       :status,
       :published_at,
       :is_featured,
@@ -76,6 +78,7 @@ defmodule MaragaInfo.Content.Post do
     |> validate_title_required()
     |> validate_length(:title, max: 160)
     |> validate_length(:category, max: 80)
+    |> validate_length(:preview_text, max: 500)
     |> validate_length(:newsletter_volume, max: 80)
     |> validate_format(:image_url, ~r/^(\/|https?:\/\/)/,
       message: "must start with /, http://, or https://"
@@ -184,7 +187,8 @@ defmodule MaragaInfo.Content.Post do
   end
 
   defp summary_source(%__MODULE__{} = post) do
-    presence(post.body) || first_section_body(post.sections)
+    presence(post.preview_text) || presence(post.body) || first_section_body(post.sections) ||
+      presence(post.seo_description) || first_section_heading(post.sections)
   end
 
   defp first_section_body(sections) when is_list(sections) do
@@ -192,6 +196,12 @@ defmodule MaragaInfo.Content.Post do
   end
 
   defp first_section_body(_), do: nil
+
+  defp first_section_heading(sections) when is_list(sections) do
+    Enum.find_value(sections, fn section -> presence(section.heading) end)
+  end
+
+  defp first_section_heading(_), do: nil
 
   defp presence(text) when is_binary(text) do
     if String.trim(text) == "", do: nil, else: text

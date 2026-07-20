@@ -131,6 +131,27 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     {:noreply, assign(socket, :sections, sections)}
   end
 
+  def handle_event("generate_pdf_preview", _params, socket) do
+    preview_text =
+      socket.assigns.sections
+      |> pdf_urls()
+      |> Enum.find_value(&Uploads.extract_stored_pdf_preview/1)
+
+    if preview_text do
+      {:noreply,
+       socket
+       |> assign_pdf_preview(preview_text)
+       |> put_flash(:info, "Preview text generated from the PDF. You can edit it before saving.")}
+    else
+      {:noreply,
+       put_flash(
+         socket,
+         :error,
+         "No text could be extracted. The PDF may be scanned, invalid, or unavailable; enter the preview manually."
+       )}
+    end
+  end
+
   def handle_event("cancel_upload", %{"upload" => name, "ref" => ref}, socket) do
     {:noreply, cancel_upload(socket, String.to_existing_atom(name), ref)}
   end
@@ -162,14 +183,20 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
 
   defp handle_progress(:section_images, entry, socket) do
     if entry.done? and not is_nil(socket.assigns.target_section) do
-      url = consume_uploaded_entry(socket, entry, fn meta -> Uploads.store_entry(meta, entry) end)
+      upload =
+        consume_uploaded_entry(socket, entry, fn meta ->
+          Uploads.store_entry_with_preview(meta, entry)
+        end)
 
       sections =
         update_section(socket.assigns.sections, socket.assigns.target_section, fn section ->
-          %{section | image_urls: section.image_urls ++ [url]}
+          %{section | image_urls: section.image_urls ++ [upload.url]}
         end)
 
-      {:noreply, assign(socket, :sections, sections)}
+      {:noreply,
+       socket
+       |> assign(:sections, sections)
+       |> maybe_assign_pdf_preview(upload.preview_text)}
     else
       {:noreply, socket}
     end
@@ -202,6 +229,34 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
   end
 
   defp assign_form(socket, changeset), do: assign(socket, :form, to_form(changeset))
+
+  defp maybe_assign_pdf_preview(socket, nil), do: socket
+
+  defp maybe_assign_pdf_preview(socket, preview_text) do
+    current_preview = Phoenix.HTML.Form.input_value(socket.assigns.form, :preview_text)
+
+    if blank?(current_preview) do
+      socket.assigns.form.source
+      |> Ecto.Changeset.put_change(:preview_text, preview_text)
+      |> then(&assign_form(socket, &1))
+    else
+      socket
+    end
+  end
+
+  defp assign_pdf_preview(socket, preview_text) do
+    socket.assigns.form.source
+    |> Ecto.Changeset.put_change(:preview_text, preview_text)
+    |> then(&assign_form(socket, &1))
+  end
+
+  defp pdf_urls(sections) do
+    sections
+    |> Enum.flat_map(& &1.image_urls)
+    |> Enum.filter(&Uploads.pdf?/1)
+  end
+
+  defp has_pdf?(sections), do: pdf_urls(sections) != []
 
   defp to_section_map(section) do
     %{
@@ -391,6 +446,33 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                   />
                 </div>
               </div>
+            </.editor_card>
+
+            <.editor_card
+              title="Card preview"
+              description="Shown on listing cards when this post has no cover image. PDF text is filled in automatically when available, and you can edit it here."
+            >
+              <.input
+                field={@form[:preview_text]}
+                type="textarea"
+                label="Preview text"
+                rows="4"
+                placeholder="A short preview will be extracted when you upload a text-based PDF."
+              />
+              <button
+                :if={has_pdf?(@sections)}
+                type="button"
+                phx-click="generate_pdf_preview"
+                class="mt-3 inline-flex items-center gap-2 rounded-lg border border-blueink px-3.5 py-2 text-sm font-semibold text-blueink transition hover:bg-blueink hover:text-white"
+              >
+                <.icon name="hero-arrow-path" class="h-4 w-4" />
+                {if blank?(@form[:preview_text].value),
+                  do: "Generate preview from PDF",
+                  else: "Regenerate preview from PDF"}
+              </button>
+              <p class="mt-2 text-xs leading-5 text-zinc-500">
+                Scanned PDFs may not contain extractable text. Enter a short summary manually in that case.
+              </p>
             </.editor_card>
 
             <.editor_card

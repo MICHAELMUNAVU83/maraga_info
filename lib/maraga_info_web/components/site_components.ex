@@ -14,6 +14,57 @@ defmodule MaragaInfoWeb.SiteComponents do
     %{name: "tiktok", href: "https://www.tiktok.com/@maraga2027", label: "TikTok"}
   ]
 
+  attr :item, :map, required: true
+
+  def post_card_preview(assigns) do
+    assigns =
+      assigns
+      |> assign(:has_image?, present?(assigns.item.image_url))
+      |> assign(:preview_text, card_preview_text(assigns.item))
+
+    ~H"""
+    <.link
+      navigate={"/blog/#{@item.slug}"}
+      class="block overflow-hidden"
+      aria-label={"Read #{@item.title}"}
+    >
+      <img
+        :if={@has_image?}
+        src={@item.image_url}
+        alt={@item.title}
+        loading="lazy"
+        class="aspect-[3/2] w-full bg-white object-cover transition duration-300 group-hover:scale-[1.02]"
+        style={Post.image_position_style(@item)}
+      />
+      <div
+        :if={!@has_image?}
+        class="relative flex aspect-[3/2] w-full flex-col justify-between overflow-hidden bg-blueink px-7 py-8 text-white"
+      >
+        <div class="absolute -right-10 -top-12 h-40 w-40 rounded-full border border-white/10"></div>
+        <div class="absolute -bottom-16 -left-10 h-44 w-44 rounded-full bg-crimson/15"></div>
+        <.icon name="hero-document-text" class="relative h-8 w-8 text-crimson" />
+        <p class="relative line-clamp-4 font-serifi text-xl leading-8 md:text-2xl">
+          {@preview_text}
+        </p>
+        <span class="relative font-head text-xs font-bold uppercase tracking-[0.18em] text-white/70">
+          Read more
+        </span>
+      </div>
+    </.link>
+    """
+  end
+
+  defp card_preview_text(post) do
+    case Post.summary(post, 170) do
+      "" -> post.title || "Open this post to read the full text or attached document."
+      summary -> summary
+    end
+  end
+
+  defp present?(nil), do: false
+  defp present?(value) when is_binary(value), do: String.trim(value) != ""
+  defp present?(_value), do: false
+
   attr :base_path, :string, default: ""
 
   def site_header(assigns) do

@@ -870,15 +870,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   defp news_card(assigns) do
     ~H"""
     <article class="group flex flex-col overflow-hidden rounded-[5px] bg-white shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
-      <.link :if={@item.image_url} navigate={~p"/blog/#{@item.slug}"} class="block overflow-hidden">
-        <img
-          src={@item.image_url}
-          alt={@item.title}
-          loading="lazy"
-          class="aspect-[3/2] w-full bg-white object-cover"
-          style={Post.image_position_style(@item)}
-        />
-      </.link>
+      <.post_card_preview item={@item} />
 
       <div class="flex flex-1 flex-col p-7">
         <div class="flex items-center gap-2 text-xs">

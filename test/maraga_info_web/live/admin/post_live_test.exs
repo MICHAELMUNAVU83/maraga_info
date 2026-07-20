@@ -9,6 +9,7 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
   @create_attrs %{
     title: "some title",
     seo_description: "some seo_description",
+    preview_text: "Editable listing preview",
     status: "published",
     published_at: "2026-06-12T13:48:00Z",
     is_featured: true
@@ -94,6 +95,7 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
       post = Enum.find(MaragaInfo.Content.list_posts(), &(&1.title == "some title"))
       assert post.image_position_x == 32
       assert post.image_position_y == 18
+      assert post.preview_text == "Editable listing preview"
     end
 
     test "updates post from the listing", %{conn: conn, post: post} do
@@ -190,6 +192,27 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
       assert [_, upload_url] = Regex.run(~r/href="(\/uploads\/[^"]+\.pdf)"/, html)
 
       on_exit(fn -> File.rm(Path.join("priv/static", upload_url)) end)
+    end
+
+    test "offers preview generation for a previously saved PDF", %{conn: conn, user: user} do
+      post =
+        post_fixture(user, %{
+          category: MaragaInfo.Content.Post.blog_category(),
+          image_url: nil,
+          preview_text: nil,
+          sections: [%{image_urls: ["/uploads/existing-brief.pdf"]}]
+        })
+
+      {:ok, edit_live, _html} = live(conn, ~p"/admin/blogs/#{post}/edit")
+
+      assert has_element?(
+               edit_live,
+               ~s(button[phx-click="generate_pdf_preview"]),
+               "Generate preview from PDF"
+             )
+
+      assert render_click(edit_live, "generate_pdf_preview") =~
+               "No text could be extracted"
     end
   end
 
