@@ -74,6 +74,12 @@ defmodule MaragaInfoWeb.SiteComponents do
       |> assign_new(:news_categories, fn ->
         Content.post_categories(:posts)
       end)
+      |> assign_new(:nav_links, fn -> Content.list_visible_nav_links() end)
+
+    assigns =
+      assigns
+      |> assign(:left_nav_links, Map.get(assigns.nav_links, "left", []))
+      |> assign(:right_nav_links, Map.get(assigns.nav_links, "right", []))
 
     assigns =
       assign(
@@ -102,26 +108,7 @@ defmodule MaragaInfoWeb.SiteComponents do
             Home
           </a>
 
-          <.nav_dropdown label="About Us">
-            <.link navigate="/david-maraga" class="text-[15px] text-ink transition hover:text-crimson">
-              David Maraga
-            </.link>
-            <.link navigate="/ugm-party" class="text-[15px] text-ink transition hover:text-crimson">
-              UGM Party
-            </.link>
-          </.nav_dropdown>
-
-          <.nav_dropdown label="Our Agenda">
-            <.link
-              navigate="/campaign-pillars"
-              class="text-[15px] text-ink transition hover:text-crimson"
-            >
-              Campaign Pillars
-            </.link>
-            <a href="#" class="text-[15px] text-ink transition hover:text-crimson">
-              Manifesto
-            </a>
-          </.nav_dropdown>
+          <.nav_entry :for={nav_link <- @left_nav_links} nav_link={nav_link} />
         </nav>
 
         <a href={section_href(@base_path, "top")} class="flex shrink-0 items-center gap-2 lg:hidden">
@@ -145,65 +132,7 @@ defmodule MaragaInfoWeb.SiteComponents do
 
         <div class="flex items-center gap-6">
           <nav class="hidden items-center gap-6 lg:flex">
-            <.nav_dropdown label="Resources">
-              <.link
-                navigate="/newsletters"
-                class="text-[15px] text-ink transition hover:text-crimson"
-              >
-                Newsletters
-              </.link>
-              <.nav_submenu label="News" navigate="/news">
-                <.link
-                  :for={category <- @news_categories}
-                  navigate={news_category_href(category)}
-                  class="text-[14px] text-grayink transition hover:text-crimson"
-                >
-                  {category}
-                </.link>
-              </.nav_submenu>
-              <.link navigate="/blog" class="text-[15px] text-ink transition hover:text-crimson">
-                Blogs
-              </.link>
-              <.nav_submenu label="Media">
-                <.link
-                  navigate="/media/photos"
-                  class="text-[14px] text-grayink transition hover:text-crimson"
-                >
-                  Photos
-                </.link>
-                <.link
-                  navigate="/media/videos"
-                  class="text-[14px] text-grayink transition hover:text-crimson"
-                >
-                  Videos
-                </.link>
-              </.nav_submenu>
-            </.nav_dropdown>
-            <.nav_dropdown label="Press">
-              <.link
-                navigate="/press-releases"
-                class="text-[15px] text-ink transition hover:text-crimson"
-              >
-                Press Releases
-              </.link>
-              <a href="/media-invitations" class="text-[15px] text-ink transition hover:text-crimson">
-                Media Invitations
-              </a>
-            </.nav_dropdown>
-            <.link
-              navigate="/events"
-              class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
-            >
-              Events
-            </.link>
-            <a
-              href="https://davidmaraga.shop"
-              target="_blank"
-              rel="noopener"
-              class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
-            >
-              Shop
-            </a>
+            <.nav_entry :for={nav_link <- @right_nav_links} nav_link={nav_link} />
             <button
               type="button"
               phx-click={open_search_modal()}
@@ -267,148 +196,9 @@ defmodule MaragaInfoWeb.SiteComponents do
           Home
         </a>
 
-        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
-          About Us
-        </p>
-        <.link
-          navigate="/david-maraga"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-        >
-          David Maraga
-        </.link>
-        <.link
-          navigate="/ugm-party"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-        >
-          UGM Party
-        </.link>
+        <.mobile_nav_entry :for={nav_link <- @left_nav_links} nav_link={nav_link} />
+        <.mobile_nav_entry :for={nav_link <- @right_nav_links} nav_link={nav_link} />
 
-        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
-          Our Agenda
-        </p>
-        <.link
-          navigate="/campaign-pillars"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-        >
-          Campaign Pillars
-        </.link>
-        <a href="#" class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson">
-          Manifesto
-        </a>
-
-        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
-          Resources
-        </p>
-        <.link
-          navigate="/newsletters"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-        >
-          Newsletters
-        </.link>
-        <details class="group pl-3">
-          <summary class="flex w-full cursor-pointer list-none items-center gap-2 py-1 text-[14px] text-white/85 transition hover:text-crimson">
-            News
-            <svg
-              class="h-4 w-4 transition group-open:rotate-180"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </summary>
-          <div class="grid gap-1 pb-1 pl-3 pt-1">
-            <.link
-              navigate="/news"
-              class="py-1 text-[13px] text-white/75 transition hover:text-crimson"
-            >
-              All News
-            </.link>
-            <p class="pt-1 font-head text-[12px] font-semibold uppercase tracking-[0.16em] text-white/55">
-              Categories
-            </p>
-            <.link
-              :for={category <- @news_categories}
-              navigate={news_category_href(category)}
-              class="py-1 text-[13px] text-white/65 transition hover:text-crimson"
-            >
-              {category}
-            </.link>
-          </div>
-        </details>
-        <.link
-          navigate="/blog"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-        >
-          Blogs
-        </.link>
-        <details class="group pl-3">
-          <summary class="flex w-full cursor-pointer list-none items-center gap-2 py-1 text-[14px] text-white/85 transition hover:text-crimson">
-            Media
-            <svg
-              class="h-4 w-4 transition group-open:rotate-180"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </summary>
-          <div class="grid gap-1 pb-1 pl-3 pt-1">
-            <.link
-              navigate="/media/photos"
-              class="py-1 text-[13px] text-white/75 transition hover:text-crimson"
-            >
-              Photos
-            </.link>
-            <.link
-              navigate="/media/videos"
-              class="py-1 text-[13px] text-white/75 transition hover:text-crimson"
-            >
-              Videos
-            </.link>
-          </div>
-        </details>
-
-        <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
-          Press
-        </p>
-        <.link
-          navigate="/press-releases"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-        >
-          Press Releases
-        </.link>
-        <a
-          href="/media-invitations"
-          class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-        >
-          Media Invitations
-        </a>
-
-        <.link
-          navigate="/events"
-          class="py-1 pt-3 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
-        >
-          Events
-        </.link>
-
-        <a
-          href="https://davidmaraga.shop"
-          target="_blank"
-          rel="noopener"
-          class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
-        >
-          Shop
-        </a>
         <button
           type="button"
           onclick="document.getElementById('nav-toggle').checked = false"
@@ -501,6 +291,85 @@ defmodule MaragaInfoWeb.SiteComponents do
     """
   end
 
+  attr :nav_link, :map, required: true
+
+  defp nav_entry(%{nav_link: %{children: [_ | _]}} = assigns) do
+    ~H"""
+    <.nav_dropdown label={@nav_link.label}>
+      <.nav_link_href
+        :for={child <- @nav_link.children}
+        href={child.href}
+        class="text-[15px] text-ink transition hover:text-crimson"
+      >
+        {child.label}
+      </.nav_link_href>
+    </.nav_dropdown>
+    """
+  end
+
+  defp nav_entry(assigns) do
+    ~H"""
+    <.nav_link_href
+      href={@nav_link.href}
+      class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+    >
+      {@nav_link.label}
+    </.nav_link_href>
+    """
+  end
+
+  attr :nav_link, :map, required: true
+
+  defp mobile_nav_entry(%{nav_link: %{children: [_ | _]}} = assigns) do
+    ~H"""
+    <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
+      {@nav_link.label}
+    </p>
+    <.nav_link_href
+      :for={child <- @nav_link.children}
+      href={child.href}
+      class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
+    >
+      {child.label}
+    </.nav_link_href>
+    """
+  end
+
+  defp mobile_nav_entry(assigns) do
+    ~H"""
+    <.nav_link_href
+      href={@nav_link.href}
+      class="py-1 pt-3 font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+    >
+      {@nav_link.label}
+    </.nav_link_href>
+    """
+  end
+
+  attr :href, :string, default: nil
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  defp nav_link_href(%{href: href} = assigns) when is_binary(href) do
+    if external_href?(href) do
+      ~H"""
+      <a href={@href} target="_blank" rel="noopener" class={@class}>{render_slot(@inner_block)}</a>
+      """
+    else
+      ~H"""
+      <.link navigate={@href} class={@class}>{render_slot(@inner_block)}</.link>
+      """
+    end
+  end
+
+  defp nav_link_href(assigns) do
+    ~H"""
+    <span class={@class}>{render_slot(@inner_block)}</span>
+    """
+  end
+
+  defp external_href?(href), do: String.starts_with?(href, "http://") or String.starts_with?(href, "https://")
+
   attr :label, :string, required: true
   slot :inner_block, required: true
 
@@ -525,45 +394,8 @@ defmodule MaragaInfoWeb.SiteComponents do
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
-      <div class="absolute left-0 top-full z-50 hidden pt-3 group-hover:block group-focus-within:block">
+      <div class="absolute left-0 top-full z-[60] hidden pt-3 group-hover:block group-focus-within:block">
         <div class="grid min-w-[220px] grid-cols-1 gap-y-2 rounded-md bg-white p-6 shadow-2xl">
-          {render_slot(@inner_block)}
-        </div>
-      </div>
-    </div>
-    """
-  end
-
-  attr :label, :string, required: true
-  attr :navigate, :string, default: nil
-  slot :inner_block, required: true
-
-  defp nav_submenu(assigns) do
-    ~H"""
-    <div class="relative">
-      <div class="group/nav-sub rounded-md transition hover:bg-slate-50 focus-within:bg-slate-50">
-        <div class="flex items-center justify-between gap-3 rounded-md py-1.5">
-          <%= if @navigate do %>
-            <.link navigate={@navigate} class="text-[15px] text-ink transition hover:text-crimson">
-              {@label}
-            </.link>
-          <% else %>
-            <span class="text-[15px] text-ink">{@label}</span>
-          <% end %>
-          <svg
-            class="h-4 w-4 text-grayink transition group-hover/nav-sub:text-crimson group-focus-within/nav-sub:text-crimson"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <polyline points="9 6 15 12 9 18" />
-          </svg>
-        </div>
-        <div class="absolute left-full top-0 z-[60] ml-2 hidden min-w-[190px] grid-cols-1 gap-y-2 rounded-md bg-white p-4 shadow-2xl group-hover/nav-sub:grid group-focus-within/nav-sub:grid">
           {render_slot(@inner_block)}
         </div>
       </div>

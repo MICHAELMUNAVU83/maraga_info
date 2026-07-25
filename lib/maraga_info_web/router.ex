@@ -145,6 +145,7 @@ defmodule MaragaInfoWeb.Router do
       live "/media/photos", MediaLive.Index, :index
       live "/media/videos", MediaLive.Index, :index
       live "/media", MediaLive.Index, :index
+      live "/navbar", NavLinkLive.Index, :index
       live "/pages", SectionLive, :pages
       live "/pages/home", HomePageLive, :index
       live "/pages/about", SectionLive, :page_about

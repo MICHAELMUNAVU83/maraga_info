@@ -9,6 +9,7 @@ defmodule MaragaInfo.Content do
   alias MaragaInfo.Accounts.User
   alias MaragaInfo.Content.Event
   alias MaragaInfo.Content.MediaItem
+  alias MaragaInfo.Content.NavLink
   alias MaragaInfo.Content.Post
   alias MaragaInfo.Content.SiteSetting
 
@@ -503,6 +504,112 @@ defmodule MaragaInfo.Content do
           |> SiteSetting.changeset(%{value: value || ""})
           |> Repo.update!()
       end
+    end)
+
+    :ok
+  end
+
+  ## Nav links
+
+  @doc """
+  Returns the full nav link tree (top-level entries with `:children` preloaded,
+  ordered by `position`) used to manage the admin nav editor.
+  """
+  def list_nav_links do
+    NavLink
+    |> where([nav_link], is_nil(nav_link.parent_id))
+    |> order_by([nav_link], asc: nav_link.position)
+    |> preload(children: ^from(c in NavLink, order_by: [asc: c.position]))
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns the nav link tree for the public navbar, limited to visible entries
+  and grouped by `placement` ("left"/"right").
+  """
+  def list_visible_nav_links do
+    list_nav_links()
+    |> Enum.filter(& &1.is_visible)
+    |> Enum.map(&filter_visible_children/1)
+    |> Enum.group_by(& &1.placement)
+  end
+
+  defp filter_visible_children(%NavLink{} = nav_link) do
+    %{nav_link | children: Enum.filter(nav_link.children, & &1.is_visible)}
+  end
+
+  def get_nav_link!(id), do: Repo.get!(NavLink, id)
+
+  def create_nav_link(attrs \\ %{}) do
+    %NavLink{}
+    |> NavLink.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_nav_link(%NavLink{} = nav_link, attrs) do
+    nav_link
+    |> NavLink.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_nav_link(%NavLink{} = nav_link) do
+    Repo.delete(nav_link)
+  end
+
+  def change_nav_link(%NavLink{} = nav_link, attrs \\ %{}) do
+    NavLink.changeset(nav_link, attrs)
+  end
+
+  @doc """
+  Persists a new relative order for a set of nav links (siblings under the
+  same parent). `ids` is the list of nav link ids in their new order.
+  """
+  def reorder_nav_links(ids) do
+    Ecto.Multi.new()
+    |> then(fn multi ->
+      ids
+      |> Enum.with_index()
+      |> Enum.reduce(multi, fn {id, index}, multi ->
+        Ecto.Multi.update_all(
+          multi,
+          {:nav_link, id},
+          from(nav_link in NavLink, where: nav_link.id == ^id),
+          set: [position: index]
+        )
+      end)
+    end)
+    |> Repo.transaction()
+  end
+
+  @doc """
+  Deletes all nav links and recreates the original hardcoded navbar
+  (`NavLink.defaults/0`). Used by the admin "Reset to defaults" action.
+  """
+  def reset_nav_links_to_defaults do
+    Repo.transaction(fn ->
+      Repo.delete_all(NavLink)
+
+      Enum.with_index(NavLink.defaults(), fn {label, href, placement, children}, position ->
+        %{id: parent_id} =
+          Repo.insert!(NavLink.changeset(%NavLink{}, %{
+            label: label,
+            href: href,
+            placement: placement,
+            position: position
+          }))
+
+        Enum.with_index(children, fn {child_label, child_href}, child_position ->
+          Repo.insert!(
+            NavLink.changeset(%NavLink{}, %{
+              label: child_label,
+              href: child_href,
+              placement: placement,
+              position: child_position,
+              parent_id: parent_id
+            })
+          )
+        end)
+      end)
     end)
 
     :ok

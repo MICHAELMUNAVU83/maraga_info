@@ -269,6 +269,7 @@ defmodule MaragaInfoWeb.AdminComponents do
       %{label: "Videos", href: ~p"/admin/media/videos", icon: "hero-video-camera"},
       %{type: :heading, label: "Pages"},
       %{label: "Home", href: ~p"/admin/pages/home", icon: "hero-home-modern"},
+      %{label: "Navbar", href: ~p"/admin/navbar", icon: "hero-bars-3"},
       %{label: "About Us", href: ~p"/admin/pages/about", icon: "hero-user-circle"},
       %{label: "Our Agenda", href: ~p"/admin/pages/agenda", icon: "hero-clipboard-document-list"},
       %{label: "Resources", href: ~p"/admin/pages/resources", icon: "hero-book-open"},
