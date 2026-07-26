@@ -126,6 +126,18 @@ body {
   animation: hero-slide-right 950ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  opacity: 0;
+  transition: opacity 1200ms ease;
+}
+
+.hero-slide.is-active {
+  opacity: 1;
+}
+
 .reveal-on-scroll {
   opacity: 0;
   transform: translateY(36px) scale(0.98);
@@ -208,7 +220,8 @@ body {
   .video-marquee,
   .reveal-on-scroll,
   .social-dance,
-  .social-dance svg {
+  .social-dance svg,
+  .hero-slide {
     animation: none !important;
     transition: none !important;
     transform: none !important;

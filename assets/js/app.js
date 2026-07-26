@@ -174,6 +174,32 @@ const Hooks = {
     },
   },
 
+  HeroSlider: {
+    mounted() {
+      this.slides = Array.from(this.el.querySelectorAll(".hero-slide"));
+      this.activeIndex = this.slides.findIndex((slide) =>
+        slide.classList.contains("is-active"),
+      );
+      if (this.activeIndex < 0) this.activeIndex = 0;
+
+      if (prefersReducedMotion.matches || this.slides.length < 2) return;
+
+      const interval = parseInt(this.el.dataset.interval, 10) || 6000;
+
+      this.timer = setInterval(() => {
+        this.slides[this.activeIndex].classList.remove("is-active");
+        this.activeIndex = (this.activeIndex + 1) % this.slides.length;
+        this.slides[this.activeIndex].classList.add("is-active");
+      }, interval);
+    },
+
+    destroyed() {
+      if (this.timer) {
+        clearInterval(this.timer);
+      }
+    },
+  },
+
   SiteSearchModal: {
     mounted() {
       this.input = this.el.querySelector("[data-search-input]");

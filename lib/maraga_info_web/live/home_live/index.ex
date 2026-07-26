@@ -226,6 +226,34 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     end
   end
 
+  @default_hero_image "/images/IMG_2075.jpg"
+
+  # Hero images are stored as a JSON-encoded list under "home.hero.bg_images".
+  # Falls back to the legacy single "home.hero.bg_image" setting, then to the
+  # default photo, so older content keeps working after this migration.
+  defp hero_images(content) do
+    case Map.get(content, "home.hero.bg_images") do
+      json when is_binary(json) and json != "" ->
+        case Jason.decode(json) do
+          {:ok, [_ | _] = images} -> images
+          _ -> [get_content(content, "home.hero.bg_image", @default_hero_image)]
+        end
+
+      _ ->
+        [get_content(content, "home.hero.bg_image", @default_hero_image)]
+    end
+  end
+
+  defp hero_interval_ms(content) do
+    seconds =
+      case Integer.parse(get_content(content, "home.hero.interval_seconds", "6")) do
+        {value, _} when value > 0 -> value
+        _ -> 6
+      end
+
+    seconds * 1000
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -290,9 +318,12 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   attr :content, :map, default: %{}
 
   defp hero_section(assigns) do
+    bg_images = hero_images(assigns.content)
+
     assigns =
       assign(assigns,
-        bg_image: get_content(assigns.content, "home.hero.bg_image", "/images/IMG_2075.jpg"),
+        bg_images: bg_images,
+        hero_interval_ms: hero_interval_ms(assigns.content),
         title: get_content(assigns.content, "home.hero.title", "David Kenani Maraga -  2027"),
         tagline:
           get_content(assigns.content, "home.hero.tagline", "Reset. Restore. Rebuild Kenya."),
@@ -309,11 +340,31 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       )
 
     ~H"""
-    <section
-      id="hero"
-      class="relative overflow-hidden bg-cover"
-      style={"background-position: center 30%; background-image: url('#{@bg_image}');"}
-    >
+    <section id="hero" class="relative overflow-hidden">
+      <div
+        :if={length(@bg_images) > 1}
+        id="hero-slider"
+        phx-hook="HeroSlider"
+        data-interval={@hero_interval_ms}
+        aria-hidden="true"
+        class="absolute inset-0"
+      >
+        <div
+          :for={{image, index} <- Enum.with_index(@bg_images)}
+          class={["hero-slide", index == 0 && "is-active"]}
+          style={"background-position: center 30%; background-image: url('#{image}');"}
+        >
+        </div>
+      </div>
+
+      <div
+        :if={length(@bg_images) <= 1}
+        aria-hidden="true"
+        class="absolute inset-0 bg-cover"
+        style={"background-position: center 30%; background-image: url('#{List.first(@bg_images)}');"}
+      >
+      </div>
+
       <div aria-hidden="true" class="absolute inset-0">
         <div class="hero-color-slide hero-color-slide-left"></div>
         <div class="hero-color-slide hero-color-slide-right"></div>
