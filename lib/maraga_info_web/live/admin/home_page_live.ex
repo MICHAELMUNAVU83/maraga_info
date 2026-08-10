@@ -69,8 +69,6 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
     {"stats_stat4_label", "home.stats.stat4_label", :stats},
     {"stats_stat4_description", "home.stats.stat4_description", :stats},
     # Campaign videos
-    {"agenda_title_prefix", "home.agenda.title_prefix", :agenda},
-    {"agenda_title_accent", "home.agenda.title_accent", :agenda},
     {"agenda_description", "home.agenda.description", :agenda}
   ]
 
@@ -575,28 +573,13 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
         </.admin_panel>
 
         <%!-- Campaign Videos --%>
-        <.admin_panel
-          title="Campaign Videos"
-          subtitle="Section heading and description for the video carousel."
-        >
+        <.admin_panel title="Campaign Videos" subtitle="Description for the video carousel.">
           <.form for={@form} id="home-form-agenda" phx-submit="save" class="space-y-4">
             <input type="hidden" name="content[_section]" value="agenda" />
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <.input
-                field={@form[:agenda_title_prefix]}
-                label="Section Title — prefix"
-                placeholder="Watch the"
-              />
-              <.input
-                field={@form[:agenda_title_accent]}
-                label="Section Title — accent word"
-                placeholder="Campaign"
-              />
-            </div>
             <.input
               field={@form[:agenda_description]}
               label="Description"
-              placeholder="Catch the latest moments from the trail..."
+              placeholder="Catch the latest from the trail"
             />
             <.save_button />
           </.form>

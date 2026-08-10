@@ -27,7 +27,7 @@ landing_settings = %{
   "home.news.title_accent" => "News",
   "home.news.description" =>
     "Get the latest updates on the campaign trail, policy positions, and more.",
-  "home.newsletter.bg_image" => "/images/maraga-town-old.jpg",
+  "home.newsletter.bg_image" => "/images/maraga-town.jpg",
   "home.newsletter.eyebrow" => "Stay in the loop",
   "home.newsletter.heading" => "Subscribe to the newsletter",
   "home.newsletter.description" =>

@@ -2,7 +2,7 @@
 
 ## Header
 
-- [ ] Add UGM party logo at top of landing page, next to/near "Maraga 27" (logo will be sent)
+- [x] Add UGM party logo at top of landing page, next to/near "Maraga 27" (logo will be sent)
 - [x] Remove social media icons from the header
 - [x] Move Home button to the extreme left
 - [x] Remove "About Us"; add "David Maraga Profile" and "UGM Party" as standalone header items
@@ -22,18 +22,18 @@
 
 ## Press — Media
 
-- [ ] Retitle section to "Maraga in the Media" (reduce text size slightly)
+- [x] Retitle section to "Maraga in the Media" (reduce text size slightly)
 - [ ] Add a way to embed and upload videos of Maraga speaking in the media
-- [ ] Remove the "David Maraga Kenya 2027" text
+- [x] Remove the "David Maraga Kenya 2027" text
 - [ ] Change the Media photo
 
 ## Events
 
-- [ ] Make individual events clickable on the calendar and on the event poster itself
-- [ ] Add a share button (share to socials or copy link)
+- [x] Make individual events clickable on the calendar and on the event poster itself
+- [x] Add a share button (share to socials or copy link)
 - [ ] Change the Events background picture
-- [ ] Rename "Events Calendar" to "Campaign Calendar"
-- [ ] Remove the "David Maraga Kenya 2027" text above it
+- [x] Rename "Events Calendar" to "Campaign Calendar"
+- [x] Remove the "David Maraga Kenya 2027" text above it
 
 ## Shop
 
@@ -41,7 +41,7 @@
 
 ## Search
 
-- [ ] Fix search bar — it is not finding articles by keyword
+- [x] Fix search bar — it is not finding articles by keyword
 
 ## Landing Page
 
@@ -50,31 +50,31 @@
 
 ## Donate Section
 
-- [ ] Change "Donate Today" to "Support the Campaign" and move it to fit under the right quadrant (everything fits inside the yellow quadrant box)
-- [ ] Make each amount clickable (50, 100, etc.) leading to the donations form
+- [x] Change "Donate Today" to "Support the Campaign" and move it to fit under the right quadrant (everything fits inside the yellow quadrant box)
+- [x] Make each amount clickable (50, 100, etc.) leading to the donations form
 
 ## Bio Section
 
-- [ ] Remove the Maraga bio with "A Man of Integrity" — that text moves next to the Donate section on the right side
-- [ ] Remove the Documentary NTV video section entirely (it moves under "Maraga in the Media")
+- [x] Remove the Maraga bio with "A Man of Integrity" — that text moves next to the Donate section on the right side
+- [x] Remove the Documentary NTV video section entirely (it moves under "Maraga in the Media")
 
 ## Newsletter Subscribe Section
 
-- [ ] Build a subscribe form
-- [ ] Change the newsletter photo
+- [x] Build a subscribe form
+- [x] Change the newsletter photo
 
 ## Stats Banner
 
-- [ ] Remove the entire stats banner section
+- [x] Remove the entire stats banner section
 
 ## Watch the Campaign
 
-- [ ] Keep only "Catch the latest from the trail" — remove the rest of the text
-- [ ] Remove the words "Let's Connect" from the social media icons
+- [x] Keep only "Catch the latest from the trail" — remove the rest of the text
+- [x] Remove the words "Let's Connect" from the social media icons
 
 ## Footer
 
-- [ ] Remove all text except:
-  - [ ] Maraga27 logo
-  - [ ] Campaign HQ info — separate the email from the phone number
-  - [ ] Home, About, News, Agenda, Photos, Press, Donate (all on one line)
+- [x] Remove all text except:
+  - [x] Maraga27 logo
+  - [x] Campaign HQ info — separate the email from the phone number
+  - [x] Home, About, News, Agenda, Photos, Press, Donate (all on one line)

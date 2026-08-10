@@ -417,6 +417,17 @@ defmodule MaragaInfo.Content do
 
   def get_event!(id), do: Repo.get!(Event, id)
 
+  @doc """
+  Fetches a published event for the public site. Returns nil when the id is
+  unknown, unpublished, or not an integer.
+  """
+  def get_published_event(id) do
+    case Integer.parse(to_string(id)) do
+      {int_id, ""} -> Repo.get_by(Event, id: int_id, is_published: true)
+      _ -> nil
+    end
+  end
+
   def create_event(attrs \\ %{}) do
     %Event{}
     |> Event.changeset(attrs)

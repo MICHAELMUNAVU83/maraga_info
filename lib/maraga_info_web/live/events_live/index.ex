@@ -10,7 +10,7 @@ defmodule MaragaInfoWeb.EventsLive.Index do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:page_title, "Events Calendar | #{Seo.site_name()}")
+     |> assign(:page_title, "Campaign Calendar | #{Seo.site_name()}")
      |> assign(
        :page_description,
        "Browse upcoming rallies, town halls and campaign events on the David Maraga 2027 calendar."
@@ -79,9 +79,8 @@ defmodule MaragaInfoWeb.EventsLive.Index do
       >
         <div class="absolute inset-0 bg-blueink/70"></div>
         <div class="relative z-10 mx-auto flex min-h-[42vh] w-full max-w-container flex-col items-center justify-center px-4 py-24 text-center lg:px-6">
-          <h3 class="font-serifi text-2xl italic text-white">David Maraga · Kenya 2027</h3>
-          <h1 class="mt-3 font-head text-4xl font-semibold uppercase tracking-[3px] text-white md:text-6xl lg:text-7xl">
-            Events Calendar
+          <h1 class="font-head text-4xl font-semibold uppercase tracking-[3px] text-white md:text-6xl lg:text-7xl">
+            Campaign Calendar
           </h1>
         </div>
       </section>
@@ -176,13 +175,14 @@ defmodule MaragaInfoWeb.EventsLive.Index do
       </div>
 
       <div class="mt-1 space-y-1">
-        <div
+        <.link
           :for={event <- @events}
-          class="truncate rounded-[3px] bg-blueink/10 px-1.5 py-0.5 text-[11px] font-medium leading-tight text-blueink"
+          navigate={~p"/events/#{event.id}"}
+          class="block truncate rounded-[3px] bg-blueink/10 px-1.5 py-0.5 text-[11px] font-medium leading-tight text-blueink transition hover:bg-crimson hover:text-white"
           title={event.title}
         >
           {event.title}
-        </div>
+        </.link>
       </div>
     </div>
     """
@@ -192,14 +192,20 @@ defmodule MaragaInfoWeb.EventsLive.Index do
 
   defp upcoming_card(assigns) do
     ~H"""
-    <article class="overflow-hidden rounded-[8px] bg-white shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
-      <img
+    <article class="group overflow-hidden rounded-[8px] bg-white shadow-[0_15px_40px_rgba(15,30,80,0.08)]">
+      <.link
         :if={present?(@event.image_url)}
-        src={@event.image_url}
-        alt={@event.title}
-        class="h-40 w-full object-cover"
-        loading="lazy"
-      />
+        navigate={~p"/events/#{@event.id}"}
+        class="block overflow-hidden"
+        aria-label={"View #{@event.title}"}
+      >
+        <img
+          src={@event.image_url}
+          alt={@event.title}
+          class="h-40 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+          loading="lazy"
+        />
+      </.link>
       <div class="flex items-stretch gap-4 p-4">
         <div class="flex shrink-0 flex-col items-center justify-center rounded-[5px] bg-blueink px-4 py-3 text-white">
           <div class="font-head text-3xl leading-none">
@@ -211,9 +217,11 @@ defmodule MaragaInfoWeb.EventsLive.Index do
         </div>
 
         <div class="min-w-0 flex-1">
-          <h4 class="font-head text-lg uppercase tracking-[.5px] text-blueink">
-            {@event.title}
-          </h4>
+          <.link navigate={~p"/events/#{@event.id}"}>
+            <h4 class="font-head text-lg uppercase tracking-[.5px] text-blueink transition hover:text-crimson">
+              {@event.title}
+            </h4>
+          </.link>
           <p class="mt-1 flex items-center gap-1.5 text-sm text-grayink">
             <.icon name="hero-clock-mini" class="h-4 w-4 text-crimson" />
             {format_when(@event)}

@@ -3,6 +3,7 @@ defmodule MaragaInfoWeb.SiteComponents do
 
   alias MaragaInfo.Content
   alias MaragaInfo.Content.Post
+  alias MaragaInfoWeb.Seo
   alias Phoenix.LiveView.JS
   import MaragaInfoWeb.CoreComponents
 
@@ -93,10 +94,10 @@ defmodule MaragaInfoWeb.SiteComponents do
       <input id="nav-toggle" type="checkbox" class="peer hidden" />
 
       <div class="relative mx-auto flex w-full max-w-container items-center justify-between gap-4 px-4 py-3 lg:px-6">
-        <nav class="hidden items-center gap-6 lg:flex">
+        <nav class="hidden min-w-0 flex-1 items-center gap-5 lg:flex xl:gap-6">
           <a
             href={section_href(@base_path, "top")}
-            class="font-head text-[15px] font-medium uppercase tracking-wide text-crimson"
+            class="whitespace-nowrap font-head text-[15px] font-medium uppercase tracking-wide text-crimson"
           >
             Home
           </a>
@@ -110,21 +111,35 @@ defmodule MaragaInfoWeb.SiteComponents do
             alt="David Maraga logo"
             class="h-12 w-auto shrink-0"
           />
+          <img src="/images/ugm-logo.png" alt="UGM party logo" class="h-10 w-auto shrink-0" />
         </a>
 
         <a
           href={section_href(@base_path, "top")}
-          class="absolute left-1/2 top-0 z-50 hidden -translate-x-1/2 flex-col items-center rounded-b-md bg-crimson px-8 pb-4 pt-2.5 shadow-lg lg:flex"
+          class="absolute left-1/2 top-0 z-50 hidden -translate-x-1/2 flex-row items-center gap-2.5 rounded-b-md bg-crimson px-5 pb-3 pt-2 shadow-lg lg:flex"
         >
+          <img src="/images/logo.png" alt="Maraga '27" class="h-11 w-auto shrink-0" />
+          <span aria-hidden="true" class="h-8 w-px bg-blueink/25"></span>
           <img
-            src="/images/logo.png"
-            alt="Politician 128 logo"
-            class="hidden h-12 w-auto shrink-0 lg:block"
+            src="/images/ugm-logo.png"
+            alt="United Green Movement Party logo"
+            class="h-9 w-auto shrink-0 rounded-[3px] bg-white p-0.5"
           />
         </a>
 
-        <div class="flex items-center gap-6">
-          <nav class="hidden items-center gap-6 lg:flex">
+        <%!-- Reserves the centre badge's width so the nav links either side can
+        never slide underneath it. Mirrors the badge markup exactly. --%>
+        <div
+          aria-hidden="true"
+          class="pointer-events-none hidden shrink-0 flex-row items-center gap-2.5 px-5 opacity-0 lg:flex"
+        >
+          <img src="/images/logo.png" alt="" class="h-11 w-auto shrink-0" />
+          <span class="h-8 w-px"></span>
+          <img src="/images/ugm-logo.png" alt="" class="h-9 w-auto shrink-0 p-0.5" />
+        </div>
+
+        <div class="flex min-w-0 flex-1 items-center justify-end gap-4 xl:gap-6">
+          <nav class="hidden items-center gap-5 lg:flex xl:gap-6">
             <.nav_entry :for={nav_link <- @right_nav_links} nav_link={nav_link} />
             <button
               type="button"
@@ -304,7 +319,7 @@ defmodule MaragaInfoWeb.SiteComponents do
     ~H"""
     <.nav_link_href
       href={@nav_link.href}
-      class="font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+      class="whitespace-nowrap font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
     >
       {@nav_link.label}
     </.nav_link_href>
@@ -368,10 +383,10 @@ defmodule MaragaInfoWeb.SiteComponents do
 
   defp nav_dropdown(assigns) do
     ~H"""
-    <div class="group relative">
+    <div class="group relative shrink-0">
       <button
         type="button"
-        class="flex items-center gap-1 font-head text-[15px] font-medium uppercase tracking-wide text-white transition group-hover:text-crimson"
+        class="flex items-center gap-1 whitespace-nowrap font-head text-[15px] font-medium uppercase tracking-wide text-white transition group-hover:text-crimson"
       >
         {@label}
         <svg
@@ -396,6 +411,129 @@ defmodule MaragaInfoWeb.SiteComponents do
     """
   end
 
+  attr :url, :string, required: true
+  attr :title, :string, required: true
+  attr :label, :string, default: "Share this story"
+  attr :id, :string, default: "copy-link-button"
+
+  @doc """
+  Social share links plus a copy-to-clipboard button for any shareable page.
+  """
+  def share_bar(assigns) do
+    %{url: url, title: title} = assigns
+    url = share_value(url, Seo.site_url())
+    title = share_value(title, Seo.site_name())
+    encoded_url = URI.encode_www_form(url)
+    encoded_title = URI.encode_www_form(title)
+
+    assigns =
+      assign(assigns,
+        url: url,
+        facebook_url: "https://www.facebook.com/sharer/sharer.php?u=#{encoded_url}",
+        x_url: "https://twitter.com/intent/tweet?url=#{encoded_url}&text=#{encoded_title}",
+        whatsapp_url: "https://api.whatsapp.com/send?text=#{encoded_title}%20#{encoded_url}",
+        linkedin_url: "https://www.linkedin.com/sharing/share-offsite/?url=#{encoded_url}",
+        telegram_url: "https://t.me/share/url?url=#{encoded_url}&text=#{encoded_title}",
+        email_url: "mailto:?subject=#{encoded_title}&body=#{encoded_url}"
+      )
+
+    ~H"""
+    <div class="border-t border-[#e8ebf1] pt-10">
+      <span class="font-head text-sm uppercase tracking-[0.18em] text-grayink">
+        {@label}
+      </span>
+
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <a
+          href={@facebook_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Share on Facebook"
+          class="flex h-11 w-11 items-center justify-center rounded-full border border-[#dfe4ec] text-grayink transition hover:border-blueink hover:bg-blueink hover:text-white"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.9 3.78-3.9 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.88h2.78l-.44 2.9h-2.34V22c4.78-.79 8.43-4.94 8.43-9.94Z" />
+          </svg>
+        </a>
+
+        <a
+          href={@x_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Share on X"
+          class="flex h-11 w-11 items-center justify-center rounded-full border border-[#dfe4ec] text-grayink transition hover:border-blueink hover:bg-blueink hover:text-white"
+        >
+          <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644Z" />
+          </svg>
+        </a>
+
+        <a
+          href={@whatsapp_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Share on WhatsApp"
+          class="flex h-11 w-11 items-center justify-center rounded-full border border-[#dfe4ec] text-grayink transition hover:border-blueink hover:bg-blueink hover:text-white"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51-.17-.01-.37-.01-.57-.01-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.22 3.08.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35ZM12.04 21.5h-.01a9.4 9.4 0 0 1-4.79-1.31l-.34-.2-3.56.93.95-3.47-.22-.36a9.38 9.38 0 0 1-1.44-5.01c0-5.18 4.22-9.4 9.41-9.4 2.51 0 4.87.98 6.64 2.76a9.34 9.34 0 0 1 2.75 6.65c0 5.18-4.22 9.41-9.4 9.41Zm8-17.41A11.32 11.32 0 0 0 12.04.75C5.8.75.72 5.83.72 12.07c0 1.99.52 3.94 1.51 5.66L.63 23.25l5.65-1.48a11.3 11.3 0 0 0 5.76 1.47h.01c6.23 0 11.31-5.08 11.32-11.32a11.25 11.25 0 0 0-3.32-8.01Z" />
+          </svg>
+        </a>
+
+        <a
+          href={@linkedin_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Share on LinkedIn"
+          class="flex h-11 w-11 items-center justify-center rounded-full border border-[#dfe4ec] text-grayink transition hover:border-blueink hover:bg-blueink hover:text-white"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14Zm1.78 13.02H3.55V9h3.57v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z" />
+          </svg>
+        </a>
+
+        <a
+          href={@telegram_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Share on Telegram"
+          class="flex h-11 w-11 items-center justify-center rounded-full border border-[#dfe4ec] text-grayink transition hover:border-blueink hover:bg-blueink hover:text-white"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M23.91 3.79 20.3 20.84c-.25 1.21-.98 1.5-2 .94l-5.5-4.07-2.66 2.57c-.3.3-.55.56-1.1.56l.38-5.56 10.07-9.1c.44-.39-.1-.61-.68-.22L6.27 13.5 .89 11.8c-1.17-.37-1.2-1.17.24-1.73L22.4 1.85c.97-.36 1.82.22 1.5 1.94Z" />
+          </svg>
+        </a>
+
+        <a
+          href={@email_url}
+          aria-label="Share via email"
+          class="flex h-11 w-11 items-center justify-center rounded-full border border-[#dfe4ec] text-grayink transition hover:border-blueink hover:bg-blueink hover:text-white"
+        >
+          <.icon name="hero-envelope" class="h-5 w-5" />
+        </a>
+
+        <button
+          type="button"
+          id={@id}
+          phx-hook="CopyLink"
+          data-url={@url}
+          aria-label="Copy link"
+          class="flex h-11 items-center gap-2 rounded-full border border-[#dfe4ec] px-4 text-sm font-semibold uppercase tracking-[0.14em] text-grayink transition hover:border-blueink hover:bg-blueink hover:text-white"
+        >
+          <.icon name="hero-link" class="h-5 w-5" />
+          <span data-copy-label>Copy link</span>
+        </button>
+      </div>
+    </div>
+    """
+  end
+
+  defp share_value(value, fallback) when is_binary(value) do
+    if String.trim(value) == "", do: fallback, else: value
+  end
+
+  defp share_value(_, fallback), do: fallback
+
   attr :id, :string, default: nil
   attr :base_path, :string, default: ""
 
@@ -407,8 +545,7 @@ defmodule MaragaInfoWeb.SiteComponents do
     <section class="relative overflow-hidden bg-gradient-to-r from-crimson via-crimson to-rose-600">
       <div class="mx-auto flex max-w-container flex-col items-center gap-6 px-4 py-12 text-center lg:px-6 lg:py-14">
         <div>
-          <p class="font-serifi text-xl italic text-white/90 sm:text-2xl">Let's Connect</p>
-          <h2 class="mt-2 font-head text-3xl font-bold uppercase tracking-[0.06em] text-white sm:text-4xl md:text-5xl">
+          <h2 class="font-head text-3xl font-bold uppercase tracking-[0.06em] text-white sm:text-4xl md:text-5xl">
             Join the Conversation
           </h2>
         </div>
@@ -425,85 +562,57 @@ defmodule MaragaInfoWeb.SiteComponents do
 
     <footer id={@id} class="border-t border-white/10 bg-blueink text-white">
       <div class="mx-auto max-w-container px-4 py-8 lg:px-6 lg:py-10">
-        <div class="grid gap-8 border-b border-white/10 pb-6 text-center lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:text-left">
-          <div class="flex flex-col items-center gap-4 lg:items-start">
-            <div class="flex items-center gap-3">
-              <img
-                src="/images/PHOTO-2026-06-14-22-19-17.jpg"
-                alt="David Maraga Info logo"
-                class="h-10 w-auto"
-              />
-              <div>
-                <p class="font-head text-[10px] uppercase tracking-[0.32em] text-crimson">
-                  Kenya 2027
-                </p>
-                <h2 class="font-head text-xl uppercase leading-none text-white sm:text-2xl">
-                  David Maraga Info
-                </h2>
-              </div>
-            </div>
+        <div class="flex flex-col items-center gap-8 border-b border-white/10 pb-6 text-center lg:flex-row lg:items-center lg:justify-between lg:text-left">
+          <a href={section_href(@base_path, "top")} class="shrink-0">
+            <img src="/images/logo.png" alt="Maraga '27" class="h-14 w-auto" />
+          </a>
 
-            <p class="mt-3 max-w-xl text-sm leading-6 text-white/72">
-              Independent coverage, campaign updates and public record context in one place.
-            </p>
-          </div>
-
-          <div class="mx-auto max-w-sm">
+          <div>
             <p class="font-head text-[11px] uppercase tracking-[0.24em] text-crimson">
               Campaign HQ
             </p>
             <p class="mt-3 text-sm leading-6 text-white/78">
               Off Vihiga Rd, Kileleshwa, Nairobi
             </p>
-            <a
-              href="tel:+254746900027"
-              class="mt-1 inline-flex text-sm text-white/78 transition hover:text-crimson"
-            >
-              +254 746 900 027
-            </a>
-            <a
-              href="mailto:infodesk@davidmaraga.com"
-              class="mt-1 inline-flex text-sm text-white/78 transition hover:text-crimson"
-            >
-              infodesk@davidmaraga.com
-            </a>
-          </div>
-
-          <div class="flex flex-col gap-4 lg:items-end">
-            <nav class="flex flex-wrap justify-center gap-x-5 gap-y-2 font-head text-xs uppercase tracking-[0.18em] text-white/78 lg:justify-end">
-              <a href={section_href(@base_path, "top")} class="transition hover:text-crimson">Home</a>
-              <a href={section_href(@base_path, "mission")} class="transition hover:text-crimson">
-                About
-              </a>
-              <a href="/news" class="transition hover:text-crimson">News</a>
-              <a href={section_href(@base_path, "agenda")} class="transition hover:text-crimson">
-                Agenda
-              </a>
-              <a href="/press-releases" class="transition hover:text-crimson">Press</a>
-              <a href="/media/photos" class="transition hover:text-crimson">Photos</a>
+            <p class="mt-2">
               <a
-                href="https://donations.davidmaraga.com/"
-                target="_blank"
-                rel="noopener"
-                class="transition hover:text-crimson"
+                href="tel:+254746900027"
+                class="text-sm text-white/78 transition hover:text-crimson"
               >
-                Donate
+                +254 746 900 027
               </a>
-            </nav>
+            </p>
+            <p class="mt-2">
+              <a
+                href="mailto:infodesk@davidmaraga.com"
+                class="text-sm text-white/78 transition hover:text-crimson"
+              >
+                infodesk@davidmaraga.com
+              </a>
+            </p>
           </div>
         </div>
 
-        <div class="mt-4 flex flex-col gap-2 pt-4 text-center text-xs text-white/68 sm:flex-row sm:items-center sm:justify-between sm:text-left">
-          <p>
-            © {Date.utc_today().year} David Maraga Info. Integrity, justice and service for Kenya.
-          </p>
-
-          <div class="flex flex-wrap items-center justify-center gap-4 font-head uppercase tracking-[0.18em] sm:justify-end">
-            <a href="https://davidmaraga.info/" class="transition hover:text-crimson">
-              davidmaraga.info
-            </a>
-          </div>
-        </div>
+        <nav class="mt-6 flex flex-nowrap items-center justify-center gap-x-5 overflow-x-auto whitespace-nowrap font-head text-xs uppercase tracking-[0.18em] text-white/78">
+          <a href={section_href(@base_path, "top")} class="transition hover:text-crimson">Home</a>
+          <a href={section_href(@base_path, "mission")} class="transition hover:text-crimson">
+            About
+          </a>
+          <a href="/news" class="transition hover:text-crimson">News</a>
+          <a href={section_href(@base_path, "agenda")} class="transition hover:text-crimson">
+            Agenda
+          </a>
+          <a href="/media/photos" class="transition hover:text-crimson">Photos</a>
+          <a href="/press-releases" class="transition hover:text-crimson">Press</a>
+          <a
+            href="https://donations.davidmaraga.com/"
+            target="_blank"
+            rel="noopener"
+            class="transition hover:text-crimson"
+          >
+            Donate
+          </a>
+        </nav>
       </div>
     </footer>
     """
@@ -540,17 +649,9 @@ defmodule MaragaInfoWeb.SiteComponents do
         group: "Section",
         title: "Mission",
         href: section_href(base_path, "mission"),
-        description: "Jump to the mission and about section.",
+        description: "Jump to the bio and support the campaign section.",
         external?: false,
-        search_text: "mission about values"
-      },
-      %{
-        group: "Section",
-        title: "Documentary",
-        href: section_href(base_path, "documentary"),
-        description: "Open the documentary feature block.",
-        external?: false,
-        search_text: "documentary feature story"
+        search_text: "mission about values bio donate support"
       },
       %{
         group: "Section",
@@ -765,7 +866,7 @@ defmodule MaragaInfoWeb.SiteComponents do
       %{
         group: "Event",
         title: event.title,
-        href: "/events",
+        href: "/events/#{event.id}",
         description:
           [format_event_date(event.starts_at), event.location]
           |> Enum.reject(&blank?/1)

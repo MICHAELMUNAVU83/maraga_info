@@ -109,9 +109,12 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     {:noreply, assign(socket, :selected_gallery_image, nil)}
   end
 
-  def handle_event("subscribe_email", %{"email" => email}, socket) do
+  def handle_event("subscribe_email", params, socket) do
     case Volunteers.create_volunteer(%{
-           email: email,
+           email: params["email"],
+           full_name: params["full_name"],
+           phone: params["phone"],
+           county: params["county"],
            additional_info: "Newsletter subscriber (website)"
          }) do
       {:ok, volunteer} ->
@@ -130,6 +133,60 @@ defmodule MaragaInfoWeb.HomeLive.Index do
            )}
         end
     end
+  end
+
+  # Kenya's 47 counties, so subscriber locations stay consistent instead of
+  # arriving as free text.
+  defp kenyan_counties do
+    [
+      "Baringo",
+      "Bomet",
+      "Bungoma",
+      "Busia",
+      "Elgeyo-Marakwet",
+      "Embu",
+      "Garissa",
+      "Homa Bay",
+      "Isiolo",
+      "Kajiado",
+      "Kakamega",
+      "Kericho",
+      "Kiambu",
+      "Kilifi",
+      "Kirinyaga",
+      "Kisii",
+      "Kisumu",
+      "Kitui",
+      "Kwale",
+      "Laikipia",
+      "Lamu",
+      "Machakos",
+      "Makueni",
+      "Mandera",
+      "Marsabit",
+      "Meru",
+      "Migori",
+      "Mombasa",
+      "Murang'a",
+      "Nairobi",
+      "Nakuru",
+      "Nandi",
+      "Narok",
+      "Nyamira",
+      "Nyandarua",
+      "Nyeri",
+      "Samburu",
+      "Siaya",
+      "Taita-Taveta",
+      "Tana River",
+      "Tharaka-Nithi",
+      "Trans Nzoia",
+      "Turkana",
+      "Uasin Gishu",
+      "Vihiga",
+      "Wajir",
+      "West Pokot"
+    ]
   end
 
   defp already_subscribed?(%Ecto.Changeset{errors: errors}) do
@@ -263,8 +320,6 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <.hero_section content={@content} />
       <.donate_section content={@content} />
       <.events_section events={@events} content={@content} />
-      <.mission_section content={@content} />
-      <.documentary_section content={@content} />
       <.news_section news_items={@news_items} content={@content} />
       <.newsletter_section
         stats={@stats}
@@ -421,179 +476,59 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             assigns.content,
             "home.donate.volunteer_url",
             "https://www.davidmaraga.com/volunteer"
-          )
-      )
-
-    ~H"""
-    <section class="relative w-full overflow-hidden bg-ghost px-4 shadow-[0_10px_50px_#0000000a]">
-      <div class="mx-auto flex max-w-container flex-col items-top justify-center gap-8 py-8 lg:flex-row lg:justify-between">
-        <div class="flex  gap-3">
-          <h3 class="font-head text-6xl uppercase text-blueink">donate</h3>
-          <h3 class="font-head text-6xl uppercase text-crimson">today</h3>
-        </div>
-
-        <div class="flex flex-col items-center gap-5 sm:items-end">
-          <div class="flex flex-wrap items-center justify-center gap-3">
-            <.donation_chip amount="KES 50" />
-            <.donation_chip amount="KES 100" />
-            <.donation_chip amount="KES 200" />
-            <.donation_chip amount="KES 500" />
-            <.donation_chip amount="KES 1000" />
-
-            <input
-              type="text"
-              placeholder="Other"
-              class="w-24 rounded-[5px] border border-[#e6e6e6] bg-white px-4 py-3 text-ink outline-none focus:border-blueink"
-            />
-          </div>
-
-          <div class="flex flex-wrap items-center justify-center gap-3 sm:justify-end">
-            <a
-              type="button"
-              href={@donate_url}
-              rel="noopener"
-              target="_blank"
-              class="rounded-[5px] border-2 border-red-500 bg-red-500 px-[44px] py-5 text-lg font-semibold text-white transition hover:bg-transparent hover:text-red-500"
-            >
-              Donate Now
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-    """
-  end
-
-  attr :content, :map, default: %{}
-
-  defp mission_section(assigns) do
-    assigns =
-      assign(assigns,
-        image: get_content(assigns.content, "home.mission.image", "/images/IMG_2052.jpg"),
-        heading_prefix: get_content(assigns.content, "home.mission.heading_prefix", "A man of"),
-        heading_accent1:
-          get_content(assigns.content, "home.mission.heading_accent1", "integrity"),
-        heading_mid:
-          get_content(
-            assigns.content,
-            "home.mission.heading_mid",
-            "for a time that demands"
           ),
-        heading_accent2:
+        bio_heading_prefix: get_content(assigns.content, "home.mission.heading_prefix", "A man of"),
+        bio_heading_accent1:
+          get_content(assigns.content, "home.mission.heading_accent1", "integrity"),
+        bio_heading_mid:
+          get_content(assigns.content, "home.mission.heading_mid", "for a time that demands"),
+        bio_heading_accent2:
           get_content(assigns.content, "home.mission.heading_accent2", "character."),
-        quote:
+        bio_quote:
           get_content(
             assigns.content,
             "home.mission.quote",
             "David Maraga — the judge who annulled a presidential election and proved no one is above the law. A reformer who digitized courts, expanded access to justice, and authored over 1,250 judgments. Fearless, principled, and relentless — Kenya's greatest judicial guardian"
-          ),
-        cta_href: get_content(assigns.content, "home.mission.cta_href", "#footer")
-      )
-
-    ~H"""
-    <section
-      id="mission"
-      class="relative overflow-hidden bg-white py-20 lg:py-28"
-      style="background-image: radial-gradient(#dfe3ee 1.6px, transparent 1.7px); background-size: 24px 24px; background-position: center;"
-    >
-      <div
-        id="mission-panel"
-        phx-hook="RevealOnScroll"
-        class="reveal-on-scroll relative mx-auto flex max-w-container flex-col items-center gap-0 px-4 lg:flex-row lg:items-center"
-      >
-        <div class="w-full lg:w-[58%]">
-          <img
-            src={@image}
-            alt="David Maraga"
-            loading="lazy"
-            class="h-[360px] w-full rounded-[5px] object-cover object-[center_30%] shadow-2xl sm:h-[620px] lg:h-[820px]"
-          />
-        </div>
-
-        <div class="relative z-10 -mt-12 w-[92%] rounded-[5px] bg-blueink px-8 py-10 shadow-2xl sm:px-10 lg:-ml-[14%] lg:mt-0 lg:w-[44%] lg:px-12 lg:py-12">
-          <h2 class="font-head text-4xl uppercase text-white md:text-5xl">
-            {@heading_prefix} <span class="text-crimson">{@heading_accent1}</span>
-            {@heading_mid} <span class="text-crimson">{@heading_accent2}</span>
-          </h2>
-
-          <p class="mt-4 font-serifi text-xl italic leading-relaxed tracking-[.5px] text-white">
-            " {@quote}"
-          </p>
-
-          <a
-            href={@cta_href}
-            class="mt-8 inline-flex items-center gap-2 font-head text-[15px] font-semibold uppercase tracking-wide text-white transition hover:text-crimson"
-          >
-            Bio
-            <svg
-              class="h-4 w-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-          </a>
-        </div>
-      </div>
-    </section>
-    """
-  end
-
-  attr :content, :map, default: %{}
-
-  defp documentary_section(assigns) do
-    assigns =
-      assign(assigns,
-        title_prefix:
-          get_content(assigns.content, "home.documentary.title_prefix", "The Maraga Story"),
-        title_accent:
-          get_content(assigns.content, "home.documentary.title_accent", "Documentary"),
-        description:
-          get_content(
-            assigns.content,
-            "home.documentary.description",
-            "The first autobiographical documentary on David Maraga, produced with NTV."
-          ),
-        youtube_url:
-          get_content(
-            assigns.content,
-            "home.documentary.youtube_url",
-            "https://www.youtube.com/embed/-2QefPbyXrQ"
           )
       )
 
     ~H"""
-    <section id="documentary" class="bg-white py-20 lg:py-28">
-      <div class="mx-auto max-w-container px-4">
-        <.section_heading
-          title={"#{@title_prefix} #{@title_accent}"}
-          accent={@title_accent}
-          description={@description}
-        />
+    <section id="mission" class="relative w-full overflow-hidden bg-ghost px-4 shadow-[0_10px_50px_#0000000a]">
+      <div class="mx-auto flex max-w-container flex-col items-center gap-8 py-12 lg:flex-row lg:items-center lg:gap-12">
+        <div class="w-full text-center lg:w-1/2 lg:text-left">
+          <h2 class="font-head text-3xl uppercase text-blueink md:text-4xl">
+            {@bio_heading_prefix} <span class="text-crimson">{@bio_heading_accent1}</span>
+            {@bio_heading_mid} <span class="text-crimson">{@bio_heading_accent2}</span>
+          </h2>
 
-        <div
-          id="documentary-frame"
-          phx-hook="RevealOnScroll"
-          class="reveal-on-scroll mx-auto mt-10 max-w-4xl overflow-hidden rounded-[5px] shadow-2xl"
-        >
-          <div class="relative w-full" style="padding-top: 56.25%;">
-            <iframe
-              class="absolute inset-0 h-full w-full"
-              src={@youtube_url}
-              title="David Maraga: The Autobiographical Documentary"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerpolicy="strict-origin-when-cross-origin"
-              allowfullscreen
-            >
-            </iframe>
+          <p class="mt-4 font-serifi text-lg italic leading-relaxed tracking-[.5px] text-grayink">
+            "{@bio_quote}"
+          </p>
+        </div>
+
+        <div class="flex w-full max-w-xl flex-col items-center gap-5 rounded-[8px] border-2 border-crimson bg-crimson/10 px-6 py-7 sm:items-start lg:w-1/2">
+          <div class="flex flex-wrap justify-center gap-3 sm:justify-start">
+            <h3 class="font-head text-4xl uppercase leading-none text-blueink">support</h3>
+            <h3 class="font-head text-4xl uppercase leading-none text-crimson">the campaign</h3>
           </div>
+
+          <div class="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
+            <.donation_chip label="KES 50" amount="50" donate_url={@donate_url} />
+            <.donation_chip label="KES 100" amount="100" donate_url={@donate_url} />
+            <.donation_chip label="KES 200" amount="200" donate_url={@donate_url} />
+            <.donation_chip label="KES 500" amount="500" donate_url={@donate_url} />
+            <.donation_chip label="KES 1000" amount="1000" donate_url={@donate_url} />
+            <.donation_chip label="Other" amount={nil} donate_url={@donate_url} />
+          </div>
+
+          <a
+            href={@donate_url}
+            rel="noopener"
+            target="_blank"
+            class="w-full rounded-[5px] border-2 border-red-500 bg-red-500 px-[44px] py-5 text-center text-lg font-semibold text-white transition hover:bg-transparent hover:text-red-500 sm:w-auto"
+          >
+            Donate Now
+          </a>
         </div>
       </div>
     </section>
@@ -653,11 +588,14 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   defp newsletter_section(assigns) do
     assigns =
       assign(assigns,
+        counties: kenyan_counties(),
+        subscribe_field_class:
+          "w-full rounded-[5px] border border-white/30 bg-white/95 px-5 py-[18px] text-base text-blueink outline-none placeholder:text-grayink focus:border-crimson",
         bg_image:
           get_content(
             assigns.content,
             "home.newsletter.bg_image",
-            "/images/maraga-town-old.jpg"
+            "/images/maraga-town.jpg"
           ),
         eyebrow: get_content(assigns.content, "home.newsletter.eyebrow", "Stay in the loop"),
         heading:
@@ -730,18 +668,52 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           <form
             :if={!@subscribed}
             phx-submit="subscribe_email"
-            class="mt-8 flex w-full max-w-xl flex-col items-stretch gap-3 sm:flex-row"
+            class="mt-8 w-full max-w-2xl text-left"
           >
-            <input
-              type="email"
-              name="email"
-              required
-              placeholder="Enter your email address"
-              class="w-full flex-1 rounded-[5px] border border-white/30 bg-white/95 px-5 py-[18px] text-base text-blueink outline-none placeholder:text-grayink focus:border-crimson"
-            />
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label class="block">
+                <span class="sr-only">Full name</span>
+                <input
+                  type="text"
+                  name="full_name"
+                  autocomplete="name"
+                  placeholder="Full name"
+                  class={@subscribe_field_class}
+                />
+              </label>
+              <label class="block">
+                <span class="sr-only">Email address</span>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  autocomplete="email"
+                  placeholder="Email address (required)"
+                  class={@subscribe_field_class}
+                />
+              </label>
+              <label class="block">
+                <span class="sr-only">Phone number</span>
+                <input
+                  type="tel"
+                  name="phone"
+                  autocomplete="tel"
+                  placeholder="Phone number"
+                  class={@subscribe_field_class}
+                />
+              </label>
+              <label class="block">
+                <span class="sr-only">County</span>
+                <select name="county" class={@subscribe_field_class}>
+                  <option value="">Select your county</option>
+                  <option :for={county <- @counties} value={county}>{county}</option>
+                </select>
+              </label>
+            </div>
+
             <button
               type="submit"
-              class="inline-flex items-center justify-center gap-2 rounded-[5px] bg-crimson px-[30px] py-[18px] font-head text-[15px] font-semibold uppercase tracking-wide text-white transition hover:bg-blueink"
+              class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-[5px] bg-crimson px-[30px] py-[18px] font-head text-[15px] font-semibold uppercase tracking-wide text-white transition hover:bg-blueink sm:w-auto"
             >
               Subscribe
               <svg
@@ -855,25 +827,20 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   defp agenda_section(assigns) do
     assigns =
       assign(assigns,
-        videos_title_prefix:
-          get_content(assigns.content, "home.agenda.title_prefix", "Watch the"),
-        videos_title_accent: get_content(assigns.content, "home.agenda.title_accent", "Campaign"),
         videos_description:
           get_content(
             assigns.content,
             "home.agenda.description",
-            "Catch the latest moments from the trail — tap any clip to watch on YouTube and social media."
+            "Catch the latest from the trail"
           )
       )
 
     ~H"""
     <section id="agenda" class="bg-white py-20">
       <div class="mx-auto max-w-container px-4">
-        <.section_heading
-          title={"#{@videos_title_prefix} #{@videos_title_accent}"}
-          accent={@videos_title_accent}
-          description={@videos_description}
-        />
+        <p class="mx-auto mb-12 max-w-xl text-center text-base leading-7 text-grayink">
+          {@videos_description}
+        </p>
       </div>
 
       <.video_carousel videos={@videos} />
@@ -1020,7 +987,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           </p>
 
           <.link
-            navigate={~p"/events"}
+            navigate={~p"/events/#{@event.id}"}
             class="mt-6 inline-flex w-full items-center justify-center rounded-full bg-crimson px-8 py-3 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-blueink"
           >
             View Event
@@ -1038,7 +1005,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     <article class="group flex flex-col gap-4">
       <.link
         :if={@event.image_url}
-        navigate={~p"/events"}
+        navigate={~p"/events/#{@event.id}"}
         class="block overflow-hidden rounded-[10px]"
       >
         <img
@@ -1060,7 +1027,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         </div>
 
         <div class="flex-1">
-          <.link navigate={~p"/events"}>
+          <.link navigate={~p"/events/#{@event.id}"}>
             <h4 class="mt-0 font-head text-2xl uppercase tracking-[.5px] text-blueink transition hover:text-crimson">
               {@event.title}
             </h4>
@@ -1172,17 +1139,37 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     """
   end
 
-  attr :amount, :string, required: true
+  attr :label, :string, required: true
+  attr :amount, :string, default: nil
+  attr :donate_url, :string, required: true
 
   defp donation_chip(assigns) do
     ~H"""
-    <label class="cursor-pointer">
-      <input type="checkbox" class="peer hidden" />
-      <span class="block rounded-[5px] border border-[#e6e6e6] bg-white px-5 py-3 font-head font-medium text-blueink transition peer-checked:border-crimson peer-checked:bg-crimson peer-checked:text-white">
-        {@amount}
-      </span>
-    </label>
+    <a
+      href={donate_amount_url(@donate_url, @amount)}
+      rel="noopener"
+      target="_blank"
+      class="block rounded-[5px] border border-[#e6e6e6] bg-white px-5 py-3 font-head font-medium text-blueink transition hover:border-crimson hover:bg-crimson hover:text-white"
+    >
+      {@label}
+    </a>
     """
+  end
+
+  # Each preset amount opens the donations form with that value pre-filled;
+  # "Other" (a nil amount) just opens the form.
+  defp donate_amount_url(donate_url, nil), do: donate_url
+
+  defp donate_amount_url(donate_url, amount) do
+    uri = URI.parse(donate_url)
+
+    query =
+      (uri.query || "")
+      |> URI.decode_query()
+      |> Map.put("amount", amount)
+      |> URI.encode_query()
+
+    URI.to_string(%{uri | query: query})
   end
 
   defp format_post_date(nil), do: "Draft"

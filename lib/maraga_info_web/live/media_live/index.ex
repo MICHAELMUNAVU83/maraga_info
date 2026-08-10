@@ -74,9 +74,8 @@ defmodule MaragaInfoWeb.MediaLive.Index do
       >
         <div class="absolute inset-0 bg-blueink/70"></div>
         <div class="relative z-10 mx-auto flex min-h-[42vh] w-full max-w-container flex-col items-center justify-center px-4 py-24 text-center lg:px-6">
-          <h3 class="font-serifi text-2xl italic text-white">David Maraga · Kenya 2027</h3>
-          <h1 class="mt-3 font-head text-4xl font-semibold uppercase tracking-[3px] text-white md:text-6xl lg:text-7xl">
-            {@config.title}
+          <h1 class="font-head text-3xl font-semibold uppercase tracking-[3px] text-white md:text-5xl lg:text-6xl">
+            Maraga in the Media
           </h1>
         </div>
       </section>
