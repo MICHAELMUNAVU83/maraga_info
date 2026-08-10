@@ -32,7 +32,8 @@ defmodule MaragaInfo.Content.NavLink do
   """
   def defaults do
     [
-      {"About Us", nil, "left", [{"David Maraga", "/david-maraga"}, {"UGM Party", "/ugm-party"}]},
+      {"David Maraga Profile", "/david-maraga", "left", []},
+      {"UGM Party", "/ugm-party", "left", []},
       {"Our Agenda", nil, "left",
        [{"Campaign Pillars", "/campaign-pillars"}, {"Manifesto", "#"}]},
       {"Resources", nil, "right",

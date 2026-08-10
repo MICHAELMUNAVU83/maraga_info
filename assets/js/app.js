@@ -208,12 +208,17 @@ const Hooks = {
       this.count = this.el.querySelector("[data-search-count]");
 
       this.filterItems = () => {
-        const query = (this.input?.value || "").trim().toLowerCase();
+        // Match every whitespace-separated term independently so multi-word
+        // queries like "water health" still find "Water is a health right".
+        const terms = (this.input?.value || "")
+          .toLowerCase()
+          .split(/\s+/)
+          .filter((term) => term.length > 0);
         let visibleCount = 0;
 
         this.items.forEach((item) => {
           const searchText = (item.dataset.searchText || "").toLowerCase();
-          const matches = query === "" || searchText.includes(query);
+          const matches = terms.every((term) => searchText.includes(term));
 
           item.classList.toggle("hidden", !matches);
 

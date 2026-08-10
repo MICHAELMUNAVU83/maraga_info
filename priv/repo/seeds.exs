@@ -212,6 +212,102 @@ posts = [
         image_urls: []
       }
     ]
+  },
+  %{
+    title: "Statement on the government's handling of the Ebola preparedness plan",
+    slug: "statement-on-ebola-preparedness-plan",
+    category: Post.press_release_category(),
+    seo_description:
+      "Press statement from the Maraga '27 campaign on Kenya's Ebola preparedness, calling for transparent county-level readiness reporting and protective equipment for frontline health workers.",
+    image_url: "/images/gallery/4.jpg",
+    preview_text:
+      "Kenyans deserve to know, county by county, whether our health system is ready. Preparedness is not a press conference; it is isolation beds, protective equipment and trained staff in place before the first case.",
+    body:
+      "The Maraga '27 campaign notes with concern the absence of a published, county-by-county Ebola preparedness assessment.\n\nPreparedness cannot be announced into existence. It is measured in isolation beds, protective equipment, screening capacity at points of entry and health workers who have been trained and paid.\n\nWe call on the Ministry of Health to publish its readiness data, to confirm that frontline workers have the equipment they need, and to brief county governments directly rather than through the media.",
+    status: :published,
+    published_at: ~U[2026-06-24 08:30:00Z],
+    is_featured: false,
+    user_id: admin.id,
+    sections: [
+      %{
+        position: 0,
+        heading: "Publish the readiness data",
+        body:
+          "Every county should be able to tell its residents how many isolation beds it holds, how much protective equipment is in store, and which facilities are designated for referral.\n\nWhere that information does not exist, it should be gathered and published. Where it exists but is withheld, withholding it serves no one but the officials who would rather not be measured.",
+        image_urls: []
+      },
+      %{
+        position: 1,
+        heading: "Protect the people on the front line",
+        body:
+          "Kenya's health workers have carried the cost of every recent outbreak, often without equipment, insurance or timely pay. Any credible preparedness plan begins with them.\n\nWe are calling for confirmation that protective equipment has been distributed, not procured, and that training has reached the facilities most likely to see a first case.",
+        image_urls: []
+      }
+    ]
+  },
+  %{
+    title: "Statement on the arrests of protesters and the shrinking of civic space",
+    slug: "statement-on-arrests-of-protesters",
+    category: Post.press_release_category(),
+    seo_description:
+      "Press statement from the Maraga '27 campaign on the arrests of protesters, abductions and the shrinking of civic space in Kenya, and the constitutional limits on police power.",
+    image_url: "/images/gallery/2.jpg",
+    preview_text:
+      "The right to assemble and to petition is not a privilege granted by the state. It is a constitutional guarantee, and no security concern suspends it.",
+    body:
+      "The Maraga '27 campaign condemns the continued arrest and detention of Kenyans exercising their right to peaceful assembly.\n\nArticle 37 of the Constitution guarantees the right to assemble, demonstrate, picket and present petitions to public authorities. That right is not conditional on the state's comfort with the message.\n\nWe call for the immediate release of those held without charge, for the accounting of every person reported missing following a protest, and for the Independent Policing Oversight Authority to be resourced to do the work the law assigns it.",
+    status: :published,
+    published_at: ~U[2026-07-09 07:00:00Z],
+    is_featured: false,
+    user_id: admin.id,
+    sections: [
+      %{
+        position: 0,
+        heading: "Charge or release",
+        body:
+          "No Kenyan may be held indefinitely while the state decides whether it has a case. Where there is evidence of an offence, charges must be brought promptly and in open court.\n\nWhere there is none, detention is not law enforcement. It is punishment without trial, and it is unconstitutional.",
+        image_urls: ["/images/gallery/5.jpg"]
+      },
+      %{
+        position: 1,
+        heading: "Account for the missing",
+        body:
+          "Every report of an abduction following a demonstration must be investigated and answered publicly. Silence from the state on these cases does more damage to public trust than any protest ever has.\n\nA government that cannot say where its citizens are has failed at its most basic duty.",
+        image_urls: []
+      }
+    ]
+  },
+  %{
+    title: "Statement on the rising cost of living and the case for water as a health right",
+    slug: "statement-on-water-as-a-health-right",
+    category: Post.press_release_category(),
+    seo_description:
+      "Press statement from the Maraga '27 campaign on the cost of living, and why access to clean water must be treated as an enforceable health right rather than a campaign promise.",
+    image_url: "/images/gallery/3.jpg",
+    preview_text:
+      "Clean water is not a development project to be unveiled before an election. Under our Constitution it is a right, and rights are enforceable.",
+    body:
+      "The Maraga '27 campaign is releasing this statement on the household cost of living, and on water in particular.\n\nArticle 43 of the Constitution guarantees every person the right to clean and safe water in adequate quantities. In much of the country that guarantee remains unmet, and the cost falls hardest on households that can least afford to buy water by the jerrican.\n\nWe are calling for a published national audit of stalled water projects, county-level accountability for the funds already disbursed, and a shift in how water is treated in public budgeting: as an obligation, not a favour.",
+    status: :published,
+    published_at: ~U[2026-07-28 09:15:00Z],
+    is_featured: false,
+    user_id: admin.id,
+    sections: [
+      %{
+        position: 0,
+        heading: "Audit the stalled projects",
+        body:
+          "Across the counties there are boreholes that were drilled and never equipped, dams that were funded and never finished, and pipelines that end short of the villages they were meant to serve.\n\nThe money for these projects was appropriated. Kenyans are entitled to a public account of where it went.",
+        image_urls: []
+      },
+      %{
+        position: 1,
+        heading: "Budget for obligations, not announcements",
+        body:
+          "A right that appears only in campaign literature is not a right. Water allocations should be tied to measurable coverage targets, reported against publicly, and audited independently.\n\nThis is the difference between a government that promises and a government that is accountable. Our campaign is asking to be judged by the second standard.",
+        image_urls: []
+      }
+    ]
   }
 ]
 

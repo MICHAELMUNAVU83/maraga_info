@@ -145,10 +145,6 @@ defmodule MaragaInfoWeb.BlogLive.Show do
             </section>
 
             <section :if={@post.sections == [] && present?(@post.body)} class="space-y-6">
-              <h2 class="font-head text-[2.2rem] uppercase leading-none tracking-[0.02em] text-blueink">
-                Full story
-              </h2>
-
               <div class="rich-content">{render_body(@post.body)}</div>
             </section>
 

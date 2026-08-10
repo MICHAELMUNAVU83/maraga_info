@@ -34,7 +34,7 @@ defmodule MaragaInfoWeb.Router do
       live "/", HomeLive.Index
       live "/david-maraga", DavidMaragaLive.Index
       live "/ugm-party", UgmPartyLive.Index
-      live "/campaign-pillars", CampaignPillarsLive.Index
+      live "/campaign-pillars", HomeLive.Index
       live "/news", NewsLive.Index
       live "/events", EventsLive.Index
       live "/newsletters", NewslettersLive.Index

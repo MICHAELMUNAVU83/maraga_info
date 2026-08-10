@@ -36,9 +36,8 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
       >
         <div class="absolute inset-0 bg-blueink/70"></div>
         <div class="relative z-10 mx-auto flex min-h-[42vh] w-full max-w-container flex-col items-center justify-center px-4 py-24 text-center lg:px-6">
-          <h3 class="font-serifi text-2xl italic text-white">David Maraga · Kenya 2027</h3>
-          <h1 class="mt-3 font-head text-4xl font-semibold uppercase tracking-[3px] text-white md:text-6xl lg:text-7xl">
-            {@config.title}
+          <h1 class="font-head text-3xl font-semibold uppercase tracking-[3px] text-white md:text-5xl lg:text-6xl">
+            {@config.heading}
           </h1>
         </div>
       </section>
@@ -63,7 +62,14 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
             </p>
           </div>
 
-          <div :if={@posts != []} class="grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
+          <div :if={@posts != [] && @config.layout == :list} class="divide-y divide-[#e6e6e6]">
+            <.statement_row :for={post <- @posts} item={post} />
+          </div>
+
+          <div
+            :if={@posts != [] && @config.layout == :cards}
+            class="grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3"
+          >
             <.news_card :for={post <- @posts} item={post} />
           </div>
         </div>
@@ -72,6 +78,42 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
       <.site_footer base_path={~p"/"} />
     </div>
     """
+  end
+
+  attr :item, :map, required: true
+
+  # Press statements read as a descending list: the title sits inline and only
+  # its last word is hyperlinked through to the full article.
+  defp statement_row(assigns) do
+    {lead, last_word} = split_last_word(assigns.item.title)
+
+    assigns = assign(assigns, lead: lead, last_word: last_word)
+
+    ~H"""
+    <div class="flex flex-col gap-1 py-4 md:flex-row md:items-baseline md:justify-between md:gap-6">
+      <h4 class="font-head text-lg uppercase tracking-[.5px] text-blueink">
+        <span :if={@lead != ""}>{@lead}</span>
+        <.link
+          navigate={~p"/blog/#{@item.slug}"}
+          class="text-crimson underline decoration-crimson/40 underline-offset-4 transition hover:decoration-crimson"
+        >
+          {@last_word}
+        </.link>
+      </h4>
+      <span class="shrink-0 text-xs font-bold uppercase tracking-[2px] text-grayink">
+        {format_post_date(@item.published_at)}
+      </span>
+    </div>
+    """
+  end
+
+  # "Statement on Ebola" -> {"Statement on", "Ebola"}
+  defp split_last_word(title) do
+    case String.split(String.trim(title || ""), ~r/\s+/, trim: true) do
+      [] -> {"", "Read statement"}
+      [single] -> {"", single}
+      words -> {Enum.drop(words, -1) |> Enum.join(" "), List.last(words)}
+    end
   end
 
   attr :item, :map, required: true
@@ -115,7 +157,9 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
       %{
         scope: :media_invitations,
         title: "Media Invitations",
+        heading: "Maraga in the Media",
         canonical_path: "/media-invitations",
+        layout: :cards,
         description:
           "Official media advisories and invitation notices from David Maraga's 2027 campaign."
       }
@@ -123,7 +167,9 @@ defmodule MaragaInfoWeb.PressReleasesLive.Index do
       %{
         scope: :press_releases,
         title: "Press Releases",
+        heading: "Press Releases",
         canonical_path: "/press-releases",
+        layout: :list,
         description: "Official press releases and statements from David Maraga's 2027 campaign."
       }
     end

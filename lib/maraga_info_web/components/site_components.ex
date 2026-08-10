@@ -94,13 +94,6 @@ defmodule MaragaInfoWeb.SiteComponents do
 
       <div class="relative mx-auto flex w-full max-w-container items-center justify-between gap-4 px-4 py-3 lg:px-6">
         <nav class="hidden items-center gap-6 lg:flex">
-          <div class="mr-2 flex items-center gap-3">
-            <.social_link
-              :for={link <- @social_links}
-              link={link}
-              class="text-white transition [filter:drop-shadow(0_0_5px_rgba(255,255,255,0.7))] hover:text-crimson hover:[filter:drop-shadow(0_0_9px_rgba(225,29,72,0.9))]"
-            />
-          </div>
           <a
             href={section_href(@base_path, "top")}
             class="font-head text-[15px] font-medium uppercase tracking-wide text-crimson"
@@ -530,7 +523,7 @@ defmodule MaragaInfoWeb.SiteComponents do
 
   defp build_search_items(base_path, news_categories) do
     static_search_items(base_path, news_categories) ++
-      post_search_items() ++ event_search_items()
+      post_search_items() ++ event_search_items() ++ media_search_items()
   end
 
   defp static_search_items(base_path, news_categories) do
@@ -709,7 +702,9 @@ defmodule MaragaInfoWeb.SiteComponents do
   end
 
   defp post_search_items do
-    Content.list_published_posts(limit: 12)
+    # Every published article is indexed (not just the newest handful) so the
+    # header search can match on any keyword in a story's body.
+    Content.list_published_posts()
     |> Enum.map(fn post ->
       %{
         group: post.category,
@@ -718,22 +713,54 @@ defmodule MaragaInfoWeb.SiteComponents do
         description: Post.summary(post, 120),
         external?: false,
         search_text:
-          Enum.join(
-            [
-              post.title,
-              post.category,
-              post.slug,
-              post.seo_description,
-              Post.summary(post, 160)
-            ],
-            " "
-          )
+          search_blob([
+            post.title,
+            post.category,
+            String.replace(post.slug || "", "-", " "),
+            post.seo_description,
+            post.preview_text,
+            post.newsletter_volume,
+            post.body
+          ])
       }
     end)
   end
 
+  defp media_search_items do
+    Content.list_published_media_items()
+    |> Enum.map(fn item ->
+      %{
+        group: if(item.media_type == "video", do: "Video", else: "Photo"),
+        title: item.title,
+        href: if(item.media_type == "video", do: "/media/videos", else: "/media/photos"),
+        description: item.description,
+        external?: false,
+        search_text:
+          search_blob([
+            item.title,
+            item.description,
+            item.category,
+            item.media_type,
+            "media gallery"
+          ])
+      }
+    end)
+  end
+
+  # Flattens a list of fields into a single plain-text haystack: HTML is
+  # stripped so rich-text bodies are searchable, and whitespace collapsed.
+  defp search_blob(fields) do
+    fields
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join(" ")
+    |> String.replace(~r/<[^>]*>/u, " ")
+    |> String.replace(~r/&[a-z]+;|&#\d+;/ui, " ")
+    |> String.replace(~r/\s+/u, " ")
+    |> String.trim()
+  end
+
   defp event_search_items do
-    Content.list_upcoming_events(limit: 8)
+    Content.list_published_events()
     |> Enum.map(fn event ->
       %{
         group: "Event",
@@ -745,13 +772,15 @@ defmodule MaragaInfoWeb.SiteComponents do
           |> Enum.join(" · "),
         external?: false,
         search_text:
-          Enum.join([event.title, event.location, event.description, "event calendar"], " ")
+          search_blob([event.title, event.location, event.description, "event calendar"])
       }
     end)
   end
 
   defp format_event_date(%DateTime{} = starts_at),
     do: Calendar.strftime(starts_at, "%b %-d, %Y")
+
+  defp format_event_date(_), do: nil
 
   defp blank?(value) when is_binary(value), do: String.trim(value) == ""
   defp blank?(nil), do: true
