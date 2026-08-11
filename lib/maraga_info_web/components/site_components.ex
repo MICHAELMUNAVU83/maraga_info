@@ -563,7 +563,10 @@ defmodule MaragaInfoWeb.SiteComponents do
     <footer id={@id} class="border-t border-white/10 bg-blueink text-white">
       <div class="mx-auto max-w-container px-4 py-8 lg:px-6 lg:py-10">
         <div class="flex flex-col items-center gap-8 border-b border-white/10 pb-6 text-center lg:flex-row lg:items-center lg:justify-between lg:text-left">
-          <a href={section_href(@base_path, "top")} class="shrink-0">
+          <a
+            href={section_href(@base_path, "top")}
+            class="shrink-0 rounded-md bg-white px-4 py-2 shadow-[0_6px_20px_rgba(0,0,0,0.18)]"
+          >
             <img src="/images/logo.png" alt="Maraga '27" class="h-14 w-auto" />
           </a>
 
