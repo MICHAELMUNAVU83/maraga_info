@@ -283,6 +283,13 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     end
   end
 
+  # Section visibility, toggled from the admin Home Page screen. Only an
+  # explicit "false" hides a section, so sections with no setting row yet stay
+  # visible.
+  defp section_visible?(content, section) do
+    Map.get(content, "home.#{section}.visible") != "false"
+  end
+
   @default_hero_image "/images/IMG_2075.jpg"
 
   # Hero images are stored as a JSON-encoded list under "home.hero.bg_images".
@@ -317,18 +324,27 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     <div id="top" class="min-h-screen bg-white">
       <.upcoming_event_modal :if={@show_event_modal && @featured_event} event={@featured_event} />
       <.site_header />
-      <.hero_section content={@content} />
-      <.donate_section content={@content} />
-      <.events_section events={@events} content={@content} />
-      <.news_section news_items={@news_items} content={@content} />
+      <.hero_section :if={section_visible?(@content, :hero)} content={@content} />
+      <.donate_section :if={section_visible?(@content, :mission)} content={@content} />
+      <.events_section
+        :if={section_visible?(@content, :events)}
+        events={@events}
+        content={@content}
+      />
+      <.news_section
+        :if={section_visible?(@content, :news)}
+        news_items={@news_items}
+        content={@content}
+      />
       <.newsletter_section
+        :if={section_visible?(@content, :newsletter) or section_visible?(@content, :stats)}
         stats={@stats}
         content={@content}
         subscribed={@subscribed}
         subscribe_error={@subscribe_error}
       />
       <%!-- <.shop_section shop_items={@shop_items} /> --%>
-      <.agenda_section videos={@videos} content={@content} />
+      <.agenda_section :if={section_visible?(@content, :agenda)} videos={@videos} content={@content} />
       <.gallery_section gallery_images={@gallery_images} />
       <.site_footer id="footer" />
 
@@ -614,12 +630,18 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             "home.stats.tagline",
             "For President · Integrity · Justice · Nation"
           ),
-        stats_motto: get_content(assigns.content, "home.stats.motto", "Ukatiba Ndio Tiba")
+        stats_motto: get_content(assigns.content, "home.stats.motto", "Ukatiba Ndio Tiba"),
+        show_newsletter: section_visible?(assigns.content, :newsletter),
+        show_stats: section_visible?(assigns.content, :stats)
       )
 
     ~H"""
     <section id="newsletter">
-      <div class="relative bg-cover bg-center" style={"background-image: url('#{@bg_image}');"}>
+      <div
+        :if={@show_newsletter}
+        class="relative bg-cover bg-center"
+        style={"background-image: url('#{@bg_image}');"}
+      >
         <div class="absolute inset-0 bg-black/60"></div>
 
         <div
@@ -738,7 +760,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         </div>
       </div>
 
-      <div class="bg-[#0b7600] py-20 text-white">
+      <div :if={@show_stats} class="bg-[#0b7600] py-20 text-white">
         <div class="mx-auto max-w-[1040px] px-4">
           <div class="text-center">
             <div class="mx-auto h-2 w-full max-w-[620px] overflow-hidden rounded-full bg-[#d61f26]">

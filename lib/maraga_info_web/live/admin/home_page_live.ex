@@ -72,6 +72,12 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
     {"agenda_description", "home.agenda.description", :agenda}
   ]
 
+  # Sections that render as their own block on the public landing page and can
+  # therefore be hidden independently. Visibility lives in its own setting
+  # ("home.<section>.visible") so toggling it never touches the section's
+  # content, and an absent/blank value means "visible".
+  @hideable_sections [:hero, :events, :mission, :news, :newsletter, :stats, :agenda]
+
   # Upload slot → {form_field, settings_key}
   @image_uploads %{
     mission_image: {"mission_image", "home.mission.image"},
@@ -94,6 +100,7 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
       |> assign(:form_data, form_data)
       |> assign(:form, to_form(form_data, as: :content))
       |> assign(:hero_images, hero_images_from_settings(settings))
+      |> assign(:hidden_sections, hidden_sections_from_settings(settings))
       |> allow_upload(:hero_bg,
         accept: ~w(.jpg .jpeg .png .webp),
         max_entries: @max_hero_images,
@@ -138,6 +145,28 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
     Content.upsert_settings(settings_map)
 
     {:noreply, put_flash(socket, :info, "Section saved.")}
+  end
+
+  def handle_event("toggle_section", %{"section" => section}, socket) do
+    section = String.to_existing_atom(section)
+    true = section in @hideable_sections
+
+    hidden = socket.assigns.hidden_sections
+    now_hidden = not MapSet.member?(hidden, section)
+
+    Content.upsert_settings(%{
+      "home.#{section}.visible" => if(now_hidden, do: "false", else: "true")
+    })
+
+    hidden =
+      if now_hidden,
+        do: MapSet.put(hidden, section),
+        else: MapSet.delete(hidden, section)
+
+    {:noreply,
+     socket
+     |> assign(:hidden_sections, hidden)
+     |> put_flash(:info, if(now_hidden, do: "Section hidden.", else: "Section is now visible."))}
   end
 
   # Required so the browser sends file-selection changes over the socket —
@@ -211,6 +240,15 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
     end
   end
 
+  # A section counts as hidden only when explicitly set to "false", so existing
+  # installs (no setting rows yet) keep showing everything.
+  defp hidden_sections_from_settings(settings) do
+    for section <- @hideable_sections,
+        Map.get(settings, "home.#{section}.visible") == "false",
+        into: MapSet.new(),
+        do: section
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -237,6 +275,9 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
           title="Hero"
           subtitle="Background image slideshow, headline, tagline, and CTA buttons."
         >
+          <:actions>
+            <.visibility_toggle section={:hero} hidden_sections={@hidden_sections} />
+          </:actions>
           <.form
             for={@form}
             id="home-form-hero"
@@ -314,6 +355,9 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
           title="Upcoming Events"
           subtitle="Section heading and description for the events grid."
         >
+          <:actions>
+            <.visibility_toggle section={:events} hidden_sections={@hidden_sections} />
+          </:actions>
           <.form for={@form} id="home-form-events" phx-submit="save" class="space-y-4">
             <input type="hidden" name="content[_section]" value="events" />
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -342,6 +386,9 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
           title="Mission"
           subtitle="Side photo, heading with accent words, quote, and bio link."
         >
+          <:actions>
+            <.visibility_toggle section={:mission} hidden_sections={@hidden_sections} />
+          </:actions>
           <.form
             for={@form}
             id="home-form-mission"
@@ -431,6 +478,9 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
           title="News"
           subtitle="Section heading and description for the latest news grid."
         >
+          <:actions>
+            <.visibility_toggle section={:news} hidden_sections={@hidden_sections} />
+          </:actions>
           <.form for={@form} id="home-form-news" phx-submit="save" class="space-y-4">
             <input type="hidden" name="content[_section]" value="news" />
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -459,6 +509,9 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
           title="Newsletter"
           subtitle="Background image, heading, description, and subscribe button."
         >
+          <:actions>
+            <.visibility_toggle section={:newsletter} hidden_sections={@hidden_sections} />
+          </:actions>
           <.form
             for={@form}
             id="home-form-newsletter"
@@ -504,6 +557,9 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
           title="Stats Banner"
           subtitle="Kenya 2027 banner — eyebrow, name, tagline, motto, and four stat cards."
         >
+          <:actions>
+            <.visibility_toggle section={:stats} hidden_sections={@hidden_sections} />
+          </:actions>
           <.form for={@form} id="home-form-stats" phx-submit="save" class="space-y-4">
             <input type="hidden" name="content[_section]" value="stats" />
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -574,6 +630,9 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
 
         <%!-- Campaign Videos --%>
         <.admin_panel title="Campaign Videos" subtitle="Description for the video carousel.">
+          <:actions>
+            <.visibility_toggle section={:agenda} hidden_sections={@hidden_sections} />
+          </:actions>
           <.form for={@form} id="home-form-agenda" phx-submit="save" class="space-y-4">
             <input type="hidden" name="content[_section]" value="agenda" />
             <.input
@@ -586,6 +645,43 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
         </.admin_panel>
       </div>
     </.admin_shell>
+    """
+  end
+
+  # Show/hide switch for one landing-page section. Saves immediately — it's
+  # independent of the section's own form and Save button.
+  attr :section, :atom, required: true
+  attr :hidden_sections, MapSet, required: true
+
+  defp visibility_toggle(assigns) do
+    assigns = assign(assigns, :hidden?, MapSet.member?(assigns.hidden_sections, assigns.section))
+
+    ~H"""
+    <div class="flex items-center gap-2">
+      <span class={[
+        "text-xs font-medium",
+        (@hidden? && "text-amber-600") || "text-zinc-500"
+      ]}>
+        {if @hidden?, do: "Hidden on site", else: "Visible on site"}
+      </span>
+      <button
+        type="button"
+        phx-click="toggle_section"
+        phx-value-section={@section}
+        role="switch"
+        aria-checked={to_string(not @hidden?)}
+        aria-label={"Toggle visibility of the #{@section} section"}
+        class={[
+          "relative inline-flex h-6 w-11 shrink-0 rounded-full transition",
+          (@hidden? && "bg-zinc-300") || "bg-blueink"
+        ]}
+      >
+        <span class={[
+          "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all",
+          (@hidden? && "left-0.5") || "left-[1.375rem]"
+        ]} />
+      </button>
+    </div>
     """
   end
 

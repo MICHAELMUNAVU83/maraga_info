@@ -111,7 +111,7 @@ defmodule MaragaInfoWeb.SiteComponents do
             alt="David Maraga logo"
             class="h-12 w-auto shrink-0"
           />
-          <img src="/images/ugm-logo.png" alt="UGM party logo" class="h-10 w-auto shrink-0" />
+          <img src="/images/ugm-logo.png" alt="UGM party logo" class="h-14 w-auto shrink-0" />
         </a>
 
         <a
@@ -123,7 +123,7 @@ defmodule MaragaInfoWeb.SiteComponents do
           <img
             src="/images/ugm-logo.png"
             alt="United Green Movement Party logo"
-            class="h-9 w-auto shrink-0 rounded-[3px] bg-white p-0.5"
+            class="h-14 w-auto shrink-0 rounded-[3px] bg-white p-0.5"
           />
         </a>
 
@@ -135,7 +135,7 @@ defmodule MaragaInfoWeb.SiteComponents do
         >
           <img src="/images/logo.png" alt="" class="h-11 w-auto shrink-0" />
           <span class="h-8 w-px"></span>
-          <img src="/images/ugm-logo.png" alt="" class="h-9 w-auto shrink-0 p-0.5" />
+          <img src="/images/ugm-logo.png" alt="" class="h-14 w-auto shrink-0 p-0.5" />
         </div>
 
         <div class="flex min-w-0 flex-1 items-center justify-end gap-4 xl:gap-6">

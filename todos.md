@@ -37,7 +37,7 @@
 
 ## Shop
 
-- [ ] Add a Back button to return to the .info website
+- [x] Add a Back button to return to the .info website
 
 ## Search
 
