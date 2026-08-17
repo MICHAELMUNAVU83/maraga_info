@@ -93,8 +93,8 @@ defmodule MaragaInfoWeb.SiteComponents do
     <header class="relative z-30 w-full bg-blueink">
       <input id="nav-toggle" type="checkbox" class="peer hidden" />
 
-      <div class="relative mx-auto flex w-full max-w-container items-center justify-between gap-4 px-4 py-3 lg:px-6">
-        <nav class="hidden min-w-0 flex-1 items-center gap-5 lg:flex xl:gap-6">
+      <div class="relative mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 py-3 lg:px-6">
+        <nav class="hidden min-w-0 flex-1 items-center gap-5 xl:flex xl:gap-6">
           <a
             href={section_href(@base_path, "top")}
             class="whitespace-nowrap font-head text-[15px] font-medium uppercase tracking-wide text-crimson"
@@ -105,7 +105,7 @@ defmodule MaragaInfoWeb.SiteComponents do
           <.nav_entry :for={nav_link <- @left_nav_links} nav_link={nav_link} />
         </nav>
 
-        <a href={section_href(@base_path, "top")} class="flex shrink-0 items-center gap-2 lg:hidden">
+        <a href={section_href(@base_path, "top")} class="flex shrink-0 items-center gap-2 xl:hidden">
           <img
             src="/images/PHOTO-2026-06-14-22-19-17.jpg"
             alt="David Maraga logo"
@@ -116,7 +116,7 @@ defmodule MaragaInfoWeb.SiteComponents do
 
         <a
           href={section_href(@base_path, "top")}
-          class="absolute left-1/2 top-0 z-50 hidden -translate-x-1/2 flex-row items-center gap-2.5 rounded-b-md bg-crimson px-5 pb-3 pt-2 shadow-lg lg:flex"
+          class="absolute left-1/2 top-0 z-50 hidden -translate-x-1/2 flex-row items-center gap-2.5 rounded-b-md bg-crimson px-5 pb-3 pt-2 shadow-lg xl:flex"
         >
           <img src="/images/logo.png" alt="Maraga '27" class="h-11 w-auto shrink-0" />
           <span aria-hidden="true" class="h-8 w-px bg-blueink/25"></span>
@@ -131,7 +131,7 @@ defmodule MaragaInfoWeb.SiteComponents do
         never slide underneath it. Mirrors the badge markup exactly. --%>
         <div
           aria-hidden="true"
-          class="pointer-events-none hidden shrink-0 flex-row items-center gap-2.5 px-5 opacity-0 lg:flex"
+          class="pointer-events-none hidden shrink-0 flex-row items-center gap-2.5 px-5 opacity-0 xl:flex"
         >
           <img src="/images/logo.png" alt="" class="h-11 w-auto shrink-0" />
           <span class="h-8 w-px"></span>
@@ -139,7 +139,7 @@ defmodule MaragaInfoWeb.SiteComponents do
         </div>
 
         <div class="flex min-w-0 flex-1 items-center justify-end gap-4 xl:gap-6">
-          <nav class="hidden items-center gap-5 lg:flex xl:gap-6">
+          <nav class="hidden items-center gap-5 xl:flex xl:gap-6">
             <.nav_entry :for={nav_link <- @right_nav_links} nav_link={nav_link} />
             <button
               type="button"
@@ -156,7 +156,7 @@ defmodule MaragaInfoWeb.SiteComponents do
             navigate="/admin"
             aria-label="Admin"
             title="Admin"
-            class="hidden h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:text-crimson lg:flex"
+            class="hidden h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:text-crimson xl:flex"
           >
             <svg
               class="h-5 w-5"
@@ -176,7 +176,7 @@ defmodule MaragaInfoWeb.SiteComponents do
           <label
             for="nav-toggle"
             aria-label="Toggle navigation menu"
-            class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:text-crimson lg:hidden"
+            class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:text-crimson xl:hidden"
           >
             <svg
               class="h-5 w-5"
@@ -196,7 +196,7 @@ defmodule MaragaInfoWeb.SiteComponents do
         </div>
       </div>
 
-      <nav class="hidden flex-col gap-1 bg-blueink px-6 pb-6 pt-2 shadow-xl peer-checked:flex lg:!hidden">
+      <nav class="hidden flex-col gap-1 bg-blueink px-6 pb-6 pt-2 shadow-xl peer-checked:flex xl:!hidden">
         <a
           href={section_href(@base_path, "top")}
           class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-crimson"
