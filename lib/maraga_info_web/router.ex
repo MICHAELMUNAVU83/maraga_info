@@ -155,6 +155,9 @@ defmodule MaragaInfoWeb.Router do
       live "/pages/press", SectionLive, :page_press
       live "/pages/shop", SectionLive, :page_shop
       live "/settings", SectionLive, :settings
+
+      live "/users", UserLive.Index, :index
+      live "/users/:id/reset_password", UserLive.Index, :reset_password
     end
   end
 

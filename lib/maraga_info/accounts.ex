@@ -60,6 +60,13 @@ defmodule MaragaInfo.Accounts do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
+  @doc """
+  Lists all users, ordered by email.
+  """
+  def list_users do
+    Repo.all(from u in User, order_by: u.email)
+  end
+
   ## User registration
 
   @doc """
@@ -349,5 +356,19 @@ defmodule MaragaInfo.Accounts do
       {:ok, %{user: user}} -> {:ok, user}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for an admin setting a user's password.
+  """
+  def change_admin_user_password(user, attrs \\ %{}) do
+    User.password_changeset(user, attrs, hash_password: false)
+  end
+
+  @doc """
+  Sets a user's password as an admin, without requiring the current password.
+  """
+  def admin_set_user_password(user, attrs) do
+    reset_user_password(user, attrs)
   end
 end

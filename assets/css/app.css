@@ -131,11 +131,15 @@ body {
   inset: 0;
   background-size: cover;
   opacity: 0;
-  transition: opacity 1200ms ease;
+  transform: scale(1.08);
+  transition:
+    opacity 1200ms ease,
+    transform 6000ms ease;
 }
 
 .hero-slide.is-active {
   opacity: 1;
+  transform: scale(1);
 }
 
 .reveal-on-scroll {

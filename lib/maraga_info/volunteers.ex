@@ -7,6 +7,7 @@ defmodule MaragaInfo.Volunteers do
 
   alias MaragaInfo.Repo
   alias MaragaInfo.Volunteers.AccessNotifier
+  alias MaragaInfo.Volunteers.BrevoSyncWorker
   alias MaragaInfo.Volunteers.Importer
   alias MaragaInfo.Volunteers.Volunteer
   alias MaragaInfo.Volunteers.VolunteerAccessCode
@@ -131,12 +132,14 @@ defmodule MaragaInfo.Volunteers do
     %Volunteer{}
     |> Volunteer.changeset(attrs)
     |> Repo.insert()
+    |> tap_sync_to_brevo()
   end
 
   def update_volunteer(%Volunteer{} = volunteer, attrs) do
     volunteer
     |> Volunteer.changeset(attrs)
     |> Repo.update()
+    |> tap_sync_to_brevo()
   end
 
   def delete_volunteer(%Volunteer{} = volunteer) do
@@ -200,7 +203,6 @@ defmodule MaragaInfo.Volunteers do
   end
 
   defp maybe_search(queryable, nil), do: queryable
-  defp maybe_search(queryable, ""), do: queryable
 
   defp maybe_search(queryable, query) do
     pattern = "%#{String.trim(query)}%"
@@ -258,6 +260,16 @@ defmodule MaragaInfo.Volunteers do
       {:error, :invalid_email}
     end
   end
+
+  defp tap_sync_to_brevo({:ok, %Volunteer{id: id}} = result) do
+    %{volunteer_id: id}
+    |> BrevoSyncWorker.new()
+    |> Oban.insert()
+
+    result
+  end
+
+  defp tap_sync_to_brevo(result), do: result
 
   defp normalize_access_code(code) do
     code =

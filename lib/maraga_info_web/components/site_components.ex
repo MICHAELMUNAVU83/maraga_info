@@ -94,10 +94,10 @@ defmodule MaragaInfoWeb.SiteComponents do
       <input id="nav-toggle" type="checkbox" class="peer hidden" />
 
       <div class="relative mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 py-3 lg:px-6">
-        <nav class="hidden min-w-0 flex-1 items-center gap-5 xl:flex xl:gap-6">
+        <nav class="hidden min-w-0 flex-1 items-center gap-3 xl:flex xl:gap-4">
           <a
             href={section_href(@base_path, "top")}
-            class="whitespace-nowrap font-head text-[15px] font-medium uppercase tracking-wide text-crimson"
+            class="whitespace-nowrap font-head text-[13px] font-medium uppercase tracking-wide text-crimson"
           >
             Home
           </a>
@@ -138,8 +138,8 @@ defmodule MaragaInfoWeb.SiteComponents do
           <img src="/images/ugm-logo.png" alt="" class="h-14 w-auto shrink-0 p-0.5" />
         </div>
 
-        <div class="flex min-w-0 flex-1 items-center justify-end gap-4 xl:gap-6">
-          <nav class="hidden items-center gap-5 xl:flex xl:gap-6">
+        <div class="flex min-w-0 flex-1 items-center justify-end gap-3 xl:gap-4">
+          <nav class="hidden items-center gap-3 xl:flex xl:gap-4">
             <.nav_entry :for={nav_link <- @right_nav_links} nav_link={nav_link} />
             <button
               type="button"
@@ -151,27 +151,6 @@ defmodule MaragaInfoWeb.SiteComponents do
               <.icon name="hero-magnifying-glass-mini" class="h-5 w-5" />
             </button>
           </nav>
-
-          <.link
-            navigate="/admin"
-            aria-label="Admin"
-            title="Admin"
-            class="hidden h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-crimson hover:text-crimson xl:flex"
-          >
-            <svg
-              class="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </.link>
 
           <label
             for="nav-toggle"
@@ -319,7 +298,7 @@ defmodule MaragaInfoWeb.SiteComponents do
     ~H"""
     <.nav_link_href
       href={@nav_link.href}
-      class="whitespace-nowrap font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+      class="whitespace-nowrap font-head text-[13px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
     >
       {@nav_link.label}
     </.nav_link_href>
@@ -386,7 +365,7 @@ defmodule MaragaInfoWeb.SiteComponents do
     <div class="group relative shrink-0">
       <button
         type="button"
-        class="flex items-center gap-1 whitespace-nowrap font-head text-[15px] font-medium uppercase tracking-wide text-white transition group-hover:text-crimson"
+        class="flex items-center gap-1 whitespace-nowrap font-head text-[13px] font-medium uppercase tracking-wide text-white transition group-hover:text-crimson"
       >
         {@label}
         <svg

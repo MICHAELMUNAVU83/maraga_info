@@ -281,6 +281,7 @@ defmodule MaragaInfoWeb.AdminComponents do
       %{label: "Emails", href: ~p"/admin/emails", icon: "hero-envelope"},
       %{label: "SMS", href: ~p"/admin/sms", icon: "hero-chat-bubble-left-right"},
       %{type: :heading, label: "System"},
+      %{label: "Users", href: ~p"/admin/users", icon: "hero-user-group"},
       %{label: "Settings", href: ~p"/admin/settings", icon: "hero-cog-6-tooth"}
     ]
   end

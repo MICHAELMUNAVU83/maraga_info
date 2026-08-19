@@ -16,6 +16,8 @@ defmodule MaragaInfo.Brevo do
   """
 
   @endpoint "https://api.brevo.com/v3/smtp/email"
+  @contacts_endpoint "https://api.brevo.com/v3/contacts"
+  @lists_endpoint "https://api.brevo.com/v3/contacts/lists"
 
   @type contact :: %{required(:email) => String.t(), optional(:name) => String.t()}
   @type payload :: %{
@@ -81,6 +83,75 @@ defmodule MaragaInfo.Brevo do
             """
           })
         end
+    end
+  end
+
+  @doc """
+  Lists the contact lists (groups) configured in Brevo, as `%{id: id, name: name}` maps.
+  """
+  def list_contact_lists(opts \\ []) do
+    limit = Keyword.get(opts, :limit, 50)
+    offset = Keyword.get(opts, :offset, 0)
+
+    with {:ok, api_key} <- api_key() do
+      url = "#{@lists_endpoint}?limit=#{limit}&offset=#{offset}"
+      request = Finch.build(:get, url, headers(api_key))
+
+      case Finch.request(request, MaragaInfo.Finch) do
+        {:ok, %Finch.Response{status: status, body: body}} when status in 200..299 ->
+          lists =
+            body
+            |> decode_body()
+            |> Map.get("lists", [])
+            |> Enum.map(fn list -> %{id: list["id"], name: list["name"]} end)
+
+          {:ok, lists}
+
+        {:ok, %Finch.Response{status: status, body: body}} ->
+          {:error, {:brevo_error, status, decode_body(body)}}
+
+        {:error, reason} ->
+          {:error, reason}
+      end
+    end
+  end
+
+  @doc """
+  Creates or updates a Brevo contact (upsert by email).
+
+  `attributes` is a map of Brevo contact attributes (e.g. `%{"FIRSTNAME" => "Jane"}`)
+  and `list_ids` are the numeric Brevo list IDs to attach the contact to.
+  """
+  def upsert_contact(email, attributes \\ %{}, list_ids \\ [])
+
+  def upsert_contact(email, attributes, list_ids) when is_binary(email) do
+    with {:ok, email} <- normalize_string(email, "email"),
+         {:ok, api_key} <- api_key() do
+      payload =
+        %{email: email, updateEnabled: true}
+        |> maybe_put(:attributes, if(map_size(attributes) > 0, do: attributes))
+        |> maybe_put(:listIds, if(list_ids != [], do: list_ids))
+
+      post_contact(payload, api_key)
+    end
+  end
+
+  def upsert_contact(_email, _attributes, _list_ids),
+    do: {:error, {:invalid_payload, "email must be a string"}}
+
+  defp post_contact(payload, api_key) do
+    request =
+      Finch.build(:post, @contacts_endpoint, headers(api_key), Jason.encode!(payload))
+
+    case Finch.request(request, MaragaInfo.Finch) do
+      {:ok, %Finch.Response{status: status, body: body}} when status in 200..299 ->
+        {:ok, %{status: status, body: decode_body(body)}}
+
+      {:ok, %Finch.Response{status: status, body: body}} ->
+        {:error, {:brevo_error, status, decode_body(body)}}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 

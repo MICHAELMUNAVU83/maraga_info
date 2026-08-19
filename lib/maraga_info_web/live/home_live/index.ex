@@ -90,6 +90,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
        selected_gallery_image: nil,
        subscribed: false,
        subscribe_error: nil,
+       show_subscribe_modal: false,
        content: content
      )}
   end
@@ -119,12 +120,15 @@ defmodule MaragaInfoWeb.HomeLive.Index do
          }) do
       {:ok, volunteer} ->
         WelcomeNotifier.deliver_welcome_email(volunteer.email)
-        {:noreply, assign(socket, subscribed: true, subscribe_error: nil)}
+
+        {:noreply,
+         assign(socket, subscribed: true, subscribe_error: nil, show_subscribe_modal: true)}
 
       {:error, changeset} ->
         # An already-registered email is still a "success" for the visitor.
         if already_subscribed?(changeset) do
-          {:noreply, assign(socket, subscribed: true, subscribe_error: nil)}
+          {:noreply,
+           assign(socket, subscribed: true, subscribe_error: nil, show_subscribe_modal: true)}
         else
           {:noreply,
            assign(socket,
@@ -133,6 +137,10 @@ defmodule MaragaInfoWeb.HomeLive.Index do
            )}
         end
     end
+  end
+
+  def handle_event("close_subscribe_modal", _params, socket) do
+    {:noreply, assign(socket, :show_subscribe_modal, false)}
   end
 
   # Kenya's 47 counties, so subscriber locations stay consistent instead of
@@ -323,14 +331,11 @@ defmodule MaragaInfoWeb.HomeLive.Index do
     ~H"""
     <div id="top" class="min-h-screen bg-white">
       <.upcoming_event_modal :if={@show_event_modal && @featured_event} event={@featured_event} />
+      <.subscribe_success_modal :if={@show_subscribe_modal} />
       <.site_header />
       <.hero_section :if={section_visible?(@content, :hero)} content={@content} />
       <.donate_section :if={section_visible?(@content, :mission)} content={@content} />
-      <.events_section
-        :if={section_visible?(@content, :events)}
-        events={@events}
-        content={@content}
-      />
+      <.events_section :if={section_visible?(@content, :events)} events={@events} content={@content} />
       <.news_section
         :if={section_visible?(@content, :news)}
         news_items={@news_items}
@@ -441,16 +446,16 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         <div class="hero-color-slide hero-color-slide-right"></div>
       </div>
 
-      <div class="relative z-10 mx-auto flex min-h-[100vh] w-full max-w-container items-center px-4 lg:px-6">
+      <div class="relative z-10 mx-auto flex min-h-[70vh] w-full max-w-container items-center px-4 lg:px-6 md:min-h-[75vh]">
         <div class="w-full text-center">
-          <h3 class="font-head text-[40px] font-semibold uppercase leading-[1.05] tracking-[3px] text-white md:text-[60px] lg:text-[76px]">
+          <h3 class="font-head text-[32px] font-semibold uppercase leading-[1.05] tracking-[3px] text-white md:text-[48px] lg:text-[60px]">
             {@title}
           </h3>
-          <h1 class="mt-4 font-serifi text-3xl italic text-white sm:text-4xl md:text-5xl lg:text-6xl">
+          <h1 class="mt-3 font-serifi text-2xl italic text-white sm:text-3xl md:text-4xl lg:text-5xl">
             {@tagline}
           </h1>
 
-          <div class="mt-12 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:gap-0">
+          <div class="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:gap-0">
             <div class="flex sm:w-1/2 sm:justify-end sm:pr-3">
               <a
                 href={@cta1_href}
@@ -493,7 +498,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             "home.donate.volunteer_url",
             "https://www.davidmaraga.com/volunteer"
           ),
-        bio_heading_prefix: get_content(assigns.content, "home.mission.heading_prefix", "A man of"),
+        bio_heading_prefix:
+          get_content(assigns.content, "home.mission.heading_prefix", "A man of"),
         bio_heading_accent1:
           get_content(assigns.content, "home.mission.heading_accent1", "integrity"),
         bio_heading_mid:
@@ -509,7 +515,10 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       )
 
     ~H"""
-    <section id="mission" class="relative w-full overflow-hidden bg-ghost px-4 shadow-[0_10px_50px_#0000000a]">
+    <section
+      id="mission"
+      class="relative w-full overflow-hidden bg-ghost px-4 shadow-[0_10px_50px_#0000000a]"
+    >
       <div class="mx-auto flex max-w-container flex-col items-center gap-8 py-12 lg:flex-row lg:items-center lg:gap-12">
         <div class="w-full text-center lg:w-1/2 lg:text-left">
           <h2 class="font-head text-3xl uppercase text-blueink md:text-4xl">
@@ -522,7 +531,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           </p>
         </div>
 
-        <div class="flex w-full max-w-xl flex-col items-center gap-5 rounded-[8px] border-2 border-crimson bg-crimson/10 px-6 py-7 sm:items-start lg:w-1/2">
+        <div class="flex w-full max-w-xl flex-col items-center gap-5 rounded-[8px] border-2 border-crimson bg-crimson/10 px-6 py-7 sm:items-start lg:ml-auto lg:w-1/2">
           <div class="flex flex-wrap justify-center gap-3 sm:justify-start">
             <h3 class="font-head text-4xl uppercase leading-none text-blueink">support</h3>
             <h3 class="font-head text-4xl uppercase leading-none text-crimson">the campaign</h3>
@@ -588,7 +597,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           </p>
         </div>
 
-        <div :if={not Enum.empty?(@news_items)} class="grid grid-cols-1 gap-7 md:grid-cols-2">
+        <div :if={not Enum.empty?(@news_items)} class="grid grid-cols-1 gap-7 md:grid-cols-3">
           <.news_card :for={item <- @news_items} item={item} />
         </div>
       </div>
@@ -1015,6 +1024,72 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             View Event
           </.link>
         </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp subscribe_success_modal(assigns) do
+    ~H"""
+    <div
+      id="subscribe-success-modal"
+      class="fixed inset-0 z-[100] flex items-center justify-center px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="subscribe-success-title"
+    >
+      <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        phx-click="close_subscribe_modal"
+        aria-hidden="true"
+      >
+      </div>
+
+      <div class="relative w-full max-w-md overflow-hidden rounded-[14px] bg-white p-8 text-center shadow-2xl sm:p-10">
+        <button
+          type="button"
+          phx-click="close_subscribe_modal"
+          class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-ghost text-blueink shadow-md transition hover:bg-crimson hover:text-white"
+          aria-label="Close"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+
+        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#0b7600]/10">
+          <svg
+            class="h-9 w-9 text-[#0b7600]"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </div>
+
+        <h3
+          id="subscribe-success-title"
+          class="mt-5 font-head text-2xl uppercase tracking-[0.5px] text-blueink"
+        >
+          You're In!
+        </h3>
+
+        <p class="mt-3 text-base leading-7 text-grayink">
+          Thanks for joining the movement. Keep an eye on your inbox for campaign updates, events, and ways to get involved.
+        </p>
+
+        <button
+          type="button"
+          phx-click="close_subscribe_modal"
+          class="mt-6 inline-flex w-full items-center justify-center rounded-full bg-crimson px-8 py-3 font-head text-[13px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-blueink"
+        >
+          Continue
+        </button>
       </div>
     </div>
     """
