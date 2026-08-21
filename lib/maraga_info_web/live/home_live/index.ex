@@ -446,7 +446,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         <div class="hero-color-slide hero-color-slide-right"></div>
       </div>
 
-      <div class="relative z-10 mx-auto flex min-h-[70vh] w-full max-w-container items-center px-4 lg:px-6 md:min-h-[75vh]">
+      <div class="relative z-10 mx-auto flex min-h-screen w-full max-w-container items-center px-4 lg:px-6">
         <div class="w-full text-center">
           <h3 class="font-head text-[32px] font-semibold uppercase leading-[1.05] tracking-[3px] text-white md:text-[48px] lg:text-[60px]">
             {@title}
