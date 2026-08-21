@@ -58,7 +58,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    news_items = Content.list_published_posts(scope: :posts, limit: 4)
+    news_items = Content.list_published_posts(scope: :posts, limit: 6)
     gallery_images = build_gallery_images()
     videos = build_campaign_videos()
     events = Content.list_upcoming_events(limit: 3)
