@@ -531,7 +531,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           </p>
         </div>
 
-        <div class="flex w-full max-w-xl flex-col items-center gap-5 rounded-[8px] border-2 border-crimson bg-crimson/10 px-6 py-7 sm:items-start lg:ml-auto lg:w-1/2">
+        <div class="flex w-full max-w-xl flex-col items-center gap-2 rounded-[8px] border-2 border-crimson bg-crimson/10 px-6 py-7 sm:items-start lg:ml-auto lg:w-1/2">
           <div class="flex flex-wrap justify-center gap-3 sm:justify-start">
             <h3 class="font-head text-4xl uppercase leading-none text-blueink">support</h3>
             <h3 class="font-head text-4xl uppercase leading-none text-crimson">the campaign</h3>

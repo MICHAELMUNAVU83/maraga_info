@@ -94,7 +94,7 @@ defmodule MaragaInfoWeb.SiteComponents do
       <input id="nav-toggle" type="checkbox" class="peer hidden" />
 
       <div class="relative mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 py-3 lg:px-6">
-        <nav class="hidden min-w-0 flex-1 items-center gap-3 xl:flex xl:gap-4">
+        <nav class="hidden min-w-0 flex-1 items-center justify-between gap-3 xl:flex xl:gap-4">
           <a
             href={section_href(@base_path, "top")}
             class="whitespace-nowrap font-head text-[15px] font-medium uppercase tracking-wide text-crimson"
@@ -138,8 +138,8 @@ defmodule MaragaInfoWeb.SiteComponents do
           <img src="/images/ugm-logo.png" alt="" class="h-14 w-auto shrink-0 p-0.5" />
         </div>
 
-        <div class="flex min-w-0 flex-1 items-center justify-end gap-3 xl:gap-4">
-          <nav class="hidden items-center gap-3 xl:flex xl:gap-4">
+        <div class="flex min-w-0 flex-1 items-center justify-start gap-3 xl:gap-4">
+          <nav class="hidden w-full items-center justify-between gap-3 xl:flex xl:gap-4">
             <.nav_entry :for={nav_link <- @right_nav_links} nav_link={nav_link} />
             <button
               type="button"
