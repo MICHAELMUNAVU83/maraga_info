@@ -186,6 +186,26 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
     {:noreply, assign(socket, :hero_images, hero_images)}
   end
 
+  def handle_event(
+        "move_hero_image",
+        %{"index" => index, "direction" => direction},
+        socket
+      ) do
+    with {index, ""} <- Integer.parse(index),
+         offset when offset in [-1, 1] <- direction_offset(direction),
+         target = index + offset,
+         true <- index in 0..(length(socket.assigns.hero_images) - 1),
+         true <- target in 0..(length(socket.assigns.hero_images) - 1) do
+      hero_images = swap(socket.assigns.hero_images, index, target)
+
+      Content.upsert_settings(%{"home.hero.bg_images" => Jason.encode!(hero_images)})
+
+      {:noreply, assign(socket, :hero_images, hero_images)}
+    else
+      _ -> {:noreply, socket}
+    end
+  end
+
   # Auto-upload progress callbacks — store the file as soon as it finishes and
   # immediately persist the new URL so it survives a page refresh even if the
   # user never clicks Save.
@@ -238,6 +258,19 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
           _ -> []
         end
     end
+  end
+
+  defp direction_offset("previous"), do: -1
+  defp direction_offset("next"), do: 1
+  defp direction_offset(_direction), do: nil
+
+  defp swap(items, first_index, second_index) do
+    first = Enum.at(items, first_index)
+    second = Enum.at(items, second_index)
+
+    items
+    |> List.replace_at(first_index, second)
+    |> List.replace_at(second_index, first)
   end
 
   # A section counts as hidden only when explicitly set to "false", so existing
@@ -712,8 +745,14 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
       </label>
 
       <div :if={@hero_images != []} class="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div :for={url <- @hero_images} class="group relative overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
+        <div
+          :for={{url, index} <- Enum.with_index(@hero_images)}
+          class="group relative overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50"
+        >
           <img src={url} alt="Hero slide" class="h-28 w-full object-cover" />
+          <span class="absolute left-1 top-1 rounded bg-blueink/85 px-2 py-1 text-xs font-semibold text-white">
+            {index + 1}
+          </span>
           <button
             type="button"
             phx-click="remove_hero_image"
@@ -723,6 +762,32 @@ defmodule MaragaInfoWeb.Admin.HomePageLive do
           >
             <.icon name="hero-x-mark-mini" class="h-4 w-4" />
           </button>
+          <div class="flex items-center justify-between border-t border-zinc-200 bg-white px-2 py-1.5">
+            <button
+              type="button"
+              phx-click="move_hero_image"
+              phx-value-index={index}
+              phx-value-direction="previous"
+              disabled={index == 0}
+              class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label={"Move slide #{index + 1} earlier"}
+              title="Move earlier"
+            >
+              <.icon name="hero-chevron-left-mini" class="h-4 w-4" /> Earlier
+            </button>
+            <button
+              type="button"
+              phx-click="move_hero_image"
+              phx-value-index={index}
+              phx-value-direction="next"
+              disabled={index == length(@hero_images) - 1}
+              class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label={"Move slide #{index + 1} later"}
+              title="Move later"
+            >
+              Later <.icon name="hero-chevron-right-mini" class="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
 
