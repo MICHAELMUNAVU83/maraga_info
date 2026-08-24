@@ -550,7 +550,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             href={@donate_url}
             rel="noopener"
             target="_blank"
-            class="w-full rounded-[5px] border-2 border-red-500 bg-red-500 px-[44px] py-5 text-center text-lg font-semibold text-white transition hover:bg-transparent hover:text-red-500 sm:w-auto"
+            class="w-full rounded-[5px] border-2 border-red-500 bg-red-500 px-[44px] py-5 text-center text-lg font-semibold text-white transition hover:bg-transparent hover:text-red-500 sm:w-auto sm:self-end"
           >
             Donate Now
           </a>

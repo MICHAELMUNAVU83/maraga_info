@@ -97,7 +97,7 @@ defmodule MaragaInfoWeb.SiteComponents do
         <nav class="hidden min-w-0 flex-1 items-center gap-3 xl:flex xl:gap-4">
           <a
             href={section_href(@base_path, "top")}
-            class="whitespace-nowrap font-head text-[13px] font-medium uppercase tracking-wide text-crimson"
+            class="whitespace-nowrap font-head text-[15px] font-medium uppercase tracking-wide text-crimson"
           >
             Home
           </a>
@@ -298,7 +298,7 @@ defmodule MaragaInfoWeb.SiteComponents do
     ~H"""
     <.nav_link_href
       href={@nav_link.href}
-      class="whitespace-nowrap font-head text-[13px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
+      class="whitespace-nowrap font-head text-[15px] font-medium uppercase tracking-wide text-white transition hover:text-crimson"
     >
       {@nav_link.label}
     </.nav_link_href>
@@ -365,7 +365,7 @@ defmodule MaragaInfoWeb.SiteComponents do
     <div class="group relative shrink-0">
       <button
         type="button"
-        class="flex items-center gap-1 whitespace-nowrap font-head text-[13px] font-medium uppercase tracking-wide text-white transition group-hover:text-crimson"
+        class="flex items-center gap-1 whitespace-nowrap font-head text-[15px] font-medium uppercase tracking-wide text-white transition group-hover:text-crimson"
       >
         {@label}
         <svg

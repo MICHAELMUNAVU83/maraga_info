@@ -16,8 +16,8 @@ config :maraga_info, :mail_from, {"David Maraga Campaign", "no-reply@davidmaraga
 
 config :maraga_info, :require_volunteer_code, true
 
-# Every synced volunteer is attached to Brevo's "All Volunteers" list.
-config :maraga_info, :brevo_list_ids, [8]
+# Every synced volunteer is attached to Brevo's "Newsletter Subscriptions" list.
+config :maraga_info, :brevo_list_ids, [10]
 
 # Oban powers reliable, retryable bulk email delivery.
 config :maraga_info, Oban,
