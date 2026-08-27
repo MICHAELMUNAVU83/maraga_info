@@ -309,16 +309,20 @@ defmodule MaragaInfoWeb.SiteComponents do
 
   defp mobile_nav_entry(%{nav_link: %{children: [_ | _]}} = assigns) do
     ~H"""
-    <p class="pt-3 font-head text-[12px] font-semibold uppercase tracking-[0.2em] text-white/60">
-      {@nav_link.label}
-    </p>
-    <.nav_link_href
-      :for={child <- @nav_link.children}
-      href={child.href}
-      class="py-1 pl-3 text-[14px] text-white/85 transition hover:text-crimson"
-    >
-      {child.label}
-    </.nav_link_href>
+    <div class="pt-3">
+      <p class="py-1 font-head text-[15px] font-medium uppercase tracking-wide text-white">
+        {@nav_link.label}
+      </p>
+      <div class="mt-1 flex flex-col gap-1 border-l border-white/20 pl-4">
+        <.nav_link_href
+          :for={child <- @nav_link.children}
+          href={child.href}
+          class="py-1 text-[15px] leading-6 text-white/85 transition hover:text-crimson"
+        >
+          {child.label}
+        </.nav_link_href>
+      </div>
+    </div>
     """
   end
 
@@ -355,7 +359,8 @@ defmodule MaragaInfoWeb.SiteComponents do
     """
   end
 
-  defp external_href?(href), do: String.starts_with?(href, "http://") or String.starts_with?(href, "https://")
+  defp external_href?(href),
+    do: String.starts_with?(href, "http://") or String.starts_with?(href, "https://")
 
   attr :label, :string, required: true
   slot :inner_block, required: true
@@ -557,10 +562,7 @@ defmodule MaragaInfoWeb.SiteComponents do
               Off Vihiga Rd, Kileleshwa, Nairobi
             </p>
             <p class="mt-2">
-              <a
-                href="tel:+254746900027"
-                class="text-sm text-white/78 transition hover:text-crimson"
-              >
+              <a href="tel:+254746900027" class="text-sm text-white/78 transition hover:text-crimson">
                 +254 746 900 027
               </a>
             </p>

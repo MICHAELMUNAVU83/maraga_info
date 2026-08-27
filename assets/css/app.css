@@ -116,14 +116,30 @@ body {
 
 .hero-color-slide-left {
   left: 0;
-  background: linear-gradient(90deg, rgba(2, 102, 49, 0.88) 0%, rgba(2, 102, 49, 0.76) 100%);
-  animation: hero-slide-left 950ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  background: linear-gradient(
+    90deg,
+    rgba(2, 102, 49, 0.88) 0%,
+    rgba(2, 102, 49, 0.76) 100%
+  );
+  transform: translateX(-101%);
 }
 
 .hero-color-slide-right {
   right: 0;
-  background: linear-gradient(90deg, rgba(203, 197, 39, 0.76) 0%, rgba(203, 197, 39, 0.88) 100%);
-  animation: hero-slide-right 950ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  background: linear-gradient(
+    90deg,
+    rgba(203, 197, 39, 0.76) 0%,
+    rgba(203, 197, 39, 0.88) 100%
+  );
+  transform: translateX(101%);
+}
+
+.hero-color-slide-left.is-animating {
+  animation: hero-curtain-left 1200ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+.hero-color-slide-right.is-animating {
+  animation: hero-curtain-right 1200ms cubic-bezier(0.65, 0, 0.35, 1) both;
 }
 
 .hero-slide {
@@ -133,7 +149,7 @@ body {
   opacity: 0;
   transform: scale(1.08);
   transition:
-    opacity 1200ms ease,
+    opacity 250ms ease,
     transform 6000ms ease;
 }
 
@@ -175,22 +191,26 @@ body {
   }
 }
 
-@keyframes hero-slide-left {
-  from {
-    transform: translateX(-105%);
+@keyframes hero-curtain-left {
+  0%,
+  100% {
+    transform: translateX(-101%);
   }
 
-  to {
+  42%,
+  58% {
     transform: translateX(0);
   }
 }
 
-@keyframes hero-slide-right {
-  from {
-    transform: translateX(105%);
+@keyframes hero-curtain-right {
+  0%,
+  100% {
+    transform: translateX(101%);
   }
 
-  to {
+  42%,
+  58% {
     transform: translateX(0);
   }
 }

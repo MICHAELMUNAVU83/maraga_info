@@ -109,13 +109,11 @@ defmodule MaragaInfo.Content.Post do
     "object-position: #{x}% #{y}%"
   end
 
-  # Newsletter posts must carry a valid Canva embed link; other categories
-  # ignore the field entirely.
+  # Canva embeds are optional for newsletters, but a supplied link must be valid.
+  # Other categories ignore the field entirely.
   defp validate_canva_embed(changeset) do
     if get_field(changeset, :category) == @newsletter_category do
-      changeset
-      |> validate_required([:canva_embed_url])
-      |> validate_format(:canva_embed_url, @canva_embed_regex,
+      validate_format(changeset, :canva_embed_url, @canva_embed_regex,
         message: "must be a Canva embed link (e.g. https://www.canva.com/design/.../view?embed)"
       )
     else

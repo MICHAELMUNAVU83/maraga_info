@@ -64,6 +64,31 @@ defmodule MaragaInfo.ContentTest do
       assert {:error, %Ecto.Changeset{}} = Content.create_post(@invalid_attrs)
     end
 
+    test "newsletter posts do not require a Canva embed link" do
+      assert {:ok, %Post{} = post} =
+               Content.create_post(%{
+                 title: "Newsletter without Canva",
+                 category: Post.newsletter_category(),
+                 newsletter_volume: "Volume 01",
+                 status: :draft
+               })
+
+      assert is_nil(post.canva_embed_url)
+    end
+
+    test "newsletter posts still validate a supplied Canva embed link" do
+      assert {:error, changeset} =
+               Content.create_post(%{
+                 title: "Newsletter with invalid embed",
+                 category: Post.newsletter_category(),
+                 newsletter_volume: "Volume 01",
+                 canva_embed_url: "https://example.com/not-canva",
+                 status: :draft
+               })
+
+      assert [_message] = errors_on(changeset).canva_embed_url
+    end
+
     test "cover focal positions must be percentages" do
       assert {:error, changeset} =
                Content.create_post(%{

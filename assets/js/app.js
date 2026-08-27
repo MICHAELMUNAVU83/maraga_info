@@ -177,6 +177,9 @@ const Hooks = {
   HeroSlider: {
     mounted() {
       this.slides = Array.from(this.el.querySelectorAll(".hero-slide"));
+      this.curtains = Array.from(
+        this.el.closest("#hero")?.querySelectorAll("[data-hero-curtain]") || [],
+      );
       this.activeIndex = this.slides.findIndex((slide) =>
         slide.classList.contains("is-active"),
       );
@@ -186,17 +189,40 @@ const Hooks = {
 
       const interval = parseInt(this.el.dataset.interval, 10) || 6000;
 
+      this.runCurtain = (changeImage = true) => {
+        if (this.isTransitioning) return;
+        this.isTransitioning = true;
+        this.curtains.forEach((curtain) =>
+          curtain.classList.add("is-animating"),
+        );
+
+        if (changeImage) {
+          this.swapTimer = setTimeout(() => {
+            this.slides[this.activeIndex].classList.remove("is-active");
+            this.activeIndex = (this.activeIndex + 1) % this.slides.length;
+            this.slides[this.activeIndex].classList.add("is-active");
+          }, 600);
+        }
+
+        this.resetTimer = setTimeout(() => {
+          this.curtains.forEach((curtain) =>
+            curtain.classList.remove("is-animating"),
+          );
+          this.isTransitioning = false;
+        }, 1200);
+      };
+
+      requestAnimationFrame(() => this.runCurtain(false));
+
       this.timer = setInterval(() => {
-        this.slides[this.activeIndex].classList.remove("is-active");
-        this.activeIndex = (this.activeIndex + 1) % this.slides.length;
-        this.slides[this.activeIndex].classList.add("is-active");
+        this.runCurtain();
       }, interval);
     },
 
     destroyed() {
-      if (this.timer) {
-        clearInterval(this.timer);
-      }
+      if (this.timer) clearInterval(this.timer);
+      if (this.swapTimer) clearTimeout(this.swapTimer);
+      if (this.resetTimer) clearTimeout(this.resetTimer);
     },
   },
 

@@ -442,8 +442,8 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       </div>
 
       <div aria-hidden="true" class="absolute inset-0">
-        <div class="hero-color-slide hero-color-slide-left"></div>
-        <div class="hero-color-slide hero-color-slide-right"></div>
+        <div class="hero-color-slide hero-color-slide-left" data-hero-curtain></div>
+        <div class="hero-color-slide hero-color-slide-right" data-hero-curtain></div>
       </div>
 
       <div class="relative z-10 mx-auto flex min-h-screen w-full max-w-container items-center px-4 lg:px-6">

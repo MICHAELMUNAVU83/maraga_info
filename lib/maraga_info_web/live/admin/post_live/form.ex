@@ -478,7 +478,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
             <.editor_card
               :if={@form[:category].value == Post.newsletter_category()}
               title="Newsletter embed"
-              description="Add the issue metadata and Canva embed link. The preview below updates live and appears on the published page."
+              description="Add the issue metadata. A Canva embed is optional; when provided, the preview below updates live and appears on the published page."
             >
               <.input
                 field={@form[:newsletter_volume]}
@@ -490,7 +490,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
               <.input
                 field={@form[:canva_embed_url]}
                 type="text"
-                label="Canva embed link"
+                label="Canva embed link (optional)"
                 placeholder="https://www.canva.com/design/.../view?embed"
               />
 
