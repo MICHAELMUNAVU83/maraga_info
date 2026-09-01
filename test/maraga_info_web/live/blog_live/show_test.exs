@@ -64,6 +64,19 @@ defmodule MaragaInfoWeb.BlogLive.ShowTest do
     assert html =~ ~s("image":["https://davidmaraga.info/images/IMG_2052.jpg"])
   end
 
+  test "renders an uploaded post video", %{conn: conn} do
+    post =
+      post_fixture(%{
+        title: "News with a video",
+        slug: "news-with-a-video",
+        video_url: "/uploads/news-clip.mp4"
+      })
+
+    {:ok, _view, html} = live(conn, ~p"/blog/#{post.slug}")
+
+    assert html =~ ~s(<video src="/uploads/news-clip.mp4" controls)
+  end
+
   test "renders section PDFs as document links", %{conn: conn} do
     post =
       post_fixture(%{

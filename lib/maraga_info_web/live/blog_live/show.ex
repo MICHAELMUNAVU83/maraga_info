@@ -79,6 +79,14 @@ defmodule MaragaInfoWeb.BlogLive.Show do
             />
           </div>
 
+          <div
+            :if={@post.video_url}
+            class="mx-auto mt-12 max-w-[1048px] overflow-hidden rounded-[8px] bg-black shadow-[0_18px_55px_rgba(15,30,80,0.12)]"
+          >
+            <video src={@post.video_url} controls preload="metadata" class="aspect-video w-full">
+            </video>
+          </div>
+
           <div class="mx-auto mt-12 max-w-[760px] space-y-12 text-[1.12rem] leading-9 text-ink">
             <div
               :if={Post.canva_embed_src(@post.canva_embed_url)}

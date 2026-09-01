@@ -216,6 +216,36 @@ defmodule MaragaInfoWeb.Admin.PostLiveTest do
     end
   end
 
+  describe "News video uploads" do
+    setup [:register_and_log_in_user]
+
+    test "uploads and saves a video on a news item", %{conn: conn} do
+      {:ok, new_live, html} = live(conn, ~p"/admin/posts/new")
+      assert html =~ "Upload video"
+
+      new_live
+      |> file_input("#post-form", :video, [
+        %{name: "news-clip.mp4", content: "test video content", type: "video/mp4"}
+      ])
+      |> render_upload("news-clip.mp4")
+
+      attrs = Map.merge(@create_attrs, %{title: "News with video", category: "Latest News"})
+
+      result =
+        new_live
+        |> form("#post-form", post: attrs)
+        |> render_submit()
+
+      assert {:ok, _show_live, _html} = follow_redirect(result, conn)
+
+      post = Enum.find(MaragaInfo.Content.list_posts(), &(&1.title == "News with video"))
+      assert post.video_url =~ ~r{^/uploads/.+\.mp4$}
+
+      upload_path = Path.join("priv/static", post.video_url)
+      on_exit(fn -> File.rm(upload_path) end)
+    end
+  end
+
   describe "Show" do
     setup [:register_and_log_in_user, :create_post]
 

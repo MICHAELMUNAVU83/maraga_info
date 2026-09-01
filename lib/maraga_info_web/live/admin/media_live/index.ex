@@ -147,7 +147,13 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
   defp handle_progress(:video, entry, socket) do
     if entry.done? do
       url = consume_uploaded_entry(socket, entry, fn meta -> Uploads.store_entry(meta, entry) end)
-      {:noreply, assign(socket, :video_url, url)}
+
+      changeset =
+        socket.assigns.editing
+        |> Content.change_media_item(Map.put(socket.assigns.form.params || %{}, "video_url", url))
+        |> Map.put(:action, :validate)
+
+      {:noreply, socket |> assign(:video_url, url) |> assign_form(changeset)}
     else
       {:noreply, socket}
     end

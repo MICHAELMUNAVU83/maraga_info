@@ -6,7 +6,9 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
   alias MaragaInfoWeb.Uploads
 
   @max_image_mb 8
+  @max_video_mb 80
   defp max_image_mb, do: @max_image_mb
+  defp max_video_mb, do: @max_video_mb
 
   @impl true
   def mount(_params, _session, socket) do
@@ -15,6 +17,8 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
      |> assign(:target_section, nil)
      |> assign(:cover_url, nil)
      |> assign(:cover_removed, false)
+     |> assign(:video_url, nil)
+     |> assign(:video_removed, false)
      |> allow_upload(:cover,
        accept: ~w(.jpg .jpeg .png .webp),
        max_entries: 1,
@@ -26,6 +30,13 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
        accept: ~w(.jpg .jpeg .png .webp .pdf),
        max_entries: 12,
        max_file_size: @max_image_mb * 1_000_000,
+       auto_upload: true,
+       progress: &handle_progress/3
+     )
+     |> allow_upload(:video,
+       accept: ~w(.mp4 .mov .webm),
+       max_entries: 1,
+       max_file_size: @max_video_mb * 1_000_000,
        auto_upload: true,
        progress: &handle_progress/3
      )}
@@ -52,6 +63,8 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     |> assign(:post, post)
     |> assign(:sections, [])
     |> assign(:cover_removed, false)
+    |> assign(:video_url, nil)
+    |> assign(:video_removed, false)
     |> assign_form(Content.change_post(post))
   end
 
@@ -63,6 +76,8 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
     |> assign(:post, post)
     |> assign(:cover_url, nil)
     |> assign(:cover_removed, false)
+    |> assign(:video_url, nil)
+    |> assign(:video_removed, false)
     |> assign(:sections, Enum.map(post.sections, &to_section_map/1))
     |> assign_form(Content.change_post(post))
   end
@@ -89,6 +104,7 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
       post_params
       |> Map.put("sections", build_section_attrs(sections))
       |> put_cover(socket.assigns.cover_url, socket.assigns.cover_removed)
+      |> put_video(socket.assigns.video_url, socket.assigns.video_removed)
 
     save_post(socket, socket.assigns.live_action, final_params, sections)
   end
@@ -168,6 +184,15 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
      |> assign(:cover_removed, true)}
   end
 
+  def handle_event("remove_video", _params, socket) do
+    socket =
+      Enum.reduce(socket.assigns.uploads.video.entries, socket, fn entry, acc ->
+        cancel_upload(acc, :video, entry.ref)
+      end)
+
+    {:noreply, assign(socket, video_url: nil, video_removed: true)}
+  end
+
   defp handle_progress(:cover, entry, socket) do
     if entry.done? do
       url =
@@ -197,6 +222,15 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
        socket
        |> assign(:sections, sections)
        |> maybe_assign_pdf_preview(upload.preview_text)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  defp handle_progress(:video, entry, socket) do
+    if entry.done? do
+      url = consume_uploaded_entry(socket, entry, fn meta -> Uploads.store_entry(meta, entry) end)
+      {:noreply, assign(socket, video_url: url, video_removed: false)}
     else
       {:noreply, socket}
     end
@@ -312,6 +346,12 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
   defp put_cover(params, _url, true), do: Map.put(params, "image_url", "")
   defp put_cover(params, _url, _removed), do: params
 
+  defp put_video(params, url, _removed) when is_binary(url) and url != "",
+    do: Map.put(params, "video_url", url)
+
+  defp put_video(params, _url, true), do: Map.put(params, "video_url", "")
+  defp put_video(params, _url, _removed), do: params
+
   defp update_section(sections, index, fun), do: List.update_at(sections, index, fun)
 
   defp swap(list, i, j) do
@@ -334,6 +374,14 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
 
   defp current_cover(_cover_url, _removed, form),
     do: Phoenix.HTML.Form.input_value(form, :image_url)
+
+  defp current_video(_video_url, true, _form), do: nil
+
+  defp current_video(video_url, _removed, _form) when is_binary(video_url) and video_url != "",
+    do: video_url
+
+  defp current_video(_video_url, _removed, form),
+    do: Phoenix.HTML.Form.input_value(form, :video_url)
 
   defp upload_error_to_string(:too_large), do: "File is too large (max #{@max_image_mb}MB)"
   defp upload_error_to_string(:too_many_files), do: "Too many files"
@@ -760,6 +808,52 @@ defmodule MaragaInfoWeb.Admin.PostLive.Form do
                 </p>
 
                 <p :for={{msg, _} <- @form[:image_url].errors} class="text-xs text-red-600">
+                  {msg}
+                </p>
+              </div>
+            </.editor_card>
+
+            <.editor_card title="Video (optional)">
+              <div class="space-y-4">
+                <div
+                  :if={current_video(@video_url, @video_removed, @form)}
+                  class="relative overflow-hidden rounded-lg border border-zinc-200 bg-black"
+                >
+                  <video
+                    src={current_video(@video_url, @video_removed, @form)}
+                    controls
+                    class="aspect-video w-full"
+                  >
+                  </video>
+                  <button
+                    type="button"
+                    phx-click="remove_video"
+                    class="absolute right-2 top-2 rounded-md bg-white/90 p-1.5 text-zinc-700 shadow-sm transition hover:text-red-600"
+                    aria-label="Remove video"
+                  >
+                    <.icon name="hero-x-mark-mini" class="h-4 w-4" />
+                  </button>
+                </div>
+
+                <label
+                  :if={!current_video(@video_url, @video_removed, @form)}
+                  class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-600 transition hover:border-blueink hover:text-blueink"
+                >
+                  <.icon name="hero-video-camera" class="h-5 w-5" />
+                  <span class="font-medium">Upload video</span>
+                  <span class="text-xs text-zinc-400">
+                    MP4, MOV or WEBM up to {max_video_mb()}MB
+                  </span>
+                  <.live_file_input upload={@uploads.video} class="sr-only" />
+                </label>
+
+                <p :for={entry <- @uploads.video.entries} class="text-xs text-zinc-500">
+                  Uploading {entry.client_name} — {entry.progress}%
+                </p>
+                <p :for={err <- upload_errors(@uploads.video)} class="text-xs text-red-600">
+                  {upload_error_to_string(err)}
+                </p>
+                <p :for={{msg, _} <- @form[:video_url].errors} class="text-xs text-red-600">
                   {msg}
                 </p>
               </div>

@@ -36,6 +36,7 @@ defmodule MaragaInfo.Content.Post do
     field :slug, :string
     field :seo_description, :string
     field :image_url, :string
+    field :video_url, :string
     field :image_position_x, :integer, default: 50
     field :image_position_y, :integer, default: 50
     field :canva_embed_url, :string
@@ -59,6 +60,7 @@ defmodule MaragaInfo.Content.Post do
       :category,
       :seo_description,
       :image_url,
+      :video_url,
       :image_position_x,
       :image_position_y,
       :canva_embed_url,
@@ -81,6 +83,9 @@ defmodule MaragaInfo.Content.Post do
     |> validate_length(:preview_text, max: 500)
     |> validate_length(:newsletter_volume, max: 80)
     |> validate_format(:image_url, ~r/^(\/|https?:\/\/)/,
+      message: "must start with /, http://, or https://"
+    )
+    |> validate_format(:video_url, ~r/^(\/|https?:\/\/)/,
       message: "must start with /, http://, or https://"
     )
     |> validate_number(:image_position_x,
