@@ -220,7 +220,7 @@ defmodule MaragaInfoWeb.BlogLive.Show do
 
   defp render_body(text), do: RichText.render(text)
 
-  defp pdf_embed_url(url), do: url <> "#toolbar=0&navpanes=0"
+  defp pdf_embed_url(url), do: url <> "#toolbar=0&navpanes=0&zoom=page-width"
 
   defp present?(nil), do: false
   defp present?(value) when is_binary(value), do: String.trim(value) != ""
