@@ -116,7 +116,7 @@ defmodule MaragaInfoWeb.BlogLive.Show do
                       class="overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-[#f8f9fb] shadow-[0_12px_40px_rgba(15,30,80,0.08)]"
                     >
                       <iframe
-                        src={url}
+                        src={pdf_embed_url(url)}
                         title={"PDF document for #{section.heading || @post.title}"}
                         class="h-[80vh] min-h-[640px] w-full bg-white"
                       >
@@ -219,6 +219,8 @@ defmodule MaragaInfoWeb.BlogLive.Show do
   end
 
   defp render_body(text), do: RichText.render(text)
+
+  defp pdf_embed_url(url), do: url <> "#toolbar=0&navpanes=0"
 
   defp present?(nil), do: false
   defp present?(value) when is_binary(value), do: String.trim(value) != ""

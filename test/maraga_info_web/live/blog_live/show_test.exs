@@ -81,7 +81,10 @@ defmodule MaragaInfoWeb.BlogLive.ShowTest do
     {:ok, _view, html} = live(conn, ~p"/blog/#{post.slug}")
 
     assert html =~ "Open PDF in a new tab"
-    assert html =~ ~s(<iframe src="/uploads/campaign-policy.pdf")
+
+    assert html =~
+             ~s(<iframe src="/uploads/campaign-policy.pdf#toolbar=0&amp;navpanes=0")
+
     assert html =~ ~s(href="/uploads/campaign-policy.pdf")
     refute html =~ ~s(<img src="/uploads/campaign-policy.pdf")
   end
