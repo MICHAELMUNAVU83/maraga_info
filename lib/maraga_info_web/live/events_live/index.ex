@@ -196,13 +196,13 @@ defmodule MaragaInfoWeb.EventsLive.Index do
       <.link
         :if={present?(@event.image_url)}
         navigate={~p"/events/#{@event.id}"}
-        class="block overflow-hidden"
+        class="block overflow-hidden bg-zinc-100"
         aria-label={"View #{@event.title}"}
       >
         <img
           src={@event.image_url}
           alt={@event.title}
-          class="h-40 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+          class="h-40 w-full object-contain"
           loading="lazy"
         />
       </.link>

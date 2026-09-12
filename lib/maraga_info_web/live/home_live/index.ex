@@ -985,7 +985,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
           :if={@event.image_url}
           src={@event.image_url}
           alt={@event.title}
-          class="h-48 w-full object-cover"
+          class="h-64 w-full bg-zinc-100 object-contain sm:h-80"
         />
 
         <div class="p-6 sm:p-8">
@@ -1106,12 +1106,12 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <.link
         :if={@event.image_url}
         navigate={~p"/events/#{@event.id}"}
-        class="block overflow-hidden rounded-[10px]"
+        class="block overflow-hidden rounded-[10px] bg-zinc-100"
       >
         <img
           src={@event.image_url}
           alt={@event.title}
-          class="h-48 w-full object-cover transition duration-500 group-hover:scale-105"
+          class="h-64 w-full object-contain sm:h-72"
           loading="lazy"
         />
       </.link>
