@@ -1,21 +1,26 @@
 defmodule MaragaInfoWeb.Uploads do
   @moduledoc """
   Helpers for storing LiveView uploads on local disk and returning the public
-  URL that can be served by `Plug.Static` from `priv/static/uploads`.
+  URL that can be served from the configured persistent uploads directory.
   """
 
-  @upload_dir Path.join(["priv", "static", "uploads"])
   @pdf_extraction_timeout 2_000
 
+  @doc "Returns the absolute directory used for persistent user uploads."
+  def directory do
+    Application.fetch_env!(:maraga_info, :uploads_dir)
+  end
+
   @doc """
-  Copies an uploaded entry into `priv/static/uploads` and returns its public
-  path (e.g. `/uploads/ab12cd34.jpg`).
+  Copies an uploaded entry into persistent storage and returns its public path
+  (e.g. `/uploads/ab12cd34.jpg`).
   """
   def store_entry(meta, entry) do
-    File.mkdir_p!(@upload_dir)
+    upload_dir = directory()
+    File.mkdir_p!(upload_dir)
     extension = extension(entry.client_name, entry.client_type)
     filename = "#{entry.uuid}#{extension}"
-    dest = Path.join(@upload_dir, filename)
+    dest = Path.join(upload_dir, filename)
     File.cp!(meta.path, dest)
     {:ok, "/uploads/#{filename}"}
   end
@@ -76,13 +81,14 @@ defmodule MaragaInfoWeb.Uploads do
 
   @doc """
   Copies a plain `Plug.Upload` (e.g. an inline image posted from the CKEditor
-  upload adapter) into `priv/static/uploads` and returns its public path.
+  upload adapter) into persistent storage and returns its public path.
   """
   def store_plug_upload(%Plug.Upload{} = upload) do
-    File.mkdir_p!(@upload_dir)
+    upload_dir = directory()
+    File.mkdir_p!(upload_dir)
     extension = extension(upload.filename, upload.content_type)
     filename = "#{Ecto.UUID.generate()}#{extension}"
-    dest = Path.join(@upload_dir, filename)
+    dest = Path.join(upload_dir, filename)
     File.cp!(upload.path, dest)
     {:ok, "/uploads/#{filename}"}
   end
@@ -96,7 +102,7 @@ defmodule MaragaInfoWeb.Uploads do
 
   def pdf?(_url), do: false
 
-  defp local_upload_path(url), do: Path.join(@upload_dir, Path.basename(url))
+  defp local_upload_path(url), do: Path.join(directory(), Path.basename(url))
 
   defp local_upload_url?(url) when is_binary(url) do
     case URI.parse(url) do

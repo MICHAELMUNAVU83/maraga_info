@@ -80,8 +80,7 @@ defmodule MaragaInfoWeb.Admin.NavLinkLive.Index do
   def handle_event("reset_to_defaults", _params, socket) do
     Content.reset_nav_links_to_defaults()
 
-    {:noreply,
-     socket |> put_flash(:info, "Navbar reset to defaults") |> load_nav_links()}
+    {:noreply, socket |> put_flash(:info, "Navbar reset to defaults") |> load_nav_links()}
   end
 
   def handle_event("toggle_visible", %{"id" => id}, socket) do
@@ -359,7 +358,12 @@ defmodule MaragaInfoWeb.Admin.NavLinkLive.Index do
         >
           Add child
         </button>
-        <button type="button" phx-click="edit" phx-value-id={@nav_link.id} class="text-blueink hover:underline">
+        <button
+          type="button"
+          phx-click="edit"
+          phx-value-id={@nav_link.id}
+          class="text-blueink hover:underline"
+        >
           Edit
         </button>
         <button

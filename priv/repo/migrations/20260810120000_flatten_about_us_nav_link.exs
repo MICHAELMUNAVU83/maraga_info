@@ -6,7 +6,9 @@ defmodule MaragaInfo.Repo.Migrations.FlattenAboutUsNavLink do
   def up do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
-    case repo().query!("SELECT id, position FROM nav_links WHERE label = 'About Us' AND parent_id IS NULL") do
+    case repo().query!(
+           "SELECT id, position FROM nav_links WHERE label = 'About Us' AND parent_id IS NULL"
+         ) do
       %{rows: [[about_id, position] | _]} ->
         # Make room for the second standalone link.
         repo().query!(

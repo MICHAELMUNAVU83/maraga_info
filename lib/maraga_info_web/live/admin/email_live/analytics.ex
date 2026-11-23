@@ -95,7 +95,8 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Analytics do
     |> assign(:last_entry, last_entry(total_entries, offset, socket.assigns.per_page))
     |> assign(
       :deliveries,
-      Campaigns.list_deliveries(campaign.id,
+      Campaigns.list_deliveries(
+        campaign.id,
         filters ++ [limit: socket.assigns.per_page, offset: offset]
       )
     )
@@ -172,7 +173,9 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Analytics do
   defp format_datetime_with_zone(%DateTime{} = dt), do: "#{format_datetime(dt)} UTC+3"
 
   defp duration_label(%{first_sent_at: nil}), do: "Waiting for the first successful send."
-  defp duration_label(%{first_sent_at: _first, last_sent_at: nil}), do: "Waiting for send timestamps."
+
+  defp duration_label(%{first_sent_at: _first, last_sent_at: nil}),
+    do: "Waiting for send timestamps."
 
   defp duration_label(%{first_sent_at: first_sent_at, last_sent_at: last_sent_at}) do
     seconds = DateTime.diff(last_sent_at, first_sent_at, :second)
@@ -212,17 +215,39 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Analytics do
       </:actions>
 
       <div class="space-y-6">
-        <.admin_panel title="Campaign overview" subtitle="Everything on this screen is displayed in UTC+3.">
+        <.admin_panel
+          title="Campaign overview"
+          subtitle="Everything on this screen is displayed in UTC+3."
+        >
           <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <.admin_stat title="Audience" value={Integer.to_string(@stats.total)} hint="Recipient rows captured for this send" />
-            <.admin_stat title="Delivered" value={Integer.to_string(@stats.sent)} hint={"Success rate #{@stats |> success_rate()}"} tone="accent" />
-            <.admin_stat title="Failed" value={Integer.to_string(@stats.failed)} hint="Rows that exhausted delivery attempts" />
-            <.admin_stat title="Pending" value={Integer.to_string(@stats.pending)} hint="Still waiting in the queue" />
+            <.admin_stat
+              title="Audience"
+              value={Integer.to_string(@stats.total)}
+              hint="Recipient rows captured for this send"
+            />
+            <.admin_stat
+              title="Delivered"
+              value={Integer.to_string(@stats.sent)}
+              hint={"Success rate #{@stats |> success_rate()}"}
+              tone="accent"
+            />
+            <.admin_stat
+              title="Failed"
+              value={Integer.to_string(@stats.failed)}
+              hint="Rows that exhausted delivery attempts"
+            />
+            <.admin_stat
+              title="Pending"
+              value={Integer.to_string(@stats.pending)}
+              hint="Still waiting in the queue"
+            />
           </div>
 
           <div class="mt-5 grid gap-4 lg:grid-cols-3">
             <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-zinc-400">Campaign status</p>
+              <p class="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                Campaign status
+              </p>
               <div class="mt-2 flex items-center gap-2">
                 <.admin_badge tone={status_tone(@campaign.status)} label={@campaign.status} />
                 <.admin_badge :if={@campaign.ab_test} tone="neutral" label="A/B test" />
@@ -244,7 +269,9 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Analytics do
             </div>
 
             <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-zinc-400">Latest activity</p>
+              <p class="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                Latest activity
+              </p>
               <p class="mt-2 text-sm font-medium text-zinc-900">
                 Last delivery update: {format_datetime_with_zone(@overview.last_updated_at)}
               </p>
@@ -263,7 +290,10 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Analytics do
           </div>
         </.admin_panel>
 
-        <.admin_panel title="Recipient deliveries" subtitle="Search, filter, and inspect each recipient row that was queued for this campaign.">
+        <.admin_panel
+          title="Recipient deliveries"
+          subtitle="Search, filter, and inspect each recipient row that was queued for this campaign."
+        >
           <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <form phx-submit="search" class="flex w-full max-w-xl gap-2">
               <input
@@ -297,7 +327,9 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Analytics do
               >
                 <option value="all" selected={@variant_filter == "all"}>All variants</option>
                 <option value="A" selected={@variant_filter == "A"}>Variant A</option>
-                <option :if={@campaign.ab_test} value="B" selected={@variant_filter == "B"}>Variant B</option>
+                <option :if={@campaign.ab_test} value="B" selected={@variant_filter == "B"}>
+                  Variant B
+                </option>
               </select>
             </form>
           </div>

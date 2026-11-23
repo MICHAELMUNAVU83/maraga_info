@@ -9,7 +9,8 @@ defmodule MaragaInfo.Sasasignal do
   @auth_endpoint "https://sasasignal.com/api/v1/authenticate"
   @campaign_endpoint "https://sasasignal.com/api/v1/sms/bulk/campaign/start"
 
-  @type recipient :: String.t() | %{required(:phone) => String.t(), optional(:message) => String.t()}
+  @type recipient ::
+          String.t() | %{required(:phone) => String.t(), optional(:message) => String.t()}
 
   @doc """
   Authenticates against SasaSignal using either explicit credentials or the
@@ -18,7 +19,8 @@ defmodule MaragaInfo.Sasasignal do
   def authenticate(email \\ nil, password \\ nil) do
     with {:ok, email} <- credential(email, :email),
          {:ok, password} <- credential(password, :password),
-         {:ok, response} <- post_json(@auth_endpoint, %{email: email, password: password}, auth_headers()),
+         {:ok, response} <-
+           post_json(@auth_endpoint, %{email: email, password: password}, auth_headers()),
          {:ok, token} <- extract_token(response.body) do
       {:ok,
        %{
@@ -117,7 +119,11 @@ defmodule MaragaInfo.Sasasignal do
 
   defp normalize_campaign_attrs(attrs) do
     with {:ok, sender_id} <-
-           required_value(fetch_any(attrs, [:sender_id, "sender_id"]), "SASASIGNAL_SENDER_ID", "sender_id"),
+           required_value(
+             fetch_any(attrs, [:sender_id, "sender_id"]),
+             "SASASIGNAL_SENDER_ID",
+             "sender_id"
+           ),
          {:ok, message} <- normalize_string(fetch_any(attrs, [:message, "message"]), "message"),
          {:ok, callback_url} <-
            required_value(
@@ -134,7 +140,8 @@ defmodule MaragaInfo.Sasasignal do
          callback_url: callback_url,
          recipients: recipients,
          filename:
-           normalize_optional_string(fetch_any(attrs, [:filename, "filename"])) || "recipients.csv"
+           normalize_optional_string(fetch_any(attrs, [:filename, "filename"])) ||
+             "recipients.csv"
        }}
     end
   end
@@ -201,7 +208,9 @@ defmodule MaragaInfo.Sasasignal do
   defp credential(nil, :password), do: env_value("SASASIGNAL_PASSWORD", :missing_password)
   defp credential(value, field), do: normalize_string(value, Atom.to_string(field))
 
-  defp required_value(nil, env_name, field), do: env_value(env_name, {:invalid_payload, "#{field} is required"})
+  defp required_value(nil, env_name, field),
+    do: env_value(env_name, {:invalid_payload, "#{field} is required"})
+
   defp required_value(value, _env_name, field), do: normalize_string(value, field)
 
   defp env_value(name, error_atom) do
@@ -253,7 +262,8 @@ defmodule MaragaInfo.Sasasignal do
   end
 
   defp normalize_recipient(%{} = recipient) do
-    with {:ok, phone} <- normalize_string(fetch_any(recipient, [:phone, "phone"]), "recipient.phone") do
+    with {:ok, phone} <-
+           normalize_string(fetch_any(recipient, [:phone, "phone"]), "recipient.phone") do
       message = normalize_optional_string(fetch_any(recipient, [:message, "message"])) || ""
       {:ok, [phone, message]}
     end

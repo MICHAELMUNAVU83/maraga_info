@@ -52,6 +52,16 @@ end
 [Path.join(root_dir, ".env"), Path.join(root_dir, ".env.#{config_env()}")]
 |> Enum.each(load_dotenv_file)
 
+# User uploads must live outside priv/static in production: that directory is
+# part of the compiled release and can be replaced by a deployment or rollback.
+uploads_dir =
+  System.get_env("UPLOADS_DIR") ||
+    if config_env() == :prod,
+      do: "storage/uploads",
+      else: "priv/static/uploads"
+
+config :maraga_info, :uploads_dir, Path.expand(uploads_dir)
+
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
 # system starts, so it is typically used to load production configuration

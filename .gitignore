@@ -42,3 +42,11 @@ npm-debug.log
 # Uploaded media (keep the dir, ignore contents)
 /priv/static/uploads/*
 !/priv/static/uploads/.gitkeep
+/storage/uploads/*
+!/storage/uploads/.gitkeep
+
+# Production secrets (never commit this file)
+/.env.prod
+!/.deploy/.env.prod.example
+.DS_Store
+*.bak

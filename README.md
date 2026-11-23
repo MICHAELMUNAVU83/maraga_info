@@ -72,7 +72,9 @@ The seed script ([`priv/repo/seeds.exs`](priv/repo/seeds.exs)) creates:
 - `/admin/media/photos`, `/admin/media/videos` — public gallery assets
 - `/admin/pages/*`, `/admin/settings` — additional admin sections
 
-Uploaded images and videos are stored under `priv/static/uploads/` and served from `/uploads`.
+Uploaded images and videos are served from `/uploads`. In production they are stored in
+the persistent `storage/uploads/` directory (override it with `UPLOADS_DIR`); development
+and test continue to use `priv/static/uploads/`.
 Uploads are stored without image processing. A 3:2 landscape cover is recommended because public
 listing cards use that aspect ratio. The admin cover preview can be dragged to choose the focal
 area shown in those cards. Post sections accept JPG, PNG, WEBP, and PDF attachments up to 8MB.

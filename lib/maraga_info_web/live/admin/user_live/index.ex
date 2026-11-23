@@ -106,12 +106,7 @@ defmodule MaragaInfoWeb.Admin.UserLive.Index do
         </div>
       </.admin_panel>
 
-      <.modal
-        :if={@reset_user}
-        id="reset-password-modal"
-        show
-        on_cancel={JS.push("close_modal")}
-      >
+      <.modal :if={@reset_user} id="reset-password-modal" show on_cancel={JS.push("close_modal")}>
         <div class="space-y-6">
           <div>
             <h2 class="text-lg font-semibold text-zinc-900">Reset password</h2>

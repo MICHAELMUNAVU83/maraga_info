@@ -27,7 +27,7 @@ defmodule MaragaInfo.Repo.Migrations.CreateNavLinks do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 
     Enum.with_index(MaragaInfo.Content.NavLink.defaults(), fn {label, href, placement, children},
-                                                               position ->
+                                                              position ->
       parent_id = insert_nav_link(label, href, placement, position, now)
 
       Enum.with_index(children, fn {child_label, child_href}, child_position ->

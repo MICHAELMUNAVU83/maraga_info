@@ -602,12 +602,14 @@ defmodule MaragaInfo.Content do
 
       Enum.with_index(NavLink.defaults(), fn {label, href, placement, children}, position ->
         %{id: parent_id} =
-          Repo.insert!(NavLink.changeset(%NavLink{}, %{
-            label: label,
-            href: href,
-            placement: placement,
-            position: position
-          }))
+          Repo.insert!(
+            NavLink.changeset(%NavLink{}, %{
+              label: label,
+              href: href,
+              placement: placement,
+              position: position
+            })
+          )
 
         Enum.with_index(children, fn {child_label, child_href}, child_position ->
           Repo.insert!(

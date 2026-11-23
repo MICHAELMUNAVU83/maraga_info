@@ -88,6 +88,8 @@ defmodule MaragaInfo.MixProject do
   end
 
   defp prevent_destructive_ecto_task(_args) do
-    Mix.raise("This project disables destructive Ecto tasks like `mix ecto.drop` and `mix ecto.reset`.")
+    Mix.raise(
+      "This project disables destructive Ecto tasks like `mix ecto.drop` and `mix ecto.reset`."
+    )
   end
 end
