@@ -79,6 +79,15 @@ Uploads are stored without image processing. A 3:2 landscape cover is recommende
 listing cards use that aspect ratio. The admin cover preview can be dragged to choose the focal
 area shown in those cards. Post sections accept JPG, PNG, WEBP, and PDF attachments up to 8MB.
 
+The home-page voter-drive form stores registrations separately from newsletter volunteers. The
+table migration automatically seeds the bundled legacy voter-drive workbook:
+
+```bash
+mix ecto.migrate
+```
+
+The `mix voter_drive.import PATH` command remains available for later spreadsheet updates.
+
 ## Routes overview
 
 | Path                                     | Description                      |

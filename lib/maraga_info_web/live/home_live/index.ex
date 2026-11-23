@@ -5,12 +5,23 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   alias MaragaInfo.Content.Post
   alias MaragaInfo.Volunteers
   alias MaragaInfo.Volunteers.WelcomeNotifier
+  alias MaragaInfo.VoterDrive
+  alias MaragaInfo.VoterDrive.Registration
   alias MaragaInfoWeb.Seo
 
   @social_links [
     %{name: "x", href: "https://x.com/dkmaraga", label: "X"},
     %{name: "instagram", href: "https://www.instagram.com/maraga2027", label: "Instagram"},
     %{name: "youtube", href: "https://www.youtube.com/@dkmaraga", label: "YouTube"}
+  ]
+
+  @volunteer_interests [
+    "Fund Raising / Donating",
+    "Civic Education",
+    "Community Organization",
+    "Issue Based Organizing",
+    "Digital Organizing",
+    "Volunteer Recruitment & Training"
   ]
 
   @fallback_videos [
@@ -91,6 +102,9 @@ defmodule MaragaInfoWeb.HomeLive.Index do
        subscribed: false,
        subscribe_error: nil,
        show_subscribe_modal: false,
+       volunteer_form: to_form(VoterDrive.change_registration(%Registration{}), as: :volunteer),
+       volunteer_submitted: false,
+       volunteer_interests: @volunteer_interests,
        content: content
      )}
   end
@@ -141,6 +155,38 @@ defmodule MaragaInfoWeb.HomeLive.Index do
 
   def handle_event("close_subscribe_modal", _params, socket) do
     {:noreply, assign(socket, :show_subscribe_modal, false)}
+  end
+
+  def handle_event("validate_volunteer", %{"volunteer" => params}, socket) do
+    changeset =
+      %Registration{}
+      |> VoterDrive.change_registration(params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, :volunteer_form, to_form(changeset, as: :volunteer))}
+  end
+
+  def handle_event("register_volunteer", %{"volunteer" => params}, socket) do
+    case VoterDrive.create_registration(params) do
+      {:ok, _registration} ->
+        {:noreply,
+         assign(socket,
+           volunteer_form:
+             to_form(VoterDrive.change_registration(%Registration{}), as: :volunteer),
+           volunteer_submitted: true
+         )}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, :volunteer_form, to_form(changeset))}
+    end
+  end
+
+  def handle_event("new_volunteer", _params, socket) do
+    {:noreply,
+     assign(socket,
+       volunteer_form: to_form(VoterDrive.change_registration(%Registration{}), as: :volunteer),
+       volunteer_submitted: false
+     )}
   end
 
   # Kenya's 47 counties, so subscriber locations stay consistent instead of
@@ -351,6 +397,11 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <%!-- <.shop_section shop_items={@shop_items} /> --%>
       <.agenda_section :if={section_visible?(@content, :agenda)} videos={@videos} content={@content} />
       <.gallery_section gallery_images={@gallery_images} />
+      <.volunteer_section
+        form={@volunteer_form}
+        submitted={@volunteer_submitted}
+        interests={@volunteer_interests}
+      />
       <.site_footer id="footer" />
 
       <.modal
@@ -388,6 +439,144 @@ defmodule MaragaInfoWeb.HomeLive.Index do
         </div>
       </.modal>
     </div>
+    """
+  end
+
+  attr :form, Phoenix.HTML.Form, required: true
+  attr :submitted, :boolean, default: false
+  attr :interests, :list, required: true
+
+  defp volunteer_section(assigns) do
+    assigns = assign(assigns, :counties, kenyan_counties())
+
+    ~H"""
+    <section id="volunteer" class="bg-blueink px-4 py-16 sm:px-6 lg:py-24">
+      <div class="mx-auto max-w-6xl overflow-hidden rounded-[10px] bg-ghost shadow-2xl">
+        <div class="border-b border-blueink/10 px-6 py-10 text-center sm:px-10 lg:px-16">
+          <p class="font-head text-xs font-semibold uppercase tracking-[0.24em] text-crimson">
+            Join the movement
+          </p>
+          <h2 class="mt-3 font-head text-4xl uppercase leading-none text-blueink sm:text-5xl">
+            Volunteer for Kenya
+          </h2>
+          <p class="mx-auto mt-4 max-w-3xl text-base leading-7 text-grayink sm:text-lg">
+            Add your voice, skills and time to a people-powered campaign working to reset,
+            restore and rebuild our country.
+          </p>
+        </div>
+
+        <div :if={@submitted} id="volunteer-success" class="px-6 py-16 text-center sm:px-10">
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-crimson text-white">
+            <.icon name="hero-check" class="h-9 w-9" />
+          </div>
+          <h3 class="mt-6 font-head text-3xl uppercase text-blueink">
+            Thank you for stepping forward
+          </h3>
+          <p class="mx-auto mt-3 max-w-xl text-grayink">
+            Your details have been received. Our campaign team will be in touch with ways to get involved.
+          </p>
+          <button
+            type="button"
+            phx-click="new_volunteer"
+            class="mt-8 rounded-[5px] bg-crimson px-7 py-3 font-head text-xs font-semibold uppercase tracking-[0.15em] text-white"
+          >
+            Add another volunteer
+          </button>
+        </div>
+
+        <.form
+          :let={f}
+          for={@form}
+          id="volunteer-form"
+          phx-change="validate_volunteer"
+          phx-submit="register_volunteer"
+          class={if @submitted, do: "hidden", else: "px-6 py-10 sm:px-10 lg:px-16"}
+        >
+          <.form_section title="Personal information" icon="hero-user">
+            <div class="grid gap-5 md:grid-cols-2">
+              <.input field={f[:first_name]} label="First name" required />
+              <.input field={f[:last_name]} label="Last name" required />
+              <.input field={f[:phone]} type="tel" label="Phone number" required />
+              <.input field={f[:email]} type="email" label="Email address" required />
+            </div>
+          </.form_section>
+
+          <.form_section title="Location information" icon="hero-map-pin">
+            <div class="grid gap-5 md:grid-cols-2">
+              <.input
+                field={f[:county]}
+                type="select"
+                label="County"
+                prompt="Select county"
+                options={@counties}
+                required
+              />
+              <.input field={f[:constituency]} label="Constituency" required />
+              <.input field={f[:ward]} label="Ward" required />
+              <.input field={f[:polling_station]} label="Polling station (optional)" />
+            </div>
+          </.form_section>
+
+          <.form_section title="How would you like to help?" icon="hero-hand-raised">
+            <div class="grid gap-3 md:grid-cols-2">
+              <label
+                :for={interest <- @interests}
+                class="flex cursor-pointer items-center gap-3 rounded-[6px] border border-blueink/15 bg-white px-4 py-4 text-sm font-semibold text-blueink transition hover:border-crimson"
+              >
+                <input
+                  type="checkbox"
+                  name="volunteer[interests][]"
+                  value={interest}
+                  checked={interest in (f[:interests].value || [])}
+                  class="h-5 w-5 rounded border-blueink/30 text-crimson focus:ring-crimson"
+                />
+                {interest}
+              </label>
+            </div>
+            <p
+              :for={error <- Enum.map(f[:interests].errors, &translate_error/1)}
+              class="mt-2 text-sm text-crimson"
+            >
+              {error}
+            </p>
+          </.form_section>
+
+          <.form_section title="Additional information" icon="hero-chat-bubble-left-right">
+            <.input
+              field={f[:additional_info]}
+              type="textarea"
+              label="Tell us about your skills, experience or how you would like to contribute (optional)"
+              rows="5"
+            />
+          </.form_section>
+
+          <div class="flex justify-end border-t border-blueink/10 pt-7">
+            <button
+              type="submit"
+              class="w-full rounded-[5px] bg-crimson px-8 py-4 font-head text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-blueink sm:w-auto"
+            >
+              Join the movement
+            </button>
+          </div>
+        </.form>
+      </div>
+    </section>
+    """
+  end
+
+  attr :title, :string, required: true
+  attr :icon, :string, required: true
+  slot :inner_block, required: true
+
+  defp form_section(assigns) do
+    ~H"""
+    <fieldset class="mb-9">
+      <legend class="mb-5 flex w-full items-center gap-3 border-b border-blueink/10 pb-3 font-head text-xl uppercase text-blueink">
+        <.icon name={@icon} class="h-6 w-6 text-crimson" />
+        {@title}
+      </legend>
+      {render_slot(@inner_block)}
+    </fieldset>
     """
   end
 

@@ -14,7 +14,11 @@ defmodule MaragaInfo.Volunteers.Importer do
     "Constituency" => :constituency,
     "Ward" => :ward,
     "Polling Station" => :polling_station,
+    "Volunteering Interests" => :interests,
+    "Reasons" => :interests,
     "Additional Info" => :additional_info,
+    "Registered At (UTC)" => :joined_on,
+    "Updated At (UTC)" => :source_updated_on,
     "Joined Date" => :joined_on,
     "Last Updated" => :source_updated_on
   }
@@ -27,7 +31,7 @@ defmodule MaragaInfo.Volunteers.Importer do
          {:ok, workbook_xml} <- fetch_entry(entries, "xl/workbook.xml"),
          {:ok, rels_xml} <- fetch_entry(entries, "xl/_rels/workbook.xml.rels"),
          {:ok, shared_strings} <- parse_shared_strings(entries),
-         {:ok, sheet_path} <- first_sheet_path(workbook_xml, rels_xml),
+         {:ok, sheet_path} <- volunteer_sheet_path(workbook_xml, rels_xml),
          {:ok, worksheet_xml} <- fetch_entry(entries, sheet_path),
          {:ok, rows} <- parse_rows(worksheet_xml, shared_strings) do
       {:ok, rows_to_attrs(rows)}
@@ -53,13 +57,19 @@ defmodule MaragaInfo.Volunteers.Importer do
     end
   end
 
-  defp first_sheet_path(workbook_xml, rels_xml) do
+  defp volunteer_sheet_path(workbook_xml, rels_xml) do
     with {:ok, workbook} <- parse_xml(workbook_xml),
          {:ok, rels} <- parse_xml(rels_xml),
-         [sheet | _] <-
+         sheets when sheets != [] <-
            xpath_nodes(
              workbook,
              "/*[local-name()='workbook']/*[local-name()='sheets']/*[local-name()='sheet']"
+           ),
+         sheet <-
+           Enum.find(
+             sheets,
+             List.first(sheets),
+             &(xpath_string(&1, "string(@name)") == "Volunteers")
            ),
          rel_id when rel_id != "" <- xpath_string(sheet, "string(@*[local-name()='id'])"),
          [relationship | _] <-
@@ -68,11 +78,15 @@ defmodule MaragaInfo.Volunteers.Importer do
              "/*[local-name()='Relationships']/*[local-name()='Relationship'][@Id='#{rel_id}']"
            ),
          target when target != "" <- xpath_string(relationship, "string(@Target)") do
-      {:ok, Path.join("xl", target)}
+      {:ok, worksheet_path(target)}
     else
       _ -> {:error, :invalid_spreadsheet}
     end
   end
+
+  defp worksheet_path("/" <> target), do: target
+  defp worksheet_path("xl/" <> _rest = target), do: target
+  defp worksheet_path(target), do: Path.join("xl", target)
 
   defp parse_shared_strings(entries) do
     case Map.fetch(entries, "xl/sharedStrings.xml") do
@@ -159,8 +173,15 @@ defmodule MaragaInfo.Volunteers.Importer do
           value = Map.get(row_map, index)
 
           case Map.fetch(@header_map, header) do
-            {:ok, field} -> Map.put(acc, field, cast_value(field, value))
-            :error -> acc
+            {:ok, :interests} ->
+              interests = cast_value(:interests, value)
+              Map.update(acc, :interests, interests, &Enum.uniq(&1 ++ interests))
+
+            {:ok, field} ->
+              Map.put(acc, field, cast_value(field, value))
+
+            :error ->
+              acc
           end
         end)
 
@@ -189,6 +210,21 @@ defmodule MaragaInfo.Volunteers.Importer do
 
   defp cast_value(field, value) when field in [:joined_on, :source_updated_on] do
     parse_date(value)
+  end
+
+  defp cast_value(:interests, value) do
+    value
+    |> to_string_or_nil()
+    |> case do
+      nil ->
+        []
+
+      text ->
+        text
+        |> String.split(~r/[;,]/)
+        |> Enum.map(&String.trim/1)
+        |> Enum.reject(&(&1 == ""))
+    end
   end
 
   defp cast_value(_field, value) do

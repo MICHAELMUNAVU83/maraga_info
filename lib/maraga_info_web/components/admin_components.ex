@@ -278,6 +278,7 @@ defmodule MaragaInfoWeb.AdminComponents do
       %{type: :heading, label: "Operations"},
       %{label: "Events", href: ~p"/admin/events", icon: "hero-calendar-days"},
       %{label: "Volunteers", href: ~p"/admin/volunteers", icon: "hero-users"},
+      %{label: "Voter Drive", href: ~p"/admin/voter-drive", icon: "hero-megaphone"},
       %{label: "Emails", href: ~p"/admin/emails", icon: "hero-envelope"},
       %{label: "SMS", href: ~p"/admin/sms", icon: "hero-chat-bubble-left-right"},
       %{type: :heading, label: "System"},

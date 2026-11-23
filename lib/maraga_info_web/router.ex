@@ -135,6 +135,7 @@ defmodule MaragaInfoWeb.Router do
 
       live "/events", EventLive.Index, :index
       live "/volunteers", VolunteerLive.Index, :index
+      live "/voter-drive", VoterDriveLive.Index, :index
       live "/emails", EmailLive.Index, :index
       live "/emails/new", EmailLive.Index, :new
       live "/emails/:id/analytics", EmailLive.Analytics, :show
