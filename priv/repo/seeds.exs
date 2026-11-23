@@ -48,29 +48,6 @@ admin =
     |> Repo.update!()
   end
 
-secondary_admin_email = "michaelmunavu83@gmail.com"
-
-secondary_admin =
-  case Repo.get_by(User, email: secondary_admin_email) do
-    nil ->
-      {:ok, user} =
-        Accounts.register_user(%{
-          email: secondary_admin_email,
-          password: "123456"
-        })
-
-      user
-
-    user ->
-      user
-  end
-
-unless secondary_admin.is_admin do
-  secondary_admin
-  |> Ecto.Changeset.change(is_admin: true)
-  |> Repo.update!()
-end
-
 # --- Seed volunteers -------------------------------------------------------
 volunteer_seed_path = Path.join([__DIR__, "seeds", "volunteers_2026-05-11.xlsx"])
 
