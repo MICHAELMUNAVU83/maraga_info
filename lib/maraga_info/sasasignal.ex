@@ -249,8 +249,6 @@ defmodule MaragaInfo.Sasasignal do
     ])
   end
 
-  defp extract_expiry(_body), do: nil
-
   defp find_first_value(map, key_paths) do
     Enum.find_value(key_paths, fn path -> get_in(map, path) end)
   end

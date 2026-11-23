@@ -124,15 +124,20 @@ defmodule MaragaInfoWeb.Admin.NavLinkLive.Index do
   defp reorder(ids, id, "down"), do: swap(ids, id, 1)
 
   defp swap(ids, id, offset) do
-    index = Enum.find_index(ids, &(&1 == id))
-    target = index + offset
+    case Enum.find_index(ids, &(&1 == id)) do
+      nil ->
+        ids
 
-    if index && target >= 0 && target < length(ids) do
-      ids
-      |> List.delete_at(index)
-      |> List.insert_at(target, id)
-    else
-      ids
+      index ->
+        target = index + offset
+
+        if target >= 0 and target < length(ids) do
+          ids
+          |> List.delete_at(index)
+          |> List.insert_at(target, id)
+        else
+          ids
+        end
     end
   end
 
@@ -186,8 +191,6 @@ defmodule MaragaInfoWeb.Admin.NavLinkLive.Index do
   end
 
   defp assign_form(socket, changeset), do: assign(socket, :form, to_form(changeset))
-
-  defp parent_label(nav_links, %NavLink{parent_id: nil}), do: nil
 
   defp parent_label(nav_links, %NavLink{parent_id: parent_id}) do
     case Enum.find(nav_links, &(&1.id == parent_id)) do

@@ -33,7 +33,6 @@ defmodule MaragaInfo.Volunteers.Importer do
       {:ok, rows_to_attrs(rows)}
     else
       {:error, _reason} = error -> error
-      _ -> {:error, :invalid_spreadsheet}
     end
   end
 

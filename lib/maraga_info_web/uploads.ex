@@ -114,8 +114,6 @@ defmodule MaragaInfoWeb.Uploads do
     end
   end
 
-  defp local_upload_url?(_url), do: false
-
   defp valid_pdf?(path) do
     case File.read(path) do
       {:ok, <<"%PDF-", _::binary>> = contents} -> String.contains?(contents, "%%EOF")

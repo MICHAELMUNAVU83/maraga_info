@@ -420,20 +420,13 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
   end
 
   def handle_event("switch_builder_mode", %{"mode" => mode}, socket) do
-    {sections, body_note} =
-      case mode do
-        "sections" -> {@default_sections, nil}
-        _ -> {[], nil}
-      end
+    sections = if mode == "sections", do: @default_sections, else: []
 
     socket =
       socket
       |> assign(:builder_mode, mode)
       |> assign(:sections, sections)
       |> refresh_preview()
-
-    socket =
-      if body_note, do: put_flash(socket, :info, body_note), else: socket
 
     {:noreply, socket}
   end
@@ -649,19 +642,6 @@ defmodule MaragaInfoWeb.Admin.EmailLive.Index do
     |> assign(:campaigns, campaigns)
     |> assign(:live_stats, live_stats)
     |> assign(:variant_stats, variant_stats)
-  end
-
-  defp ensure_polling(socket) do
-    if socket.assigns.polling do
-      socket
-    else
-      if Enum.any?(socket.assigns.campaigns, &(&1.status == "sending")) do
-        schedule_tick()
-        assign(socket, :polling, true)
-      else
-        socket
-      end
-    end
   end
 
   defp schedule_tick, do: Process.send_after(self(), :tick, @poll_interval)

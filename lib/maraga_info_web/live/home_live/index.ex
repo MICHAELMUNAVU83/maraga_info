@@ -546,7 +546,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             <.donation_chip label="KES 200" amount="200" donate_url={@donate_url} />
             <.donation_chip label="KES 500" amount="500" donate_url={@donate_url} />
             <.donation_chip label="KES 1000" amount="1000" donate_url={@donate_url} />
-            <.donation_chip label="Other" amount={nil} donate_url={@donate_url} />
+            <.donation_chip label="Other" donate_url={@donate_url} />
           </div>
 
           <a
