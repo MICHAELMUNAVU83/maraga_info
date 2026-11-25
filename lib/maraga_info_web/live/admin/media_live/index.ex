@@ -671,7 +671,7 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
             />
           </datalist>
           <p class="-mt-2 text-xs text-zinc-500">
-            Pick an existing album or type a new name. Each album shows as its own tab in the public gallery.
+            Pick an existing album or type a new name. Each album shows as its own folder in the public gallery.
           </p>
           <.input field={@form[:description]} type="textarea" label="Description (optional)" rows="3" />
           <.input field={@form[:position]} type="number" label="Sort order" />
