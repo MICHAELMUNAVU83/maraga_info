@@ -10,14 +10,14 @@ defmodule MaragaInfoWeb.MediaLive.Index do
     {:ok,
      socket
      |> assign(:config, scope_from_path("/media"))
-     |> assign(:categories, [])
-     |> assign(:active_category, "all")
+     |> assign(:folders, [])
+     |> assign(:folder, nil)
      |> assign(:selected, nil)
      |> assign(:items, [])}
   end
 
   @impl true
-  def handle_params(_params, url, socket) do
+  def handle_params(params, url, socket) do
     path = URI.parse(url).path
     config = scope_from_path(path)
 
@@ -27,21 +27,11 @@ defmodule MaragaInfoWeb.MediaLive.Index do
      |> assign(:page_title, "#{config.title} | #{Seo.site_name()}")
      |> assign(:page_description, config.description)
      |> assign(:canonical_url, Seo.site_url() <> config.canonical_path)
-     |> assign(
-       :categories,
-       Content.list_published_media_categories(media_type: config.media_type)
-     )
-     |> load_items("all")}
+     |> assign(:folder, blank_to_nil(params["folder"]))
+     |> load_items()}
   end
 
   @impl true
-  def handle_event("filter", %{"category" => category}, socket) do
-    {:noreply,
-     socket
-     |> assign(:active_category, category)
-     |> load_items(category)}
-  end
-
   def handle_event("open", %{"id" => id}, socket) do
     selected = Enum.find(socket.assigns.items, &(to_string(&1.id) == id))
     {:noreply, assign(socket, :selected, selected)}
@@ -51,15 +41,37 @@ defmodule MaragaInfoWeb.MediaLive.Index do
     {:noreply, assign(socket, :selected, nil)}
   end
 
-  defp load_items(socket, category) do
-    assign(
-      socket,
-      :items,
-      Content.list_published_media_items(
-        category: category,
-        media_type: socket.assigns.config.media_type
-      )
-    )
+  defp load_items(socket) do
+    all_items = Content.list_published_media_items(media_type: socket.assigns.config.media_type)
+    folder = socket.assigns.folder
+
+    items =
+      if folder, do: Enum.filter(all_items, &(&1.category == folder)), else: []
+
+    socket
+    |> assign(:items, items)
+    |> assign(:folders, build_folders(all_items))
+  end
+
+  defp build_folders(items) do
+    items
+    |> Enum.group_by(& &1.category)
+    |> Enum.map(fn {name, folder_items} ->
+      %{
+        name: name,
+        count: length(folder_items),
+        cover: Enum.find_value(folder_items, & &1.image_url)
+      }
+    end)
+    |> Enum.sort_by(&String.downcase(&1.name || ""))
+  end
+
+  defp folder_path(base_path, name), do: base_path <> "?" <> URI.encode_query(folder: name)
+
+  defp blank_to_nil(nil), do: nil
+
+  defp blank_to_nil(value) when is_binary(value) do
+    if String.trim(value) == "", do: nil, else: value
   end
 
   @impl true
@@ -82,34 +94,50 @@ defmodule MaragaInfoWeb.MediaLive.Index do
 
       <section class="bg-white py-16">
         <div class="mx-auto max-w-container px-4">
-          <div class="mb-10 flex flex-wrap items-center justify-between gap-4">
-            <h2 class="font-head text-2xl uppercase tracking-[0.08em] text-blueink">
-              All <span class="text-crimson">{@config.label}</span>
+          <%= if is_nil(@folder) do %>
+            <h2 class="mb-10 font-head text-2xl uppercase tracking-[0.08em] text-blueink">
+              {@config.label} <span class="text-crimson">Albums</span>
             </h2>
 
-            <div class="flex flex-wrap items-center gap-5">
-              <.filter_tab label={@config.all_label} value="all" active={@active_category} />
-              <.filter_tab
-                :for={category <- @categories}
-                label={category}
-                value={category}
-                active={@active_category}
+            <div :if={@folders == []} class="rounded-[8px] bg-ghost px-8 py-16 text-center">
+              <h3 class="font-head text-2xl uppercase tracking-[0.08em] text-blueink">
+                No {@config.label |> String.downcase()} here yet
+              </h3>
+              <p class="mx-auto mt-3 max-w-xl text-base leading-7 text-grayink">
+                Albums added in the admin media library will appear here automatically.
+              </p>
+            </div>
+
+            <div :if={@folders != []} class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <.folder_card
+                :for={folder <- @folders}
+                folder={folder}
+                href={folder_path(@config.canonical_path, folder.name)}
               />
             </div>
-          </div>
+          <% else %>
+            <div class="mb-10 flex flex-wrap items-center justify-between gap-4">
+              <h2 class="font-head text-2xl uppercase tracking-[0.08em] text-blueink">
+                {@folder}
+              </h2>
+              <.link
+                patch={@config.canonical_path}
+                class="inline-flex items-center gap-2 font-head text-sm font-semibold uppercase tracking-[0.12em] text-blueink transition hover:text-crimson"
+              >
+                <.icon name="hero-arrow-left-mini" class="h-4 w-4" /> All albums
+              </.link>
+            </div>
 
-          <div :if={@items == []} class="rounded-[8px] bg-ghost px-8 py-16 text-center">
-            <h3 class="font-head text-2xl uppercase tracking-[0.08em] text-blueink">
-              No {@config.label |> String.downcase()} here yet
-            </h3>
-            <p class="mx-auto mt-3 max-w-xl text-base leading-7 text-grayink">
-              Items added in the admin media library will appear in this gallery automatically.
-            </p>
-          </div>
+            <div :if={@items == []} class="rounded-[8px] bg-ghost px-8 py-16 text-center">
+              <h3 class="font-head text-2xl uppercase tracking-[0.08em] text-blueink">
+                This album is empty
+              </h3>
+            </div>
 
-          <div :if={@items != []} class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <.media_card :for={item <- @items} item={item} />
-          </div>
+            <div :if={@items != []} class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <.media_card :for={item <- @items} item={item} />
+            </div>
+          <% end %>
         </div>
       </section>
 
@@ -220,24 +248,34 @@ defmodule MaragaInfoWeb.MediaLive.Index do
     """
   end
 
-  attr :label, :string, required: true
-  attr :value, :string, required: true
-  attr :active, :string, required: true
+  attr :folder, :map, required: true
+  attr :href, :string, required: true
 
-  defp filter_tab(assigns) do
+  defp folder_card(assigns) do
     ~H"""
-    <button
-      type="button"
-      phx-click="filter"
-      phx-value-category={@value}
-      class={[
-        "font-head text-sm font-semibold uppercase tracking-[0.12em] transition",
-        @active == @value && "text-crimson",
-        @active != @value && "text-blueink hover:text-crimson"
-      ]}
+    <.link
+      patch={@href}
+      class="group relative block overflow-hidden rounded-[6px] shadow-[0_15px_40px_rgba(15,30,80,0.08)]"
     >
-      {@label}
-    </button>
+      <img
+        :if={@folder.cover}
+        src={@folder.cover}
+        alt={@folder.name}
+        loading="lazy"
+        class="h-72 w-full object-cover object-[center_30%] transition duration-500 group-hover:scale-105"
+      />
+      <div :if={!@folder.cover} class="flex h-72 w-full items-center justify-center bg-blueink text-white">
+        <.icon name="hero-photo" class="h-12 w-12" />
+      </div>
+      <span class="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-to-t from-blueink/90 via-blueink/50 to-transparent px-5 pb-5 pt-16">
+        <span class="font-head text-xl uppercase tracking-[0.04em] text-white">
+          {@folder.name}
+        </span>
+        <span class="font-head text-[11px] uppercase tracking-[0.22em] text-white/80">
+          {@folder.count} {if @folder.count == 1, do: "item", else: "items"} · View album
+        </span>
+      </span>
+    </.link>
     """
   end
 

@@ -24,6 +24,8 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
      |> assign(:video_url, nil)
      |> assign(:form, nil)
      |> assign(:items, [])
+     |> assign(:folder, nil)
+     |> assign(:folders, [])
      |> assign(:stats, item_stats([]))
      |> allow_upload(:image,
        accept: ~w(.jpg .jpeg .png .webp),
@@ -42,13 +44,14 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
   end
 
   @impl true
-  def handle_params(_params, url, socket) do
+  def handle_params(params, url, socket) do
     path = URI.parse(url).path
     scope = scope_from_path(path)
 
     {:noreply,
      socket
      |> assign(:current_path, path)
+     |> assign(:folder, blank_to_nil(params["folder"]))
      |> assign(:scope, scope)
      |> assign(:page_title, scope.title)
      |> assign(:page_subtitle, scope.subtitle)
@@ -59,7 +62,10 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
 
   @impl true
   def handle_event("new", _params, socket) do
-    media_item = %MediaItem{media_type: default_media_type(socket.assigns.scope)}
+    media_item = %MediaItem{
+      media_type: default_media_type(socket.assigns.scope),
+      category: socket.assigns.folder
+    }
 
     {:noreply,
      socket
@@ -192,11 +198,38 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
   ## Helpers
 
   defp load_items(socket) do
-    items = Content.list_media_items(media_type: socket.assigns.scope.media_type)
+    all_items = Content.list_media_items(media_type: socket.assigns.scope.media_type)
+    folder = socket.assigns[:folder]
+
+    items =
+      if folder, do: Enum.filter(all_items, &(&1.category == folder)), else: all_items
 
     socket
     |> assign(:items, items)
+    |> assign(:folders, build_folders(all_items))
     |> assign(:stats, item_stats(items))
+  end
+
+  defp build_folders(items) do
+    items
+    |> Enum.group_by(& &1.category)
+    |> Enum.map(fn {name, folder_items} ->
+      %{
+        name: name,
+        count: length(folder_items),
+        cover: Enum.find_value(folder_items, & &1.image_url)
+      }
+    end)
+    |> Enum.sort_by(&String.downcase(&1.name || ""))
+  end
+
+  defp folder_path(base_path, nil), do: base_path
+  defp folder_path(base_path, name), do: base_path <> "?" <> URI.encode_query(folder: name)
+
+  defp blank_to_nil(nil), do: nil
+
+  defp blank_to_nil(value) when is_binary(value) do
+    if String.trim(value) == "", do: nil, else: value
   end
 
   defp item_stats(items) do
@@ -289,6 +322,12 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
     end
   end
 
+  defp category_suggestions do
+    (MediaItem.categories() ++
+       MaragaInfo.Content.list_published_media_categories())
+    |> Enum.uniq()
+  end
+
   defp upload_error_to_string(:too_large), do: "File is too large"
   defp upload_error_to_string(:too_many_files), do: "Only one file allowed"
   defp upload_error_to_string(:not_accepted), do: "Unsupported file type"
@@ -334,7 +373,49 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
           <.admin_stat title="Hidden" value={Integer.to_string(@stats.hidden)} hint="Not public" />
         </section>
 
-        <.admin_panel title={@scope.panel_title} subtitle={@scope.panel_subtitle}>
+        <.admin_panel
+          :if={is_nil(@folder)}
+          title="Folders"
+          subtitle="Each folder is an album in the public gallery. Open one to manage its items."
+        >
+          <div :if={@folders != []} class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+            <.link
+              :for={folder <- @folders}
+              patch={folder_path(@scope.base_path, folder.name)}
+              class="group overflow-hidden rounded-xl border border-zinc-200 bg-white transition hover:border-blueink"
+            >
+              <div class="relative aspect-[4/3] overflow-hidden bg-zinc-100">
+                <img
+                  :if={folder.cover}
+                  src={folder.cover}
+                  alt={folder.name}
+                  class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                />
+                <div :if={!folder.cover} class="flex h-full items-center justify-center text-zinc-400">
+                  <.icon name="hero-folder" class="h-12 w-12" />
+                </div>
+              </div>
+              <div class="flex items-center gap-2 p-3">
+                <.icon name="hero-folder-mini" class="h-4 w-4 shrink-0 text-blueink" />
+                <p class="truncate text-sm font-semibold text-zinc-900">{folder.name}</p>
+                <span class="ml-auto text-xs text-zinc-500">{folder.count}</span>
+              </div>
+            </.link>
+          </div>
+          <.admin_empty_state
+            :if={@folders == []}
+            title="No folders yet"
+            description="Add a photo and type an album name, e.g. Ukatiba Caravan Bungoma, to create the first folder."
+          />
+        </.admin_panel>
+
+        <.admin_panel :if={@folder} title={@folder} subtitle={"#{@stats.total} item(s) in this folder"}>
+          <.link
+            patch={@scope.base_path}
+            class="mb-4 inline-flex items-center gap-1 text-sm font-medium text-blueink hover:underline"
+          >
+            <.icon name="hero-arrow-left-mini" class="h-4 w-4" /> All folders
+          </.link>
           <div :if={@items != []} class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div
               :for={item <- @items}
@@ -394,7 +475,7 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
 
           <.admin_empty_state
             :if={@items == []}
-            title={"No " <> String.downcase(@scope.title) <> " yet"}
+            title="This folder is empty"
             description={"Add the first " <> String.downcase(@scope.singular) <> " to populate this section."}
           />
         </.admin_panel>
@@ -577,11 +658,21 @@ defmodule MaragaInfoWeb.Admin.MediaLive.Index do
           <.input field={@form[:title]} type="text" label="Title" />
           <.input
             field={@form[:category]}
-            type="select"
-            label="Category"
-            options={MediaItem.categories()}
-            prompt="Choose a category"
+            type="text"
+            label="Album / category"
+            list="media-category-options"
+            placeholder="e.g. Ukatiba Caravan Bungoma"
+            autocomplete="off"
           />
+          <datalist id="media-category-options">
+            <option
+              :for={category <- category_suggestions()}
+              value={category}
+            />
+          </datalist>
+          <p class="-mt-2 text-xs text-zinc-500">
+            Pick an existing album or type a new name. Each album shows as its own tab in the public gallery.
+          </p>
           <.input field={@form[:description]} type="textarea" label="Description (optional)" rows="3" />
           <.input field={@form[:position]} type="number" label="Sort order" />
           <.input field={@form[:is_published]} type="checkbox" label="Show in public gallery" />
