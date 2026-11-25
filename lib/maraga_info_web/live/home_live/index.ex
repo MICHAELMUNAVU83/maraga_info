@@ -644,7 +644,11 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       </div>
 
       <%!-- Keeps the hero copy legible while the curtains are open. --%>
-      <div aria-hidden="true" class="absolute inset-0 bg-black/35"></div>
+      <div
+        aria-hidden="true"
+        class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/55 to-black/70"
+      >
+      </div>
 
       <div aria-hidden="true" class="absolute inset-0">
         <div class="hero-color-slide hero-color-slide-left" data-hero-curtain></div>
