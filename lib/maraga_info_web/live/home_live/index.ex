@@ -105,11 +105,20 @@ defmodule MaragaInfoWeb.HomeLive.Index do
        volunteer_form: to_form(VoterDrive.change_registration(%Registration{}), as: :volunteer),
        volunteer_submitted: false,
        volunteer_interests: @volunteer_interests,
+       donate_amount: 500,
        content: content
      )}
   end
 
   @impl true
+  def handle_event("select_donate_amount", %{"amount" => amount}, socket) do
+    {:noreply, assign(socket, :donate_amount, parse_amount(amount))}
+  end
+
+  def handle_event("custom_donate_amount", %{"amount" => amount}, socket) do
+    {:noreply, assign(socket, :donate_amount, parse_amount(amount))}
+  end
+
   def handle_event("close_event_modal", _params, socket) do
     {:noreply, assign(socket, :show_event_modal, false)}
   end
@@ -380,7 +389,11 @@ defmodule MaragaInfoWeb.HomeLive.Index do
       <.subscribe_success_modal :if={@show_subscribe_modal} />
       <.site_header />
       <.hero_section :if={section_visible?(@content, :hero)} content={@content} />
-      <.donate_section :if={section_visible?(@content, :mission)} content={@content} />
+      <.donate_section
+        :if={section_visible?(@content, :mission)}
+        content={@content}
+        donate_amount={@donate_amount}
+      />
       <.events_section :if={section_visible?(@content, :events)} events={@events} content={@content} />
       <.news_section
         :if={section_visible?(@content, :news)}
@@ -674,6 +687,7 @@ defmodule MaragaInfoWeb.HomeLive.Index do
   end
 
   attr :content, :map, default: %{}
+  attr :donate_amount, :integer, default: nil
 
   defp donate_section(assigns) do
     assigns =
@@ -684,72 +698,150 @@ defmodule MaragaInfoWeb.HomeLive.Index do
             "home.donate.button_url",
             "https://donations.davidmaraga.com/"
           ),
-        volunteer_url:
-          get_content(
-            assigns.content,
-            "home.donate.volunteer_url",
-            "https://www.davidmaraga.com/volunteer"
-          ),
-        bio_heading_prefix:
-          get_content(assigns.content, "home.mission.heading_prefix", "A man of"),
-        bio_heading_accent1:
-          get_content(assigns.content, "home.mission.heading_accent1", "integrity"),
-        bio_heading_mid:
-          get_content(assigns.content, "home.mission.heading_mid", "for a time that demands"),
-        bio_heading_accent2:
-          get_content(assigns.content, "home.mission.heading_accent2", "character."),
-        bio_quote:
-          get_content(
-            assigns.content,
-            "home.mission.quote",
-            "David Maraga — the judge who annulled a presidential election and proved no one is above the law. A reformer who digitized courts, expanded access to justice, and authored over 1,250 judgments. Fearless, principled, and relentless — Kenya's greatest judicial guardian"
-          )
+        amounts: [50, 100, 200, 500, 1000, 2500],
+        selected:
+          assigns.donate_amount in [50, 100, 200, 500, 1000, 2500] && assigns.donate_amount
       )
 
     ~H"""
-    <section
-      id="mission"
-      class="relative w-full overflow-hidden bg-ghost px-4 shadow-[0_10px_50px_#0000000a]"
-    >
-      <div class="mx-auto flex max-w-container flex-col items-center gap-8 py-12 lg:flex-row lg:items-center lg:gap-12">
-        <div class="w-full text-center lg:w-1/2 lg:text-left">
-          <h2 class="font-head text-3xl uppercase text-blueink md:text-4xl">
-            {@bio_heading_prefix} <span class="text-crimson">{@bio_heading_accent1}</span>
-            {@bio_heading_mid} <span class="text-crimson">{@bio_heading_accent2}</span>
-          </h2>
-
-          <p class="mt-4 font-serifi text-lg italic leading-relaxed tracking-[.5px] text-grayink">
-            "{@bio_quote}"
-          </p>
+    <section id="donate" class="bg-[#f7f3ea] px-4 py-20 sm:px-[30px] lg:py-[140px]">
+      <div class="mx-auto grid max-w-container gap-6 lg:grid-cols-[1fr_520px]">
+        <div class="relative flex min-h-[520px] flex-col justify-end overflow-hidden rounded-[10px] p-8 text-white sm:p-[50px]">
+          <img
+            src="/images/gallery/3.jpg"
+            alt="Supporters at a Maraga rally"
+            loading="lazy"
+            class="absolute inset-0 h-full w-full object-cover object-top"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/75 to-ink/10"></div>
+          <div class="relative">
+            <p class="font-head text-sm font-semibold uppercase tracking-[0.12em] text-brand">
+              . Donate
+            </p>
+            <h2 class="mt-5 max-w-[520px] font-head text-4xl uppercase leading-tight md:text-5xl">
+              Fuel a people-powered campaign
+            </h2>
+            <p class="mt-5 max-w-[480px] text-lg leading-[1.7] text-white/85">
+              This movement is funded by ordinary Kenyans, not powerful interests. Every shilling helps us reset, restore and rebuild Kenya.
+            </p>
+            <ul class="mt-8 grid gap-3 text-base sm:grid-cols-2">
+              <li
+                :for={
+                  item <- [
+                    "Outreach across all 47 counties",
+                    "Voter registration drives",
+                    "Town halls & rallies",
+                    "Official, secure donation site"
+                  ]
+                }
+                class="flex items-center gap-3"
+              >
+                <.icon name="hero-check" class="h-5 w-5 shrink-0 text-brand" />{item}
+              </li>
+            </ul>
+          </div>
         </div>
 
-        <div class="flex w-full max-w-xl flex-col items-center gap-2 rounded-[8px] border-2 border-crimson bg-crimson/10 px-6 py-7 sm:items-start lg:ml-auto lg:w-1/2">
-          <div class="flex flex-wrap justify-center gap-3 sm:justify-start">
-            <h3 class="font-head text-4xl uppercase leading-none text-blueink">support</h3>
-            <h3 class="font-head text-4xl uppercase leading-none text-crimson">the campaign</h3>
+        <div class="flex flex-col gap-8 rounded-[10px] bg-white p-8 shadow-[0_30px_60px_-30px_rgba(50,103,59,0.35)] sm:p-[40px]">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="font-head text-[13px] font-semibold uppercase tracking-[0.12em] text-grayink">
+                Support the campaign
+              </p>
+              <h3 class="mt-3 font-head text-2xl uppercase text-ink">Choose your contribution</h3>
+            </div>
+            <span class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-[#e6e6e6]">
+              <img
+                src="/images/correct badge with correct colors.png"
+                alt=""
+                class="h-full w-full scale-[1.6] object-cover"
+              />
+            </span>
           </div>
 
-          <div class="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
-            <.donation_chip label="KES 50" amount="50" donate_url={@donate_url} />
-            <.donation_chip label="KES 100" amount="100" donate_url={@donate_url} />
-            <.donation_chip label="KES 200" amount="200" donate_url={@donate_url} />
-            <.donation_chip label="KES 500" amount="500" donate_url={@donate_url} />
-            <.donation_chip label="KES 1000" amount="1000" donate_url={@donate_url} />
-            <.donation_chip label="Other" donate_url={@donate_url} />
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <button
+              :for={amount <- @amounts}
+              type="button"
+              phx-click="select_donate_amount"
+              phx-value-amount={amount}
+              class={[
+                "rounded-[10px] border px-4 py-4 text-center font-head text-lg font-semibold uppercase tracking-[0.04em] transition",
+                if(@selected == amount,
+                  do: "border-blueink bg-blueink text-white",
+                  else: "border-[#e6e6e6] bg-white text-ink hover:border-ink"
+                )
+              ]}
+            >
+              KES {format_kes(amount)}
+            </button>
           </div>
 
-          <a
-            href={@donate_url}
-            rel="noopener"
-            target="_blank"
-            class="w-full rounded-[5px] border-2 border-red-500 bg-red-500 px-[44px] py-5 text-center text-lg font-semibold text-white transition hover:bg-transparent hover:text-red-500 sm:w-auto sm:self-end"
-          >
-            Donate Now
-          </a>
+          <form phx-change="custom_donate_amount" onsubmit="return false" class="flex flex-col gap-2">
+            <span class="font-head text-[13px] font-semibold uppercase tracking-[0.12em] text-grayink">
+              Or enter another amount
+            </span>
+            <span class="flex items-center rounded-[10px] border border-[#e6e6e6] px-4 focus-within:border-ink">
+              <span class="font-head font-semibold text-grayink">KES</span>
+              <input
+                id="don-other"
+                name="amount"
+                type="number"
+                min="10"
+                step="10"
+                inputmode="numeric"
+                placeholder="e.g. 750"
+                value={if(@selected, do: "", else: @donate_amount)}
+                phx-debounce="200"
+                class="w-full border-0 bg-transparent px-3 py-4 text-lg text-ink outline-none focus:ring-0"
+              />
+            </span>
+          </form>
+
+          <div class="flex flex-col gap-4 border-t border-[#e6e6e6] pt-8">
+            <p class="text-base text-ink/80">
+              You are giving
+              <strong class="font-head text-xl text-ink">
+                {if @donate_amount,
+                  do: "KES #{format_kes(@donate_amount)}",
+                  else: "an amount of your choice"}
+              </strong>
+            </p>
+            <a
+              href={donate_amount_url(@donate_url, @donate_amount && to_string(@donate_amount))}
+              target="_blank"
+              rel="noopener"
+              class="flex w-full items-center justify-between rounded-[10px] bg-red-500 px-6 py-4 font-head text-lg font-semibold uppercase tracking-[0.04em] text-white transition hover:bg-red-600"
+            >
+              Donate now
+              <span class="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
+                <.icon name="hero-arrow-right" class="h-5 w-5" />
+              </span>
+            </a>
+            <p class="flex items-center gap-2 text-sm text-grayink">
+              <.icon name="hero-lock-closed" class="h-4 w-4 shrink-0" />
+              You’ll complete your gift securely on donations.davidmaraga.com
+            </p>
+          </div>
         </div>
       </div>
     </section>
     """
+  end
+
+  defp parse_amount(value) do
+    case Integer.parse(to_string(value)) do
+      {n, _} when n > 0 -> n
+      _ -> nil
+    end
+  end
+
+  defp format_kes(n) do
+    n
+    |> Integer.to_string()
+    |> String.reverse()
+    |> String.replace(~r/(\d{3})(?=\d)/, "\\1,")
+    |> String.reverse()
   end
 
   attr :news_items, :list, required: true
